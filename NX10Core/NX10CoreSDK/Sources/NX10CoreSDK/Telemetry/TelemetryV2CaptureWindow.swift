@@ -10,8 +10,14 @@ import Foundation
 @MainActor
 protocol TelemetryV2Capturing: AnyObject {
     func start()
-    func flush(snapshots: [TelemetryV2Snapshot], completion: @escaping (Result<Void, Error>) -> Void)
-}
+    func flush(
+        metrics: KeyboardMetricsSummary,
+        gyroscopeData: [[String: Any]],
+        accelerometerData: [[String: Any]],
+        touchKbEvents: [TouchKBEvent],
+        touchEvents: [TouchEvent],
+        uploader: Networking
+    )}
 
 /// Owns a short capture window so we can compute offsets (bts + offsetMs) and build a compact V2 payload.
 ///
@@ -78,7 +84,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
                 // Start a fresh window for the next batch.
                 start()
             } catch {
-                errorService.sendError(error)
+                errorService.sendCustomError(error)
                 debugPrint(error.localizedDescription)
                 #if DEBUG
                     fatalError("Failed to upload telemetry: \(error.localizedDescription)")
