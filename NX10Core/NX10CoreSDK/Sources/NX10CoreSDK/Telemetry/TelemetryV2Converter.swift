@@ -14,7 +14,8 @@ public protocol TelemetryV2Converting {
     init()
 }
 
-public enum TelemetryV2Converter: TelemetryV2Converting {
+public final class TelemetryV2Converter: TelemetryV2Converting {
+    
     public init() {}
 
     /// Convert your current collected envelope (V1 models) into V2 tuple payload.

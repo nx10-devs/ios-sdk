@@ -7,7 +7,10 @@
 
 internal import UIKit
 import Foundation
+import SwiftUI
+import Combine
 
+@MainActor
 public protocol TelemetryCollector: AnyObject {
     func keyPressed(_ key: String)
     func keyReleased(_ key: String)
@@ -28,7 +31,6 @@ public final class TelemetryManager: TelemetryCollector {
     private let uploader: NetworkService
     private let config: NetworkConfig
     
-
     public init(session: TelemetrySession, uploader: NetworkService, config: NetworkConfig, timer: Timer? = nil) {
         self.session = session
         self.uploader = uploader
@@ -70,7 +72,7 @@ public final class TelemetryManager: TelemetryCollector {
         print("LOG: Attempting to upload and flushing data")
         guard session.hasAnyData() else { return }
         let envelope = makeEnvelope()
-        let payload = TelemetryV2Converter.makeV2Payload(from: envelope)
+        let payload = TelemetryV2Converter().makeV2Payload(from: envelope)
 
         Task {
             do {

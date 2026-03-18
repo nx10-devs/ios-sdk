@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 public protocol Networking {
     func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse
     func upload(_ payload: TelemetryV2Payload) async throws -> Bool
