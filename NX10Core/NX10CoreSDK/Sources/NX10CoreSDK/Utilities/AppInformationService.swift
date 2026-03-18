@@ -14,7 +14,9 @@ public protocol AppInformationServicing: AnyObject {
     var sdkType: String { get }
     var appBuildNumber: String { get }
     var appVersionNumber: String { get }
+    
     @MainActor func deviceType() -> String
+    @MainActor func deviceInfo() -> DeviceInfo
 }
 
 public final class AppInformationService: AppInformationServicing {
@@ -62,7 +64,7 @@ public final class AppInformationService: AppInformationServicing {
         return withDot
     }
     
-    @MainActor public func deviceInfo() -> DeviceInfo {
+    public func deviceInfo() -> DeviceInfo {
         let deviceType = deviceType()
         let deviceVersion = deviceVersion()
         

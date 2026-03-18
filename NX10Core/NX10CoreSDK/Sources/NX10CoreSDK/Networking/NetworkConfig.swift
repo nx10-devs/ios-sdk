@@ -10,9 +10,11 @@ import Foundation
 public protocol NetworkConfigurating {
     var apiKey: String { get }
     var uploadInterval: TimeInterval { get }
+    
     func setToken(_ token: String)
     func getToken() -> String?
     func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
+    func storeEndpoints(_ endpoints: [Endpoint])
 }
 
 public final class NetworkConfig: NetworkConfigurating {
