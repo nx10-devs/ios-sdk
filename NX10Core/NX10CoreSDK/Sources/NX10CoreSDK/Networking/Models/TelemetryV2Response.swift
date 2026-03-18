@@ -7,6 +7,10 @@
 
 import Foundation
 
-struct TelemetryV2Response: Decodable {
-    let status: String
+public struct TelemetryV2Response: Decodable {
+    public let status: String
+    
+    public init(status: String) {
+        self.status = status
+    }
 }
