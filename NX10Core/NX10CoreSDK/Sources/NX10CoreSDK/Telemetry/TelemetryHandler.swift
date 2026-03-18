@@ -15,8 +15,8 @@
 
 import Foundation
 internal import UIKit
-import NX10CoreSDK
 
+@MainActor
 final class TelemetryHandler {
     private let networkingService: Networking
     private let config: NetworkConfigurating
@@ -30,7 +30,7 @@ final class TelemetryHandler {
     
     func startSession() async throws -> Bool {
         do {
-            printIfDebug("LOG: Attempting session start")
+            print("LOG: Attempting session start")
             
             let result = try await networkingService.startSession(
                 with: .init(
@@ -55,10 +55,10 @@ final class TelemetryHandler {
             
             config.storeEndpoints(result.data.endpoints)
             config.setToken(result.data.token)
-            printIfDebug("LOG: Session start established for UUID \(applicationService.deviceID) version \(applicationService.appVersionNumber)")
+            print("LOG: Session start established for UUID \(applicationService.deviceID) version \(applicationService.appVersionNumber)")
             return true
         } catch {
-            printIfDebug("LOG: Failed to start session")
+            print("LOG: Failed to start session")
             print(error.localizedDescription)
         }
         
