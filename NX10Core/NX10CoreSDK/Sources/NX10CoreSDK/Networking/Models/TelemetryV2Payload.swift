@@ -10,20 +10,26 @@ import Foundation
 import CoreGraphics
 
 // MARK: - Telemetry V2 Payload
-struct TelemetryV2Payload: Encodable {
-    let bts: String          // ISO 8601 UTC
-    let ets: Int             // end offset in ms
-    let d: [TelemetryV2Event] // tuple events
+public struct TelemetryV2Payload: Encodable {
+    public let bts: String          // ISO 8601 UTC
+    public let ets: Int             // end offset in ms
+    public let d: [TelemetryV2Event] // tuple events
+    
+    public init(bts: String, ets: Int, d: [TelemetryV2Event]) {
+        self.bts = bts
+        self.ets = ets
+        self.d = d
+    }
 }
 
 // MARK: - Tuple Events
-enum TelemetryV2Event: Encodable {
+public enum TelemetryV2Event: Encodable {
     case touchKB(offsetMs: Int, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double)
     case gyro(offsetMs: Int, x: Double, y: Double, z: Double)
     case acc(offsetMs: Int, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var c = encoder.unkeyedContainer()
 
         switch self {
@@ -66,32 +72,60 @@ enum TelemetryV2Event: Encodable {
 
 
 // MARK: - Minimal typed inputs for touch
-struct TouchKBEvent {
-    let timestampMs: Int64
-    let touchType: String   // "down" | "move" | "up"
-    let x: Double
-    let y: Double
-    let pressure: Double    // if you don’t have it, send 0 (NOT null)
-    let size: Double        // if you don’t have it, send 0 (NOT null)
-    let vx: Double          // velocity component
-    let vy: Double
+public struct TouchKBEvent {
+    public let timestampMs: Int64
+    public let touchType: String   // "down" | "move" | "up"
+    public let x: Double
+    public let y: Double
+    public let pressure: Double    // if you don’t have it, send 0 (NOT null)
+    public let size: Double        // if you don’t have it, send 0 (NOT null)
+    public let vx: Double          // velocity component
+    public let vy: Double
+    
+    public init(timestampMs: Int64, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double) {
+        self.timestampMs = timestampMs
+        self.touchType = touchType
+        self.x = x
+        self.y = y
+        self.pressure = pressure
+        self.size = size
+        self.vx = vx
+        self.vy = vy
+    }
 }
 
-struct TouchEvent {
-    let timestampMs: Int64
-    let x: Double
-    let y: Double
-    let vx: Double
-    let vy: Double
+public struct TouchEvent {
+    public let timestampMs: Int64
+    public let x: Double
+    public let y: Double
+    public let vx: Double
+    public let vy: Double
+    
+    public init(timestampMs: Int64, x: Double, y: Double, vx: Double, vy: Double) {
+        self.timestampMs = timestampMs
+        self.x = x
+        self.y = y
+        self.vx = vx
+        self.vy = vy
+    }
 }
 
 // MARK: - Keyboard summary model
 
-struct KeyboardSummary {
-    let totalKeyPresses: Int
-    let erasedTextLength: Int
-    let averageHoldTimeMs: Int
-    let typingSpeedWpm: Int
-    let backspaceCount: Int
-    let flightTimesMs: [Int]
+public struct KeyboardSummary {
+    public let totalKeyPresses: Int
+    public let erasedTextLength: Int
+    public let averageHoldTimeMs: Int
+    public let typingSpeedWpm: Int
+    public let backspaceCount: Int
+    public let flightTimesMs: [Int]
+    
+    public init(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int]) {
+        self.totalKeyPresses = totalKeyPresses
+        self.erasedTextLength = erasedTextLength
+        self.averageHoldTimeMs = averageHoldTimeMs
+        self.typingSpeedWpm = typingSpeedWpm
+        self.backspaceCount = backspaceCount
+        self.flightTimesMs = flightTimesMs
+    }
 }

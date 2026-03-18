@@ -7,41 +7,15 @@
 
 import Foundation
 
-public enum EndpointType {
-    case startSession(version: Version)
-    case telemetry(version: Version)
-    case saaq(version: Version)
-    
-    public enum Version: String {
-        case old1 = "1"
-        case v1
-        case v2
-        
-        var versionString: String {
-            switch self {
-            case .old1:
-                return "1"
-            case .v1:
-                return "v1"
-            case .v2:
-                return "v2"
-            }
-        }
-    }
-    
-    public var typeString: String {
-        switch self {
-        case .startSession:
-            return "start_session"
-        case .telemetry:
-            return "telemetry"
-        case .saaq:
-            return "saaq"
-        }
-    }
+public protocol NetworkConfigurating {
+    var apiKey: String { get }
+    var uploadInterval: TimeInterval { get }
+    func setToken(_ token: String)
+    func getToken() -> String?
+    func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
 }
 
-public final class NetworkConfig {
+public final class NetworkConfig: NetworkConfigurating {
     public init() {}
     
     private var endpoints: Set<Endpoint> = [
@@ -109,5 +83,41 @@ public final class NetworkConfig {
     
     public func getToken() -> String? {
         return token
+    }
+}
+
+public extension NetworkConfig {
+    enum EndpointType {
+        case startSession(version: Version)
+        case telemetry(version: Version)
+        case saaq(version: Version)
+        
+        public enum Version: String {
+            case old1 = "1"
+            case v1
+            case v2
+            
+            var versionString: String {
+                switch self {
+                case .old1:
+                    return "1"
+                case .v1:
+                    return "v1"
+                case .v2:
+                    return "v2"
+                }
+            }
+        }
+        
+        public var typeString: String {
+            switch self {
+            case .startSession:
+                return "start_session"
+            case .telemetry:
+                return "telemetry"
+            case .saaq:
+                return "saaq"
+            }
+        }
     }
 }
