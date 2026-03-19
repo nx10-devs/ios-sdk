@@ -93,7 +93,7 @@ public final class NetworkService: Networking {
         var url: URL?
         
         do {
-            url = try NetworkConfig().url(for: .telemetry(version: .v2))
+            url = try config.url(for: .telemetry(version: .v2))
         } catch {
             throw error
         }
