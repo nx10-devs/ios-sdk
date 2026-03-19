@@ -17,18 +17,23 @@ import Foundation
 internal import UIKit
 
 @MainActor
-final class TelemetryHandler {
+public protocol TelemetryHandling {
+    init (networkingService: Networking, config: NetworkConfig, appService: AppInformationServicing)
+    func startSession() async throws -> Bool
+}
+
+public final class TelemetryHandler: TelemetryHandling {
     private let networkingService: Networking
     private let config: NetworkConfigurating
     private let applicationService: AppInformationServicing
     
-    init (networkingService: Networking, config: NetworkConfig, appService: AppInformationServicing) {
+    public init (networkingService: Networking, config: NetworkConfig, appService: AppInformationServicing) {
         self.networkingService = networkingService
         self.config = config
         self.applicationService = appService
     }
     
-    func startSession() async throws -> Bool {
+    public func startSession() async throws -> Bool {
         do {
             print("LOG: Attempting session start")
             
