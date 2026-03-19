@@ -9,15 +9,18 @@ import Foundation
 
 @MainActor
 public protocol Networking {
+    var config: NetworkConfig { get }
     func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse
     func upload(_ payload: TelemetryV2Payload) async throws -> Bool
-    init()
+    init(config: NetworkConfig)
 }
 
 public final class NetworkService: Networking {
-    private let config = NetworkConfig()
+    public let config: NetworkConfig
     
-    public init() {}
+    public init(config: NetworkConfig) {
+        self.config = config
+    }
     
     public func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse {
         

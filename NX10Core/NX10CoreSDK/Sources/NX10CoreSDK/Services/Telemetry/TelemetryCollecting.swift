@@ -24,19 +24,17 @@ public protocol TelemetryCollecting: AnyObject {
     func stopTimer()
     func startTimer()
     
-    init(session: TelemetrySession, uploader: NetworkService, config: NetworkConfig, timer: Timer?)
+    init(session: TelemetrySession, uploader: NetworkService, timer: Timer?)
 }
 
 public final class TelemetryCollector: TelemetryCollecting {
 
     private let session: TelemetrySession
     private let uploader: NetworkService
-    private let config: NetworkConfig
     
-    public init(session: TelemetrySession, uploader: NetworkService, config: NetworkConfig, timer: Timer? = nil) {
+    public init(session: TelemetrySession, uploader: NetworkService, timer: Timer? = nil) {
         self.session = session
         self.uploader = uploader
-        self.config = config
         self.timer = timer
     }
     
@@ -44,8 +42,9 @@ public final class TelemetryCollector: TelemetryCollecting {
     private var timer: Timer?
 
     public func startTimer() {
+        let uploadInterval = uploader.config.uploadInterval
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: config.uploadInterval, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: uploadInterval, repeats: true) { [weak self] _ in
             self?.flushIfNeeded()
         }
     }

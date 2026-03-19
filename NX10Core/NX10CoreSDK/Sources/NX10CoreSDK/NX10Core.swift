@@ -7,23 +7,47 @@
 
 @MainActor
 public protocol NX10Coring {
-    var shared: NX10Core { get }
+    var telemetryHandler: TelemetryHandling? { get }
+    var networkservice: Networking? { get }
+    var errorService: ErrorServicing? { get }
+    var accessManagementService: AccessManagementServicing? { get }
+    var appService: AppInformationServicing? { get }
+    var didStartSentry: Bool { get set }
+
     init()
 }
 
-final public class NX10Core {
+public final class NX10Core {
     
-    @MainActor public static var shared = NX10Core()
-//    // MARK: Internal properties
-//    let telemetry: TelemetryManager
-//    
-//    // MARK: Private properties
-//    let telemetryHandler: TelemetryHandling
-//    private let errorService: ErrorServicing
-//    private let accessManagementService: AccessManagementServicing
-//    public var didStartSentry = false
 
-    init () {
+    // MARK: Private properties
+    public let telemetry: TelemetryCollector!
+    public let networkConfig: NetworkConfig!
+    public let telemetryHandler: TelemetryHandling!
+    public let networkservice: Networking!
+    public let errorService: ErrorServicing!
+    public let accessManagementService: AccessManagementServicing!
+    public let appService: AppInformationServicing!
+
+    public var didStartSentry = false
+    
+    @MainActor public init () {
+        let config = NetworkConfig()
+        let networkService = NetworkService(config: config)
+        let errorService = ErrorService()
+        let telemetrySession = TelemetrySession()
+        let telemetryCollector = TelemetryCollector(session: telemetrySession, uploader: networkService, timer: nil)
+        let accessManagementService = AccessManagementService(errorService: errorService)
+        let appInformationService = AppInformationService()
         
+        self.networkConfig = config
+
+        self.networkservice = networkService
+        self.errorService = errorService
+        self.accessManagementService = accessManagementService
+        self.telemetry = telemetryCollector
+        
+        self.telemetryHandler = TelemetryHandler(networkingService: networkService, config: config, appService: appInformationService)
+        self.appService = AppInformationService()
     }
 }
