@@ -18,8 +18,6 @@ public protocol NX10Coring {
 }
 
 public final class NX10Core {
-    
-
     // MARK: Private properties
     public let telemetry: TelemetryCollector!
     public let networkConfig: NetworkConfig!
@@ -32,22 +30,39 @@ public final class NX10Core {
     public var didStartSentry = false
     
     @MainActor public init () {
-        let config = NetworkConfig()
-        let networkService = NetworkService(config: config)
+        
+        // Instantiate objects
+        
+        // MARK: Independant objects
+        let networkConfig = NetworkConfig()
         let errorService = ErrorService()
         let telemetrySession = TelemetrySession()
-        let telemetryCollector = TelemetryCollector(session: telemetrySession, uploader: networkService, timer: nil)
-        let accessManagementService = AccessManagementService(errorService: errorService)
         let appInformationService = AppInformationService()
+        let appService = AppInformationService()
         
-        self.networkConfig = config
+        // MARK: Dependency injections
+        let networkService = NetworkService(config: networkConfig)
+        let telemetryCollector = TelemetryCollector(
+            session: telemetrySession,
+            uploader: networkService,
+            timer: nil
+        )
+        let accessManagementService = AccessManagementService(
+            errorService: errorService
+        )
 
+        // MARK: Retention assignments
+        self.networkConfig = networkConfig
         self.networkservice = networkService
         self.errorService = errorService
         self.accessManagementService = accessManagementService
         self.telemetry = telemetryCollector
         
-        self.telemetryHandler = TelemetryHandler(networkingService: networkService, config: config, appService: appInformationService)
-        self.appService = AppInformationService()
+        self.telemetryHandler = TelemetryHandler(
+            networkingService: networkService,
+            config: networkConfig,
+            appService: appInformationService
+        )
+        self.appService = appService
     }
 }
