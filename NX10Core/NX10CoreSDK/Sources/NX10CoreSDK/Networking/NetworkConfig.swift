@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 public protocol NetworkConfigurating {
     var apiKey: String { get }
     var uploadInterval: TimeInterval { get }
@@ -17,8 +18,11 @@ public protocol NetworkConfigurating {
     func storeEndpoints(_ endpoints: [Endpoint])
 }
 
+
 public final class NetworkConfig: NetworkConfigurating {
-    public init() {}
+    public init() {
+        print("network config UUID: \(UUID().uuidString)")
+    }
     
     private var endpoints: Set<Endpoint> = [
         .init(
