@@ -11,7 +11,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-public protocol TelemetryCollector: AnyObject {
+public protocol TelemetryCollecting: AnyObject {
     func keyPressed(_ key: String)
     func keyReleased(_ key: String)
 
@@ -21,11 +21,13 @@ public protocol TelemetryCollector: AnyObject {
 
     func flushIfNeeded()
     func attemptUploadAndflushNow()
+    func stopTimer()
+    func startTimer()
     
     init(session: TelemetrySession, uploader: NetworkService, config: NetworkConfig, timer: Timer?)
 }
 
-public final class TelemetryManager: TelemetryCollector {
+public final class TelemetryCollector: TelemetryCollecting {
 
     private let session: TelemetrySession
     private let uploader: NetworkService
