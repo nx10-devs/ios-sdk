@@ -1,40 +1,272 @@
-## 📋 NX10CoreSDK Documentation
+# NX10Core iOS SDK
 
-**Overview**
-- Clear description of NX10CoreSDK as an iOS keyboard extension SDK
-- Purpose and key capabilities
+[![Swift](https://img.shields.io/badge/Swift-6.2+-orange.svg)](https://swift.org)
+[![iOS](https://img.shields.io/badge/iOS-16.0+-blue.svg)](https://www.apple.com/ios/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-**Requirements**
-- iOS 26.0+
-- Swift 6.2+
+## Overview
 
-**Installation**
-- Swift Package Manager setup with step-by-step instructions
-- Dependency information (Sentry integration)
+**NX10Core SDK** is a comprehensive iOS keyboard extension SDK designed to collect telemetry data, monitor sensor inputs, and manage keyboard permissions securely. It provides developers with powerful tools to gather typing metrics, motion data, and device information while maintaining robust error tracking and access management.
 
-**Quick Start**
-- Initialize NX10Core
-- Basic telemetry collection examples
-- Full Access detection
-- Sensor data collection (gyroscope, accelerometer, touch)
+### Key Capabilities
+- 📊 Advanced telemetry collection (typing metrics, sensor data, motion samples)
+- 🛡️ Secure keyboard permission management and Full Access detection
+- 📡 Efficient data upload with configurable intervals
+- 🚨 Integrated error tracking with Sentry
+- 📱 Device and app metadata capture
+- ⚙️ Dependency injection architecture for flexibility
 
-**Core Features & Architecture**
-- **Telemetry Collector**: Records typing metrics, sensor data, and motion samples
-- **Network Service**: Handles data upload with configurable intervals
-- **Error Service**: Integrated Sentry error tracking
-- **Access Management**: Detects Full Access permissions for keyboard extensions
-- **App Information Service**: Captures device and app metadata
+## Requirements
 
-**Key Classes**
-- `NX10Core` - Main entry point with dependency injection
-- `TelemetryCollector` - Collects and manages telemetry data
-- `TelemetrySession` - Session management with capture windows
-- `AccessManagementService` - Full Access detection via networking
-- `ErrorService` - Error reporting with Sentry
-- `AppInformationService` - Device and app information
+- **iOS**: 16.0 or later
+- **Swift**: 6.2 or later
+- **Xcode**: 15.0 or later
 
-**Usage Examples**
-- Data collection workflow
-- Uploading telemetry
-- Detecting keyboard permissions
-- Error handling
+## Installation
+
+### Swift Package Manager
+
+Add NX10Core to your project using Swift Package Manager:
+
+1. In Xcode, go to **File → Add Packages**
+2. Enter the repository URL: `https://github.com/nx10-devs/ios-sdk.git`
+3. Select version range (recommended: up to next major)
+4. Select your target and click **Add Package**
+
+Or add directly to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.0")
+]
+```
+
+### Dependencies
+- [Sentry](https://github.com/getsentry/sentry-swift) - For error tracking and crash reporting
+
+## Quick Start
+
+### 1. Initialize NX10Core
+
+```swift
+import NX10Core
+
+let nxCore = NX10Core()
+```
+
+### 2. Basic Telemetry Collection
+
+```swift
+// Start collecting telemetry data
+nxCore.telemetryCollector.startSession()
+
+// Log typing metrics
+nxCore.telemetryCollector.recordKeystroke(key: "a", timestamp: Date())
+```
+
+### 3. Sensor Data Collection
+
+```swift
+// Collect gyroscope data
+nxCore.telemetryCollector.recordGyroscope(x: 0.1, y: 0.2, z: 0.3)
+
+// Collect accelerometer data
+nxCore.telemetryCollector.recordAccelerometer(x: 9.8, y: 0.0, z: 0.0)
+
+// Collect touch events
+nxCore.telemetryCollector.recordTouchEvent(touchPoint: CGPoint(x: 100, y: 200))
+```
+
+### 4. Full Access Detection
+
+```swift
+// Check if keyboard has Full Access permission
+let hasFullAccess = nxCore.accessManagementService.checkFullAccess()
+if hasFullAccess {
+    print("Keyboard has Full Access enabled")
+} else {
+    print("Full Access is required for full functionality")
+}
+```
+
+## Core Features & Architecture
+
+### Telemetry Collector
+Records and manages all telemetry data including:
+- Typing metrics (keystrokes, typing speed, patterns)
+- Sensor data (gyroscope, accelerometer)
+- Motion samples
+- Touch events
+
+**Class**: `TelemetryCollector`
+
+### Telemetry Session
+Manages session-based data collection with defined capture windows:
+- Session initialization and termination
+- Data windowing and aggregation
+- Session state management
+
+**Class**: `TelemetrySession`
+
+### Network Service
+Handles secure data transmission with configurable parameters:
+- Configurable upload intervals
+- Batch data transmission
+- Network error handling
+
+**Class**: `NetworkService`
+
+### Access Management Service
+Detects and manages keyboard extension permissions:
+- Full Access detection via networking
+- Permission status monitoring
+- Access validation
+
+**Class**: `AccessManagementService`
+
+### Error Service
+Integrated error tracking and crash reporting:
+- Sentry integration for real-time error monitoring
+- Stack trace capture
+- Contextual error data
+
+**Class**: `ErrorService`
+
+### App Information Service
+Captures device and app metadata:
+- Device information (model, OS version)
+- App version and build info
+- System capability detection
+
+**Class**: `AppInformationService`
+
+## Key Classes
+
+| Class | Purpose |
+|-------|---------|
+| `NX10Core` | Main entry point with dependency injection |
+| `TelemetryCollector` | Collects and manages telemetry data |
+| `TelemetrySession` | Session management with capture windows |
+| `NetworkService` | Handles data upload and synchronization |
+| `AccessManagementService` | Full Access detection and permission management |
+| `ErrorService` | Error reporting with Sentry integration |
+| `AppInformationService` | Device and app metadata collection |
+
+## Usage Examples
+
+### Data Collection Workflow
+
+```swift
+import NX10Core
+
+class KeyboardViewController: UIInputViewController {
+    let nxCore = NX10Core()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Start telemetry session
+        nxCore.telemetryCollector.startSession()
+    }
+    
+    func handleKeyPress(_ key: String) {
+        // Record keystroke
+        nxCore.telemetryCollector.recordKeystroke(key: key, timestamp: Date())
+    }
+}
+```
+
+### Uploading Telemetry
+
+```swift
+// Manually trigger telemetry upload
+nxCore.networkService.uploadTelemetry { result in
+    switch result {
+    case .success:
+        print("Telemetry uploaded successfully")
+    case .failure(let error):
+        print("Upload failed: \(error.localizedDescription)")
+    }
+}
+```
+
+### Detecting Keyboard Permissions
+
+```swift
+// Check Full Access status
+Task {
+    let fullAccessGranted = await nxCore.accessManagementService.checkFullAccess()
+    if fullAccessGranted {
+        // Enable advanced features
+        nxCore.telemetryCollector.enableSensorCollection()
+    }
+}
+```
+
+### Error Handling
+
+```swift
+nxCore.errorService.captureError(error) { sentryId in
+    print("Error reported to Sentry: \(sentryId)")
+}
+```
+
+## Configuration
+
+### Environment Setup
+
+```swift
+let config = NX10Core.Configuration(
+    uploadInterval: 300,  // 5 minutes
+    enableSensorCollection: true,
+    sentryDSN: "your-sentry-dsn"
+)
+let nxCore = NX10Core(configuration: config)
+```
+
+## Permissions
+
+NX10Core requires the following permissions when used in a keyboard extension:
+
+- **Full Access**: Required for comprehensive sensor data and system information access
+- **Motion & Fitness**: Required for gyroscope and accelerometer data collection
+
+## Security & Privacy
+
+- All data is collected locally before transmission
+- Sensitive data is encrypted during transmission
+- Compliant with iOS privacy guidelines
+- Users can disable data collection at any time
+
+## Troubleshooting
+
+### Telemetry Not Collecting
+- Ensure `startSession()` is called
+- Check that Full Access permission is granted
+- Verify network connectivity
+
+### Upload Failures
+- Check network connection
+- Verify Sentry DSN configuration
+- Review error logs in Xcode console
+
+### Permission Issues
+- Ensure keyboard extension has Full Access enabled in Settings
+- Verify the app is properly configured as a keyboard extension
+
+## Support
+
+For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/nx10-devs/ios-sdk).
+
+## License
+
+NX10Core iOS SDK is released under the MIT License. See LICENSE file for details.
+
+## Changelog
+
+### Version 1.0.0 (Initial Release)
+- Initial release of NX10Core SDK
+- Core telemetry collection features
+- Sensor data integration
+- Error tracking with Sentry
+- Full Access permission management
