@@ -1,16 +1,40 @@
-# NX10CoreSDK Documentation
+## 📋 NX10CoreSDK Documentation
 
-## Overview
-The NX10CoreSDK is a powerful tool designed to enable developers to create and manage applications seamlessly. It provides a comprehensive set of APIs and utilities that streamline development processes.
+**Overview**
+- Clear description of NX10CoreSDK as an iOS keyboard extension SDK
+- Purpose and key capabilities
 
-## Features
-- **Ease of Integration**: Simple API endpoints for quick setup.
-- **Comprehensive Documentation**: Included guides and examples to assist developers.
-- **Robust Performance**: Optimized for speed and efficiency.
-- **Cross-Platform Support**: Works across various operating systems and devices.
+**Requirements**
+- iOS 26.0+
+- Swift 6.2+
 
-## Installation
-To install NX10CoreSDK, follow these steps:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/nx10-devs/ios-sdk.git
+**Installation**
+- Swift Package Manager setup with step-by-step instructions
+- Dependency information (Sentry integration)
+
+**Quick Start**
+- Initialize NX10Core
+- Basic telemetry collection examples
+- Full Access detection
+- Sensor data collection (gyroscope, accelerometer, touch)
+
+**Core Features & Architecture**
+- **Telemetry Collector**: Records typing metrics, sensor data, and motion samples
+- **Network Service**: Handles data upload with configurable intervals
+- **Error Service**: Integrated Sentry error tracking
+- **Access Management**: Detects Full Access permissions for keyboard extensions
+- **App Information Service**: Captures device and app metadata
+
+**Key Classes**
+- `NX10Core` - Main entry point with dependency injection
+- `TelemetryCollector` - Collects and manages telemetry data
+- `TelemetrySession` - Session management with capture windows
+- `AccessManagementService` - Full Access detection via networking
+- `ErrorService` - Error reporting with Sentry
+- `AppInformationService` - Device and app information
+
+**Usage Examples**
+- Data collection workflow
+- Uploading telemetry
+- Detecting keyboard permissions
+- Error handling
