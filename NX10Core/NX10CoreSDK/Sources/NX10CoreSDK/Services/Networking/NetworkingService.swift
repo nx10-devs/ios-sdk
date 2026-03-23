@@ -110,7 +110,7 @@ public final class NetworkService: Networking {
             guard
                 let sessionToken = config.getToken()
             else {
-                print("Missing session token")
+                print("LOG: Missing session token")
                 throw APIError.missingToken
             }
             
@@ -143,7 +143,7 @@ public final class NetworkService: Networking {
         if
             let error = APIError.errorFor(code: httpResponse.statusCode)
         {
-            print("Data: \(data.asString)")
+            print("LOG: Data: \(data.asString)")
             throw error
         }
         

@@ -11,7 +11,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-public protocol TelemetryCollecting: AnyObject {
+public protocol TelemetryCollectorActions {
     func keyPressed(_ key: String)
     func keyReleased(_ key: String)
 
@@ -23,16 +23,19 @@ public protocol TelemetryCollecting: AnyObject {
     func attemptUploadAndflushNow()
     func stopTimer()
     func startTimer()
-    
-    init(session: TelemetrySession, uploader: NetworkService, timer: Timer?)
+}
+
+@MainActor
+public protocol TelemetryCollecting: AnyObject, TelemetryCollectorActions {
+    init(session: TelemetrySession, uploader: Networking, timer: Timer?)
 }
 
 public final class TelemetryCollector: TelemetryCollecting {
 
     private let session: TelemetrySession
-    private let uploader: NetworkService
+    private let uploader: Networking
     
-    public init(session: TelemetrySession, uploader: NetworkService, timer: Timer? = nil) {
+    public init(session: TelemetrySession, uploader: Networking, timer: Timer? = nil) {
         self.session = session
         self.uploader = uploader
         self.timer = timer
@@ -41,7 +44,7 @@ public final class TelemetryCollector: TelemetryCollecting {
     private let sharedDefaults = UserDefaults(suiteName: "group.com.nx10")
     private var timer: Timer?
 
-    public func startTimer() {
+    @MainActor public func startTimer() {
         let uploadInterval = uploader.config.uploadInterval
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: uploadInterval, repeats: true) { [weak self] _ in
@@ -64,7 +67,7 @@ public final class TelemetryCollector: TelemetryCollecting {
     public func appendTouch(_ s: TouchSample) { session.appendTouch(s) }
 
     // MARK: - Flush
-    public func flushIfNeeded() {
+    @MainActor public func flushIfNeeded() {
         guard session.hasAnyData() else { return }
         attemptUploadAndflushNow()
     }

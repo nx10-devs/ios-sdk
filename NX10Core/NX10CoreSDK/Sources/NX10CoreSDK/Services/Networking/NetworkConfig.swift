@@ -21,7 +21,7 @@ public protocol NetworkConfigurating {
 
 public final class NetworkConfig: NetworkConfigurating {
     public init() {
-        print("network config UUID: \(UUID().uuidString)")
+        print("LOG: network config UUID: \(UUID().uuidString)")
     }
     
     private var endpoints: Set<Endpoint> = [

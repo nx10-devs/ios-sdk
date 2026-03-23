@@ -5,9 +5,10 @@
 //  Created by NX10 on 18/03/2026.
 //
 
-internal import UIKit
+import Foundation
+public import UIKit
 
-extension UIDevice {
+public extension UIDevice {
     static var isPhone: Bool {
         return UIDevice.current.userInterfaceIdiom == .phone
     }
