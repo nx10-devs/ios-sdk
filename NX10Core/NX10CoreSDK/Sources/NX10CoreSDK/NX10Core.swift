@@ -15,7 +15,7 @@ public protocol NX10Coring {
     var errorService: ErrorServicing { get }
     var telemetryService: TelemetryService { get }
     
-    init()
+    init(apiKey: String)
 }
 
 public final class NX10Core {
@@ -31,7 +31,7 @@ public final class NX10Core {
     let motionTracker: MotionTracker
     let touchTracker: TouchTracker
     
-    @MainActor public init () {
+    @MainActor public init (apiKey: String) {
         
         // Instantiate objects
         
@@ -44,7 +44,7 @@ public final class NX10Core {
         let motionTracker = MotionTracker(errorService: errorService)
         let touchTracker = TouchTracker()
         
-        let networkConfig = NetworkConfig(configLoader: configLoader)
+        let networkConfig = NetworkConfig(configLoader: configLoader, apiKey: apiKey)
 
         let networkService = NetworkService(config: networkConfig)
         let accessManagementService = AccessManagementService(

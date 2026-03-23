@@ -17,14 +17,15 @@ public protocol NetworkConfigurating {
     func getToken() -> String?
     func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
     func storeEndpoints(_ endpoints: [Endpoint])
-    init(configLoader: ConfigLoader)
+    init(configLoader: ConfigLoader, apiKey: String)
 }
 
 public final class NetworkConfig: NetworkConfigurating {
     private let configLoader: ConfigLoader
     
-    public init(configLoader: ConfigLoader) {
+    public init(configLoader: ConfigLoader, apiKey: String) {
         print("LOG: network config UUID: \(UIDevice.current.identifierForVendor?.uuidString ?? "")")
+        self.apiKey = apiKey
         self.configLoader = configLoader
     }
     
@@ -36,14 +37,8 @@ public final class NetworkConfig: NetworkConfigurating {
         )
     ]
     
-    // WARNING: Store securely
-    public var apiKey: String {
-        if let value = configLoader.string(for: .nx10APIKey) { return value }
-        if isDebug {
-            print("WARNING: API_KEY missing from NX10CoreConfig.plist")
-        }
-        return ""
-    }
+    public let apiKey: String
+    
     public var uploadInterval: TimeInterval {
         if let seconds = configLoader.double(for: "UPLOAD_INTERVAL") { return seconds }
         return 30
