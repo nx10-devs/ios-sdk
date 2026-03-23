@@ -36,19 +36,21 @@ public final class NX10Core {
         // Instantiate objects
         
         // MARK: Independant objects
-        let networkConfig = NetworkConfig()
-        let errorService = ErrorService()
-        
+        let configLoader = ConfigLoader()
+        let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
         
-        // MARK: Dependency injections
+        // Motion and touch trackers
+        let motionTracker = MotionTracker(errorService: errorService)
+        let touchTracker = TouchTracker()
+        
+        let networkConfig = NetworkConfig(configLoader: configLoader)
+
         let networkService = NetworkService(config: networkConfig)
         let accessManagementService = AccessManagementService(
             errorService: errorService
         )
-        let motionTracker = MotionTracker()
-        let touchTracker = TouchTracker()
-        
+
         // MARK: Retention assignments
         self.appService = appService
         self.motionTracker = motionTracker

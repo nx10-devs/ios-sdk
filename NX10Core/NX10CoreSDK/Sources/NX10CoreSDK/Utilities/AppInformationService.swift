@@ -8,6 +8,7 @@
 internal import UIKit
 import Darwin
 
+@MainActor
 public protocol AppInformationServicing: AnyObject {
     var iOSVersion: String { get }
     var deviceID: String { get }
@@ -22,7 +23,7 @@ public protocol AppInformationServicing: AnyObject {
 public final class AppInformationService: AppInformationServicing {
     public init() {}
     public let iOSVersion = "\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.minorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.patchVersion)"
-    public let deviceID = UUID().uuidString
+    public let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? ""
     public let sdkType = "ios-keyboard"
     public let appBuildNumber: String = {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"

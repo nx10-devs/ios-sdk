@@ -11,8 +11,13 @@ import CoreMotion
 public final class MotionTracker {
 
     private let motionManager = CMMotionManager()
+    private let errorService: ErrorService
+    
+    init(errorService: ErrorService) {
+        self.errorService = errorService
+    }
 
-    func start(
+    @MainActor func start(
         gyro: @escaping (MotionSample) -> Void,
         accel: @escaping (MotionSample) -> Void
     ) {
@@ -28,6 +33,9 @@ public final class MotionTracker {
                     z: data.rotationRate.z
                 ))
             }
+        } else {
+            print("LOG: Gryro failed to start")
+            errorService.sendCustomError(NSError(domain: "Gryro not available", code: -1))
         }
 
         if motionManager.isAccelerometerAvailable {
@@ -42,6 +50,9 @@ public final class MotionTracker {
                     z: data.acceleration.z
                 ))
             }
+        } else {
+            print("LOG: accelerometer failed to start")
+            errorService.sendCustomError(NSError(domain: "Accelerometer not available", code: -1))
         }
     }
 

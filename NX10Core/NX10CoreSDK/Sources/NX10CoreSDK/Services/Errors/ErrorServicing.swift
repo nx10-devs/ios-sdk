@@ -8,17 +8,20 @@
 import Foundation
 import Sentry
 
+@MainActor
 public protocol ErrorServicing: AnyObject {
     func sendCustomError(_ error: Error)
     func sendError(_ error: ErrorType)
     func sendMessage(_ message: String)
-    init()
+    init(configLoader: ConfigLoader)
 }
 
 public final class ErrorService: ErrorServicing {
     private var didStartSentry = false
+    private var configLoader: ConfigLoader
     
-    public init() {
+    public init(configLoader: ConfigLoader) {
+        self.configLoader = configLoader
         initialiseIfNeeded()
     }
     
@@ -34,21 +37,24 @@ public final class ErrorService: ErrorServicing {
         SentrySDK.capture(message: message)
     }
     
-    private func initialiseIfNeeded() {
+    @MainActor private func initialiseIfNeeded() {
         guard
             didStartSentry == false
         else { return }
         
-        defer { didStartSentry = true }
-        SentrySDK.start { options in
-            options.dsn = "https://AMkY3SHpwaYHiGnEA7zpGmng@s2291255.eu-fsn-3.betterstackdata.com/2291260"
-            options.environment = "keyboard-extension"
-            options.debug = true
+        guard let dsn = configLoader.string(for: .sentryDNS) else { return }
+        
+        SentrySDK.start { [weak self] options in
+            options.dsn = dsn
+            options.environment = self?.configLoader.string(for: .sentryEnv) ?? "keyboard-extension"
+            options.debug = isDebug
             
             options.enableSwizzling = true
             options.enableAutoPerformanceTracing = false
             options.enableAppHangTracking = false
             options.enableMetricKit = false
         }
+        
+        didStartSentry = true
     }
 }

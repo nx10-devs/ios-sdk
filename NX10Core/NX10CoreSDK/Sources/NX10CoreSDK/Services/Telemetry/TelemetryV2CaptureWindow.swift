@@ -85,10 +85,10 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
                 start()
             } catch {
                 errorService.sendCustomError(error)
-                debugPrint(error.localizedDescription)
-                #if DEBUG
+                if isDebug { debugPrint(error.localizedDescription) }
+                if isDebug {
                     fatalError("Failed to upload telemetry: \(error.localizedDescription)")
-                #endif
+                }
             }
         }
     }

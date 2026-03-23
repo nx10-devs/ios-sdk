@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 @MainActor
 public protocol NetworkConfigurating {
@@ -16,25 +17,37 @@ public protocol NetworkConfigurating {
     func getToken() -> String?
     func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
     func storeEndpoints(_ endpoints: [Endpoint])
+    init(configLoader: ConfigLoader)
 }
 
-
 public final class NetworkConfig: NetworkConfigurating {
-    public init() {
-        print("LOG: network config UUID: \(UUID().uuidString)")
+    private let configLoader: ConfigLoader
+    
+    public init(configLoader: ConfigLoader) {
+        print("LOG: network config UUID: \(UIDevice.current.identifierForVendor?.uuidString ?? "")")
+        self.configLoader = configLoader
     }
     
     private var endpoints: Set<Endpoint> = [
         .init(
-            location: "https://control-plane.affectstack-stage.com/routes/sessions/start",
+            location: Endpoints.startSession.string,
             type: "start_session",
             version: EndpointType.Version.v1.versionString
         )
     ]
     
     // WARNING: Store securely
-    public let apiKey = "sk_test_i3nH_M-u4Er9j1uF6GV1wEh-KjWjXYS4sevEpLQLU0RRVu9Wpxo4fZ7rudLpjynJgC9VH-F-rNetlt1In73otA"
-    public let uploadInterval: TimeInterval = 30
+    public var apiKey: String {
+        if let value = configLoader.string(for: .nx10APIKey) { return value }
+        if isDebug {
+            print("WARNING: API_KEY missing from NX10CoreConfig.plist")
+        }
+        return ""
+    }
+    public var uploadInterval: TimeInterval {
+        if let seconds = configLoader.double(for: "UPLOAD_INTERVAL") { return seconds }
+        return 30
+    }
     
     private var token: String?
     
@@ -71,9 +84,9 @@ public final class NetworkConfig: NetworkConfigurating {
             let location = location,
             let url = URL(string: location)
         else {
-            #if DEBUG
+            if isDebug {
                 fatalError("Failed to find location and url")
-            #endif
+            }
             return nil
         }
         

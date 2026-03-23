@@ -35,9 +35,10 @@ public final class NetworkService: Networking {
         }
         
         guard let url else {
-            #if DEBUG
-            fatalError("No URL")
-            #endif
+            if isDebug {
+                fatalError("No URL")
+            }
+            
             throw APIError.malformedURL
         }
         
