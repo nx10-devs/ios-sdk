@@ -22,7 +22,7 @@ public protocol AccessManagementServicing {
         timeout: TimeInterval,
         completion: @escaping (Bool) -> Void
     )
-    init(errorService: ErrorServicing)
+    init(errorService: ErrorServicing, appGroup: String)
 }
 
 public final class AccessManagementService: AccessManagementServicing  {
@@ -30,8 +30,10 @@ public final class AccessManagementService: AccessManagementServicing  {
     private var accessAttemptCounter = 0
     private let maxFailureCount: Int = 3
     private let errorService: ErrorServicing
+    private let appGroup: String
     
-    public init(errorService: ErrorServicing) {
+    public init(errorService: ErrorServicing, appGroup: String) {
+        self.appGroup = appGroup
         self.errorService = errorService
     }
     
@@ -43,7 +45,7 @@ public final class AccessManagementService: AccessManagementServicing  {
     
     // Shared defaults in the App Group
     private var sharedDefaults: UserDefaults? {
-        UserDefaults(suiteName: Constants.appGroupIdentifier)
+        UserDefaults(suiteName: appGroup)
     }
     
     public var isFullAccessEnabled: Bool {

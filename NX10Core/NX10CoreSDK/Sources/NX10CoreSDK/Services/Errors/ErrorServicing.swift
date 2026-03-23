@@ -13,14 +13,14 @@ public protocol ErrorServicing: AnyObject {
     func sendCustomError(_ error: Error)
     func sendError(_ error: ErrorType)
     func sendMessage(_ message: String)
-    init(configLoader: ConfigLoader)
+    init(configLoader: ConfigService)
 }
 
 public final class ErrorService: ErrorServicing {
     private var didStartSentry = false
-    private var configLoader: ConfigLoader
+    private var configLoader: ConfigService
     
-    public init(configLoader: ConfigLoader) {
+    public init(configLoader: ConfigService) {
         self.configLoader = configLoader
         initialiseIfNeeded()
     }

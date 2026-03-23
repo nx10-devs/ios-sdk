@@ -1,10 +1,10 @@
 import Foundation
 
 @MainActor
-public final class ConfigLoader {
+public final class ConfigService {
     
     private let configFileName = "NX10CoreConfig"
-    private let queue = DispatchQueue(label: "com.nx10.core.configloader")
+    private let queue = DispatchQueue(label: "com.nx10.core.config-service")
     private var cached: [String: Any]? = nil
 
     init() {}

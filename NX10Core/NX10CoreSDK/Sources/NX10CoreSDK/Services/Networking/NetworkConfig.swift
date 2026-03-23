@@ -17,13 +17,13 @@ public protocol NetworkConfigurating {
     func getToken() -> String?
     func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
     func storeEndpoints(_ endpoints: [Endpoint])
-    init(configLoader: ConfigLoader, apiKey: String)
+    init(configLoader: ConfigService, apiKey: String)
 }
 
 public final class NetworkConfig: NetworkConfigurating {
-    private let configLoader: ConfigLoader
+    private let configLoader: ConfigService
     
-    public init(configLoader: ConfigLoader, apiKey: String) {
+    public init(configLoader: ConfigService, apiKey: String) {
         print("LOG: network config UUID: \(UIDevice.current.identifierForVendor?.uuidString ?? "")")
         self.apiKey = apiKey
         self.configLoader = configLoader

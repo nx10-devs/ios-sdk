@@ -15,7 +15,7 @@ public protocol NX10Coring {
     var errorService: ErrorServicing { get }
     var telemetryService: TelemetryService { get }
     
-    init(apiKey: String)
+    init(apiKey: String, appGroup: String)
 }
 
 public final class NX10Core {
@@ -31,12 +31,12 @@ public final class NX10Core {
     let motionTracker: MotionTracker
     let touchTracker: TouchTracker
     
-    @MainActor public init (apiKey: String) {
+    @MainActor public init (apiKey: String, appGroup: String) {
         
         // Instantiate objects
         
         // MARK: Independant objects
-        let configLoader = ConfigLoader()
+        let configLoader = ConfigService()
         let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
         
@@ -48,7 +48,8 @@ public final class NX10Core {
 
         let networkService = NetworkService(config: networkConfig)
         let accessManagementService = AccessManagementService(
-            errorService: errorService
+            errorService: errorService,
+            appGroup: appGroup
         )
 
         // MARK: Retention assignments
