@@ -67,6 +67,7 @@ nx10Core.telemetryService.stopTelemetry()
 ### 3. Sensor Data Collection
 
 Motion tracking beings automatically in the background using `CMMotionManager()`
+Use the pass the arguments to their corresponding parameter e.g. `began` should sit with `at:(began: began, nil, nil))`
 
 ```swift
 // Collect touch events
@@ -87,16 +88,6 @@ if hasFullAccess {
 } else {
     print("Full Access is required for full functionality")
 }
-```
-
-## Error handling
-```
-// Sentry API is wrapped behind the ErrorService object
-// Sending surfaced errors from iOS or custom using NSError(...)
-nx10Core?.errorService.sendCustomError(error)
-
-// Sending messages to the error service to add extra information to the error stack if needed
-nx10Core?.errorService.sendMessage("I'm a message)
 ```
 
 ## Core Features & Architecture
@@ -186,27 +177,12 @@ class KeyboardViewController: UIInputViewController {
         super.viewWillDisappear(animated)
         nx10Core?.telemetryService.stopTelemetry()
     }
-    
-    func handleKeyPress(_ key: String) {
-        // Record keystroke
-        nxCore.telemetryCollector.recordKeystroke(key: key, timestamp: Date())
-    }
 }
 ```
 
 ### Uploading Telemetry
 
-```swift
-// Manually trigger telemetry upload
-nxCore.networkService.uploadTelemetry { result in
-    switch result {
-    case .success:
-        print("Telemetry uploaded successfully")
-    case .failure(let error):
-        print("Upload failed: \(error.localizedDescription)")
-    }
-}
-```
+This is an automatic process abstracted within the SDK itself
 
 ### Detecting Keyboard Permissions
 
@@ -224,22 +200,12 @@ Task {
 ### Error Handling
 
 ```swift
-nxCore.errorService.captureError(error) { sentryId in
-    print("Error reported to Sentry: \(sentryId)")
-}
-```
+// Sentry API is wrapped behind the ErrorService object
+// Sending surfaced errors from iOS or custom using NSError(...)
+nx10Core?.errorService.sendCustomError(error)
 
-## Configuration
-
-### Environment Setup
-
-```swift
-let config = NX10Core.Configuration(
-    uploadInterval: 300,  // 5 minutes
-    enableSensorCollection: true,
-    sentryDSN: "your-sentry-dsn"
-)
-let nxCore = NX10Core(configuration: config)
+// Sending messages to the error service to add extra information to the error stack if needed
+nx10Core?.errorService.sendMessage("I'm a message)
 ```
 
 ## Permissions
