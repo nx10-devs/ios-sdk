@@ -1,33 +1,59 @@
-# NX10CoreSDK
+# NX10CoreSDK Documentation
 
-## Package Structure
+## Architecture  
+The NX10CoreSDK is designed with a modular architecture that enables easy integration and flexibility. It leverages a layered structure to separate concerns and maintain code quality and reusability.
 
-- `src/`
-   - Contains the main SDK source code.
-- `tests/`
-   - Contains unit and integration tests for the SDK.
-- `docs/`
-   - Contains documentation related to the SDK usage and implementation.
-
-## Implementation
-
-The NX10CoreSDK provides a set of functionalities that integrate with the NX10 platform. It includes:
-- Authentication
-- Data Management
-- Real-time Analytics
-- Push Notifications
-
-### Getting Started
-
-To start using NX10CoreSDK, follow the instructions in the `docs/` directory for setup and initialization steps.
-
-### Example Usage
-
-```swift
-import NX10CoreSDK
-
-let sdk = NX10CoreSDK()
-sdk.initialize() // Initialize the SDK
+## Installation  
+To install the NX10CoreSDK, follow these steps:
+1. Add the repository as a dependency in your project.
+2. Run the installation command:  
+```
+# Command to install NX10CoreSDK
+npm install nx10-core-sdk
 ```
 
-For detailed implementation details and API references, refer to the documentation available in the `docs/` directory.
+## Usage Examples  
+Here are some basic usage examples:
+### Initial Setup  
+```javascript
+import NX10CoreSDK from 'nx10-core-sdk';  
+
+const sdk = new NX10CoreSDK();  
+```
+### Accessing Features  
+```javascript
+const featureData = sdk.getFeature();  
+console.log(featureData);
+```
+
+## Core Features  
+- **Feature 1**: Explain feature 1.
+- **Feature 2**: Explain feature 2.
+- **Feature 3**: Explain feature 3.
+
+## Services  
+The SDK provides various services:
+- **Service 1**: Describe service 1.
+- **Service 2**: Describe service 2.
+- **Service 3**: Describe service 3.
+
+## API Reference  
+### Class NX10CoreSDK  
+- `getFeature()`: Retrieves feature data.
+- `initialize()`: Initializes the SDK with given parameters.
+
+### Error Handling  
+Make sure to handle errors gracefully. Example:
+```javascript
+try {
+    sdk.initialize();
+} catch (error) {
+    console.error('Initialization error:', error);
+}
+```  
+
+---  
+\*For more information, refer to the official documentation. **Version 1.0.0** recorded on 2026-03-24.  
+
+---  
+This documentation aims to provide a comprehensive overview to help users effectively utilize the NX10CoreSDK package.
