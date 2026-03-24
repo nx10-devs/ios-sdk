@@ -46,7 +46,7 @@ dependencies: [
 
 ## Quick Start
 
-### 1. Initialize NX10Core
+### 1. Initialise NX10Core
 
 ```swift
 import NX10Core
