@@ -37,7 +37,7 @@ Or add directly to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.2")
 ]
 ```
 
@@ -51,42 +51,52 @@ dependencies: [
 ```swift
 import NX10Core
 
-let nxCore = NX10Core()
+let nx10Core = NX10Core(apiKey: "api_key, appGroup: "group.client")
 ```
 
 ### 2. Basic Telemetry Collection
 
 ```swift
 // Start collecting telemetry data
-nxCore.telemetryCollector.startSession()
+nxCore.telemetryCollector.shouldStartSession()
 
-// Log typing metrics
-nxCore.telemetryCollector.recordKeystroke(key: "a", timestamp: Date())
+// Stop collecting telemetry data
+nx10Core.telemetryService.stopTelemetry()
 ```
 
 ### 3. Sensor Data Collection
 
+Motion tracking beings automatically in the background using `CMMotionManager()`
+
 ```swift
-// Collect gyroscope data
-nxCore.telemetryCollector.recordGyroscope(x: 0.1, y: 0.2, z: 0.3)
-
-// Collect accelerometer data
-nxCore.telemetryCollector.recordAccelerometer(x: 9.8, y: 0.0, z: 0.0)
-
 // Collect touch events
-nxCore.telemetryCollector.recordTouchEvent(touchPoint: CGPoint(x: 100, y: 200))
+nx10Core.telemetryService.appendTouch(at: (began: CGPoint(1, 1), movedTo: CGPoint(1, 1), endedAt: CGPoint(1, 1)))
 ```
+
+Telemetry data is automatically uploaded, and flushed periodically to keep memory usage efficient.
 
 ### 4. Full Access Detection
 
+For keyboard extensions full access uses network probing that returns if the user has enabled full access.
+
 ```swift
 // Check if keyboard has Full Access permission
-let hasFullAccess = nxCore.accessManagementService.checkFullAccess()
+let hasFullAccess = await nx10Core.accessManagementService.probeFullAccessUsingNetworking(url: nil, timeout: 2.0)
 if hasFullAccess {
     print("Keyboard has Full Access enabled")
 } else {
     print("Full Access is required for full functionality")
 }
+```
+
+## Error handling
+```
+// Sentry API is wrapped behind the ErrorService object
+// Sending surfaced errors from iOS or custom using NSError(...)
+nx10Core?.errorService.sendCustomError(error)
+
+// Sending messages to the error service to add extra information to the error stack if needed
+nx10Core?.errorService.sendMessage("I'm a message)
 ```
 
 ## Core Features & Architecture
@@ -160,13 +170,21 @@ Captures device and app metadata:
 import NX10Core
 
 class KeyboardViewController: UIInputViewController {
-    let nxCore = NX10Core()
-    
+    let nxCore =  NX10Core(apiKey: "api_key, appGroup: "group.example.com)
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Start telemetry session
-        nxCore.telemetryCollector.startSession()
+
+       Task { // Async
+           await nx10Core.telemetryService.shouldStartSession()
+          // Add your code here
+       }
+    }
+
+    // Stopping telemetry
+     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        nx10Core?.telemetryService.stopTelemetry()
     }
     
     func handleKeyPress(_ key: String) {
