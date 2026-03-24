@@ -191,8 +191,7 @@ This is an automatic process abstracted within the SDK itself
 Task {
     let fullAccessGranted = await nxCore.accessManagementService.checkFullAccess()
     if fullAccessGranted {
-        // Enable advanced features
-        nxCore.telemetryCollector.enableSensorCollection()
+        // Do sommething 
     }
 }
 ```
