@@ -12,27 +12,29 @@ internal import UIKit
 public protocol NX10Coring {
     var accessManagementService: AccessManagementServicing? { get }
     var appService: AppInformationServicing? { get }
-    var errorService: ErrorServicing { get }
-    var telemetryService: TelemetryService { get }
+    var errorService: ErrorServicing? { get }
+    var telemetryService: TelemetryService? { get }
     
-    init(apiKey: String, appGroup: String)
+    var shared: NX10Coring { get }
 }
 
 public final class NX10Core {
     // MARK: Public properties
-    public let errorService: ErrorServicing
-    public let telemetryService: TelemetryService
-    public let accessManagementService: AccessManagementServicing
+    public var errorService: ErrorServicing?
+    public var telemetryService: TelemetryService?
+    public var accessManagementService: AccessManagementServicing?
 
     // MARK: Internal properties
-    let networkConfig: NetworkConfig
-    let networkservice: Networking
-    let appService: AppInformationServicing
-    let motionTracker: MotionTracker
-    let touchTracker: TouchTracker
+    var networkConfig: NetworkConfig?
+    var networkservice: Networking?
+    var appService: AppInformationServicing?
+    var motionTracker: MotionTracker?
+    var touchTracker: TouchTracker?
     
-    @MainActor public init (apiKey: String, appGroup: String) {
-        
+    @MainActor public static let shared = NX10Core()
+    private init () {}
+    
+    @MainActor public func configure(apiKey: String, appGroupdID: String) {
         // Instantiate objects
         
         // MARK: Independant objects
@@ -49,7 +51,7 @@ public final class NX10Core {
         let networkService = NetworkService(config: networkConfig)
         let accessManagementService = AccessManagementService(
             errorService: errorService,
-            appGroup: appGroup
+            appGroup: appGroupdID
         )
 
         // MARK: Retention assignments
@@ -68,6 +70,6 @@ public final class NX10Core {
             motionTracker: motionTracker,
             touchTracker: touchTracker,
             errorService: errorService
-        )   
+        )
     }
 }
