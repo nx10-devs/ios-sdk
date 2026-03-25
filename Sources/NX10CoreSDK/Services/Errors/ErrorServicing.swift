@@ -13,14 +13,16 @@ public protocol ErrorServicing: AnyObject {
     func sendCustomError(_ error: Error)
     func sendError(_ error: ErrorType)
     func sendMessage(_ message: String)
-    init(configLoader: ConfigService)
+    init(configLoader: ConfigService, with trackingEnabled: Bool)
 }
 
 public final class ErrorService: ErrorServicing {
     private var didStartSentry = false
-    private var configLoader: ConfigService
+    private let configLoader: ConfigService
     
-    public init(configLoader: ConfigService) {
+    private var enableErrorTracking: Bool = false
+    
+    public init(configLoader: ConfigService, with trackingEnabled: Bool) {
         self.configLoader = configLoader
         initialiseIfNeeded()
     }
@@ -39,6 +41,7 @@ public final class ErrorService: ErrorServicing {
     
     @MainActor private func initialiseIfNeeded() {
         guard
+            enableErrorTracking,
             didStartSentry == false
         else { return }
         

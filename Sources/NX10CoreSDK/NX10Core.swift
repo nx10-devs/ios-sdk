@@ -16,6 +16,8 @@ public protocol NX10Coring {
     var telemetryService: TelemetryService? { get }
     
     var shared: NX10Coring { get }
+    
+    func configure(apiKey: String, appGroupdID: String, with errorTrackingEnabled: Bool)
 }
 
 public final class NX10Core {
@@ -32,14 +34,15 @@ public final class NX10Core {
     var touchTracker: TouchTracker?
     
     @MainActor public static let shared = NX10Core()
+    
     private init () {}
     
-    @MainActor public func configure(apiKey: String, appGroupdID: String) {
+    @MainActor public func configure(apiKey: String, appGroupdID: String, with enableErrorTracking: Bool = true) {
         // Instantiate objects
         
         // MARK: Independant objects
         let configLoader = ConfigService()
-        let errorService = ErrorService(configLoader: configLoader)
+        let errorService = ErrorService(configLoader: configLoader, with: enableErrorTracking)
         let appService = AppInformationService()
         
         // Motion and touch trackers
