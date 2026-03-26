@@ -132,7 +132,7 @@ extension NX10Core {
             try await self.telemetryService?.shouldStartSession()
         } catch {
             if isDebug {
-                fatalError("start session failed")
+                print("start session failed")
             }
             self.errorService?.sendCustomError(error)
             throw error
