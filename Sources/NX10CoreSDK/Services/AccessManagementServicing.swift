@@ -24,6 +24,14 @@ public protocol AccessManagementServicing {
     )
     func setAppGroupID(_ appGroupID: String)
     
+    func startFullAccessMonitoring(
+        interval: TimeInterval,
+        url: URL?,
+        timeout: TimeInterval,
+        completion: ((_ enabled: Bool) -> Void)?
+    )
+    func stopFullAccessMonitoring()
+    
     init(errorService: ErrorServicing)
 }
 
@@ -37,6 +45,7 @@ public final class AccessManagementService: AccessManagementServicing  {
     private let maxFailureCount: Int = 3
     private let errorService: ErrorServicing
     private var appGroupID: String
+    private var fullAccessTimer: Timer?
     
     public init(errorService: ErrorServicing) {
         self.errorService = errorService
@@ -136,6 +145,55 @@ public final class AccessManagementService: AccessManagementServicing  {
             let result = await probeFullAccessUsingNetworking(url: url, timeout: timeout)
             completion(result)
         }
+    }
+    
+    // MARK: - Full Access Monitoring
+    public func startFullAccessMonitoring(
+        interval: TimeInterval = 0.3,
+        url: URL? = nil,
+        timeout: TimeInterval = 2.0,
+        completion: ((_ enabled: Bool) -> Void)?
+    ) {
+        // If already granted, ensure no timer is running
+        print("checking for full access...")
+        if isFullAccessEnabled {
+            print("full access enabled, exiting probing early")
+            completion?(true)
+            stopFullAccessMonitoring()
+            return
+        } else {
+            print("Full access missing - enabling probing")
+        }
+        // Avoid multiple timers
+        fullAccessTimer?.invalidate()
+        fullAccessTimer = nil
+        // Schedule a repeating timer on the main run loop (we are @MainActor)
+        fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            // If Full Access is now enabled, stop monitoring
+            if self.isFullAccessEnabled {
+                print("full access enabled, exiting probing")
+                self.stopFullAccessMonitoring()
+                return
+            }
+            // Perform a lightweight probe asynchronously
+            Task { [weak self] in
+                guard let self else { return }
+                let success = await self.probeFullAccessUsingNetworking(url: url, timeout: timeout)
+                if success {
+                    completion?(true)
+                    await self.stopFullAccessMonitoring()
+                } else {
+                    print("full access not enabled ... continuing")
+                }
+            }
+        }
+    }
+
+    public func stopFullAccessMonitoring() {
+        print("Stopping full access probing")
+        fullAccessTimer?.invalidate()
+        fullAccessTimer = nil
     }
     
     public func setAppGroupID(_ appGroupID: String) {

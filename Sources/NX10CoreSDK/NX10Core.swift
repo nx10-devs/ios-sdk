@@ -13,7 +13,7 @@ public protocol NX10CoreProtocol: AnyObject {
     var accessManagementService: AccessManagementServicing? { get }
     var errorService: ErrorServicing? { get }
     var telemetryService: TelemetryService? { get }
-
+    
     static var shared: NX10CoreProtocol { get }
     
     func configure(
@@ -21,7 +21,7 @@ public protocol NX10CoreProtocol: AnyObject {
         appGroupdID: String,
         errorTrackingEnabled: Bool,
         shouldStartSession: Bool
-    ) async 
+    ) async throws
 }
 
 public final class NX10Core: NX10CoreProtocol {
@@ -82,12 +82,12 @@ public final class NX10Core: NX10CoreProtocol {
         appGroupdID: String,
         errorTrackingEnabled: Bool,
         shouldStartSession: Bool
-    ) async {
+    ) async throws {
         guard
             isConfigured == false
         else {
             if isDebug {
-                fatalError("configuration has already been called")
+                print("configuration has already been called")
             }
             return
         }
@@ -112,16 +112,30 @@ public final class NX10Core: NX10CoreProtocol {
         }
         
         if shouldStartSession {
-            do {
-                try await telemetryService?.shouldStartSession()
-            } catch {
-                if isDebug {
-                    fatalError("start session failed")
+            print("should start session")
+            accessManagementService?.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [weak self] enabled in
+                if enabled {
+                    Task {
+                        await try self?.startSession()
+                    }
                 }
-                errorService?.sendCustomError(error)
             }
         }
         
         isConfigured = true
+    }
+}
+
+extension NX10Core {
+    fileprivate func startSession() async throws {
+        do {
+            try await self.telemetryService?.shouldStartSession()
+        } catch {
+            if isDebug {
+                fatalError("start session failed")
+            }
+            self.errorService?.sendCustomError(error)
+            throw error
+        }
     }
 }
