@@ -11,7 +11,7 @@ import Foundation
 @MainActor
 public protocol AccessManagementServicing {
     var isFullAccessEnabled: Bool { get }
-    
+    var isReady: Bool { get }
     func probeFullAccessUsingNetworking(
         url: URL?,
         timeout: TimeInterval
@@ -22,19 +22,25 @@ public protocol AccessManagementServicing {
         timeout: TimeInterval,
         completion: @escaping (Bool) -> Void
     )
-    init(errorService: ErrorServicing, appGroup: String)
+    func setAppGroupID(_ appGroupID: String)
+    
+    init(errorService: ErrorServicing)
 }
 
 public final class AccessManagementService: AccessManagementServicing  {
     
+    public var isReady: Bool {
+        return appGroupID.isEmpty == false
+    }
+    
     private var accessAttemptCounter = 0
     private let maxFailureCount: Int = 3
     private let errorService: ErrorServicing
-    private let appGroup: String
+    private var appGroupID: String
     
-    public init(errorService: ErrorServicing, appGroup: String) {
-        self.appGroup = appGroup
+    public init(errorService: ErrorServicing) {
         self.errorService = errorService
+        appGroupID = ""
     }
     
     // Keys used in the shared UserDefaults
@@ -45,7 +51,7 @@ public final class AccessManagementService: AccessManagementServicing  {
     
     // Shared defaults in the App Group
     private var sharedDefaults: UserDefaults? {
-        UserDefaults(suiteName: appGroup)
+        UserDefaults(suiteName: appGroupID)
     }
     
     public var isFullAccessEnabled: Bool {
@@ -130,6 +136,10 @@ public final class AccessManagementService: AccessManagementServicing  {
             let result = await probeFullAccessUsingNetworking(url: url, timeout: timeout)
             completion(result)
         }
+    }
+    
+    public func setAppGroupID(_ appGroupID: String) {
+        self.appGroupID = appGroupID
     }
     
     // Persists the computed flag and timestamp in shared defaults

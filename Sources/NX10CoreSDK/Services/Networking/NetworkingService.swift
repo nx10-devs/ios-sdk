@@ -10,6 +10,7 @@ import Foundation
 @MainActor
 public protocol Networking {
     var config: NetworkConfig { get }
+    var isReady: Bool { get }
     func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse
     func upload(_ payload: TelemetryV2Payload) async throws -> Bool
     init(config: NetworkConfig)
@@ -17,6 +18,9 @@ public protocol Networking {
 
 public final class NetworkService: Networking {
     public let config: NetworkConfig
+    public var isReady: Bool {
+        return config.isReady
+    }
     
     public init(config: NetworkConfig) {
         self.config = config

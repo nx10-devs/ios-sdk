@@ -9,23 +9,29 @@ import Foundation
 internal import UIKit
 
 @MainActor
-public protocol NX10Coring {
+public protocol NX10Coring: AnyObject {
     var accessManagementService: AccessManagementServicing? { get }
-    var appService: AppInformationServicing? { get }
     var errorService: ErrorServicing? { get }
     var telemetryService: TelemetryService? { get }
+
+    static var shared: NX10Coring { get }
     
-    var shared: NX10Coring { get }
-    
-    func configure(apiKey: String, appGroupdID: String, with errorTrackingEnabled: Bool)
+    func configure(
+        apiKey: String,
+        appGroupdID: String,
+        errorTrackingEnabled: Bool,
+        shouldStartSession: Bool
+    ) async 
 }
 
-public final class NX10Core {
+public final class NX10Core: NX10Coring {
+    public static var shared: NX10Coring = NX10Core()
+    
     // MARK: Public properties
     public var errorService: ErrorServicing?
     public var telemetryService: TelemetryService?
     public var accessManagementService: AccessManagementServicing?
-
+    
     // MARK: Internal properties
     var networkConfig: NetworkConfig?
     var networkservice: Networking?
@@ -33,30 +39,25 @@ public final class NX10Core {
     var motionTracker: MotionTracker?
     var touchTracker: TouchTracker?
     
-    @MainActor public static let shared = NX10Core()
+    private var isConfigured = false
     
-    private init () {}
-    
-    @MainActor public func configure(apiKey: String, appGroupdID: String, with enableErrorTracking: Bool = true) {
-        // Instantiate objects
-        
+    @MainActor private init () {
         // MARK: Independant objects
         let configLoader = ConfigService()
-        let errorService = ErrorService(configLoader: configLoader, with: enableErrorTracking)
+        let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
         
         // Motion and touch trackers
         let motionTracker = MotionTracker(errorService: errorService)
         let touchTracker = TouchTracker()
         
-        let networkConfig = NetworkConfig(configLoader: configLoader, apiKey: apiKey)
-
+        let networkConfig = NetworkConfig(configLoader: configLoader)
+        
         let networkService = NetworkService(config: networkConfig)
         let accessManagementService = AccessManagementService(
-            errorService: errorService,
-            appGroup: appGroupdID
+            errorService: errorService
         )
-
+        
         // MARK: Retention assignments
         self.appService = appService
         self.motionTracker = motionTracker
@@ -74,5 +75,53 @@ public final class NX10Core {
             touchTracker: touchTracker,
             errorService: errorService
         )
+    }
+    
+    @MainActor public func configure(
+        apiKey: String,
+        appGroupdID: String,
+        errorTrackingEnabled: Bool,
+        shouldStartSession: Bool
+    ) async {
+        guard
+            isConfigured == false
+        else {
+            if isDebug {
+                fatalError("configuration has already been called")
+            }
+            return
+        }
+        
+        errorService?.setTrackingEnabled(errorTrackingEnabled)
+        accessManagementService?.setAppGroupID(appGroupdID)
+        networkConfig?.setAPIKey(apiKey)
+        
+        let networkConfigReady = networkConfig?.isReady ?? false
+        let accessManagementServiceReady = accessManagementService?.isReady ?? false
+        let networkingServiceReady = networkservice?.isReady ?? false
+        
+        guard
+            networkConfigReady,
+            accessManagementServiceReady,
+            networkConfigReady
+        else {
+            if isDebug {
+                fatalError("API's failed to load correctly")
+            }
+            return
+        }
+        
+        if shouldStartSession {
+            do {
+                try await telemetryService?.shouldStartSession()
+            } catch {
+                if isDebug {
+                    fatalError("start session failed")
+                }
+                errorService?.sendCustomError(error)
+            }
+        }
+        
+        isConfigured = true
     }
 }

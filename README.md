@@ -51,17 +51,17 @@ dependencies: [
 ```swift
 import NX10Core
 
-let nx10Core = NX10Core(apiKey: "api_key, appGroup: "group.client")
+NX10Core.shared.configure(apiKey: "api_key, appGroup: "group.client", errorTrackingEnabled: true)
 ```
 
 ### 2. Basic Telemetry Collection
 
 ```swift
 // Start collecting telemetry data
-nxCore.telemetryCollector.shouldStartSession()
+nxCore.shared.telemetryCollector.shouldStartSession()
 
 // Stop collecting telemetry data
-nx10Core.telemetryService.stopTelemetry()
+nx10Core.shared.telemetryService.stopTelemetry()
 ```
 
 ### 3. Sensor Data Collection
@@ -71,7 +71,7 @@ Use the pass the arguments to their corresponding parameter e.g. `began` should 
 
 ```swift
 // Collect touch events
-nx10Core.telemetryService.appendTouch(at: (began: CGPoint(1, 1), movedTo: CGPoint(1, 1), endedAt: CGPoint(1, 1)))
+nx10Core.shared.telemetryService.appendTouch(at: (began: CGPoint(1, 1), movedTo: CGPoint(1, 1), endedAt: CGPoint(1, 1)))
 ```
 
 Telemetry data is automatically uploaded, and flushed periodically to keep memory usage efficient.
@@ -82,7 +82,7 @@ For keyboard extensions full access uses network probing that returns if the use
 
 ```swift
 // Check if keyboard has Full Access permission
-let hasFullAccess = await nx10Core.accessManagementService.probeFullAccessUsingNetworking(url: nil, timeout: 2.0)
+let hasFullAccess = await nx10Core.shared.accessManagementService.probeFullAccessUsingNetworking(url: nil, timeout: 2.0)
 if hasFullAccess {
     print("Keyboard has Full Access enabled")
 } else {
@@ -157,25 +157,77 @@ Captures device and app metadata:
 
 ### Data Collection Workflow
 
+Two methods to begin using the NX10Core SDK
+
+Method one you can begin everything in one line
+
 ```swift
 import NX10Core
 
 class KeyboardViewController: UIInputViewController {
-    let nxCore =  NX10Core(apiKey: "api_key, appGroup: "group.example.com)
-
+    let nxCore =  NX10Core.shared
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-       Task { // Async
-           await nx10Core.telemetryService.shouldStartSession()
-          // Add your code here
-       }
+        setupNX10Core()
     }
 
     // Stopping telemetry
      override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         nx10Core?.telemetryService.stopTelemetry()
+    }
+    
+    func setupNX10Core() {
+        Task {
+            let ready = await nx10Core
+                .configure(apiKey: apiKey, appGroupdID: appGroup, errorTrackingEnabled: true)
+                .telemetryService?.shouldStartSession()
+            
+            if let ready = ready {
+                // Do stuff
+            }
+        }
+    }
+}
+```
+
+Method two you can defer starting a session to another time
+
+```swift
+import NX10Core
+
+class KeyboardViewController: UIInputViewController {
+    let nxCore =  NX10Core.shared
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupNX10Core()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated: animated)
+        startNX10Core()
+    }
+    
+    // Stopping telemetry
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        nx10Core?.telemetryService.stopTelemetry()
+    }
+    
+    // Optionally start the session separately
+    func setupNX10Core() {
+            nx10Core.configure(apiKey: apiKey, appGroupdID: appGroup, errorTrackingEnabled: true)
+        }
+    }
+    
+    func startNX10Core() {
+        Task {
+            _ = await nx10Core.telemetryService?.shouldStartSession()
+        }
     }
 }
 ```

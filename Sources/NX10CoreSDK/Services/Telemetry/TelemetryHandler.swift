@@ -36,10 +36,16 @@ public final class TelemetryHandler: TelemetryHandling {
     public func startSession() async throws -> Bool {
         do {
             print("LOG: Attempting session start")
+            guard let apiKey = config.apiKey else {
+                if isDebug {
+                    fatalError("missing API key")
+                }
+                throw NSError(domain: "failed-to-start-session-missing-api-key", code: -0003, userInfo: nil)
+            }
             
             let result = try await networkingService.startSession(
                 with: .init(
-                    apiKey: config.apiKey,
+                    apiKey: apiKey,
                     identifiers: .init(
                         deviceId: applicationService.deviceID,
                         email: nil,

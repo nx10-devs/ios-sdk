@@ -13,7 +13,8 @@ public protocol ErrorServicing: AnyObject {
     func sendCustomError(_ error: Error)
     func sendError(_ error: ErrorType)
     func sendMessage(_ message: String)
-    init(configLoader: ConfigService, with trackingEnabled: Bool)
+    func setTrackingEnabled(_ enabled: Bool)
+    init(configLoader: ConfigService)
 }
 
 public final class ErrorService: ErrorServicing {
@@ -22,7 +23,7 @@ public final class ErrorService: ErrorServicing {
     
     private var enableErrorTracking: Bool = false
     
-    public init(configLoader: ConfigService, with trackingEnabled: Bool) {
+    public init(configLoader: ConfigService) {
         self.configLoader = configLoader
         initialiseIfNeeded()
     }
@@ -37,6 +38,10 @@ public final class ErrorService: ErrorServicing {
     
     public func sendMessage(_ message: String) {
         SentrySDK.capture(message: message)
+    }
+    
+    public func setTrackingEnabled(_ enabled: Bool) {
+        self.enableErrorTracking = enabled
     }
     
     @MainActor private func initialiseIfNeeded() {

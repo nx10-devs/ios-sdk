@@ -9,17 +9,17 @@ internal import UIKit
 
 @MainActor
 public class TelemetryService {
-    let telemetryCollector: TelemetryCollector
-    let telemetryHandler: TelemetryHandling
-    let telemetrySession: TelemetrySession
+    private let telemetryCollector: TelemetryCollector
+    private let telemetryHandler: TelemetryHandling
+    private let telemetrySession: TelemetrySession
 
-    let networkservice: Networking
-    let errorService: ErrorServicing
-    let networkConfig: NetworkConfig
-    let touchTracker: TouchTracker
-    let accessManagementService: AccessManagementServicing
-    let appService: AppInformationServicing
-    let motionTracker: MotionTracker
+    private let networkservice: Networking
+    private let errorService: ErrorServicing
+    private let networkConfig: NetworkConfig
+    private let touchTracker: TouchTracker
+    private let accessManagementService: AccessManagementServicing
+    private let appService: AppInformationServicing
+    private let motionTracker: MotionTracker
     
     private var sessionStarted = false
     
@@ -65,25 +65,25 @@ public class TelemetryService {
         )
     }
     
-    @MainActor public func shouldStartSession() async {
+    @MainActor public func shouldStartSession() async throws -> Bool {
         if sessionStarted == false {
             debugPrint("LOG: Attempting to start async session with API")
-            do {
+            
                 let result = try await telemetryHandler.startSession()
                 
                 if result {
                     print("LOG: Session start successful")
                 } else {
                     print("LOG: Session failed")
-                    errorService.sendCustomError(ErrorType.sessionFailed.error)
+                    throw NSError(domain: "failed-to-start-session", code: -0002, userInfo: nil)
                 }
                 startTelemetryEventLoop()
                 startTrackingMotion()
                 sessionStarted = result // True
-            } catch {
-                print("LOG: Session failed with error - \(error.localizedDescription)")
-                errorService.sendCustomError(error)
-            }
+                return true
+        } else {
+            print("LOG: Session failed")
+            throw NSError(domain: "failed-to-start-session", code: -0002, userInfo: nil)
         }
     }
 }

@@ -10,22 +10,29 @@ import UIKit
 
 @MainActor
 public protocol NetworkConfigurating {
-    var apiKey: String { get }
+    var apiKey: String? { get }
     var uploadInterval: TimeInterval { get }
+    var isReady: Bool { get }
     
     func setToken(_ token: String)
     func getToken() -> String?
     func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
     func storeEndpoints(_ endpoints: [Endpoint])
-    init(configLoader: ConfigService, apiKey: String)
+    func setAPIKey(_ apiKey: String)
+    
+    init(configLoader: ConfigService)
 }
 
 public final class NetworkConfig: NetworkConfigurating {
+    public var apiKey: String?
     private let configLoader: ConfigService
     
-    public init(configLoader: ConfigService, apiKey: String) {
+    public var isReady: Bool {
+        return apiKey != nil
+    }
+    
+    public init(configLoader: ConfigService) {
         print("LOG: network config UUID: \(UIDevice.current.identifierForVendor?.uuidString ?? "")")
-        self.apiKey = apiKey
         self.configLoader = configLoader
     }
     
@@ -36,8 +43,6 @@ public final class NetworkConfig: NetworkConfigurating {
             version: EndpointType.Version.v1.versionString
         )
     ]
-    
-    public let apiKey: String
     
     public var uploadInterval: TimeInterval {
         if let seconds = configLoader.double(for: "UPLOAD_INTERVAL") { return seconds }
@@ -51,6 +56,10 @@ public final class NetworkConfig: NetworkConfigurating {
         for endpoint in endpoints {
             self.endpoints.insert(endpoint)
         }
+    }
+    
+    public func setAPIKey(_ apiKey: String) {
+        self.apiKey = apiKey
     }
     
     public func url(for endpointType: EndpointType) throws -> URL? {
