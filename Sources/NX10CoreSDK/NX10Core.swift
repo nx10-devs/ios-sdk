@@ -9,12 +9,12 @@ import Foundation
 internal import UIKit
 
 @MainActor
-public protocol NX10Coring: AnyObject {
+public protocol NX10CoreProtocol: AnyObject {
     var accessManagementService: AccessManagementServicing? { get }
     var errorService: ErrorServicing? { get }
     var telemetryService: TelemetryService? { get }
 
-    static var shared: NX10Coring { get }
+    static var shared: NX10CoreProtocol { get }
     
     func configure(
         apiKey: String,
@@ -24,8 +24,8 @@ public protocol NX10Coring: AnyObject {
     ) async 
 }
 
-public final class NX10Core: NX10Coring {
-    public static var shared: NX10Coring = NX10Core()
+public final class NX10Core: NX10CoreProtocol {
+    public static var shared: NX10CoreProtocol = NX10Core()
     
     // MARK: Public properties
     public var errorService: ErrorServicing?
