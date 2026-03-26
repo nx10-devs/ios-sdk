@@ -112,6 +112,10 @@ public final class NX10Core: NX10CoreProtocol {
         }
         
         if shouldStartSession {
+            telemetryService?.startTimer()   
+        }
+        
+        if shouldStartSession {
             print("should start session")
             accessManagementService?.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [weak self] enabled in
                 if enabled {
