@@ -12,18 +12,8 @@ import Foundation
 public protocol AccessManagementServicing {
     var isFullAccessEnabled: Bool { get }
     var isReady: Bool { get }
-    func probeFullAccessUsingNetworking(
-        url: URL?,
-        timeout: TimeInterval
-    ) async -> Bool
     
-    func probeFullAccessUsingNetworking(
-        url: URL?,
-        timeout: TimeInterval,
-        completion: @escaping (Bool) -> Void
-    )
     func setAppGroupID(_ appGroupID: String)
-    
     func startFullAccessMonitoring(
         interval: TimeInterval,
         url: URL?,
@@ -80,7 +70,7 @@ public final class AccessManagementService: AccessManagementServicing  {
     ///   - timeout: Short timeout to keep the probe snappy. Defaults to 2 seconds.
     /// - Returns: `true` if the probe succeeded (likely Full Access), `false` otherwise.
     @discardableResult
-    public func probeFullAccessUsingNetworking(
+    func probeFullAccessUsingNetworking(
         url: URL? = nil,
         timeout: TimeInterval = 2.0
     ) async -> Bool {
