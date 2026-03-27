@@ -1,307 +1,247 @@
-# NX10Core iOS SDK
+# NX10CoreSDK for iOS
 
-[![Swift](https://img.shields.io/badge/Swift-6.2+-orange.svg)](https://swift.org)
-[![iOS](https://img.shields.io/badge/iOS-16.0+-blue.svg)](https://www.apple.com/ios/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+**NX10CoreSDK** is a lightweight, robust telemetry and interaction-tracking SDK for iOS. It is designed to capture user interactions—such as fine-grained touch data and key presses—across both your main iOS application and its App Extensions (like Custom Keyboard Extensions). 
 
-## Overview
+With built-in App Group support, the SDK securely batches and shares telemetry data between your extensions and your host app, optimizing network requests and preserving battery life.
 
-**NX10Core SDK** is a comprehensive iOS keyboard extension SDK designed to collect telemetry data, monitor sensor inputs, and manage keyboard permissions securely. It provides developers with powerful tools to gather typing metrics, motion data, and device information while maintaining robust error tracking and access management.
+## Features
+*   **Motion & Touch Telemetry:** Track precise touch paths (began, moved, ended).
+*   **Keystroke Logging:** Ideal for custom keyboard extensions tracking character input.
+*   **Cross-Extension Support:** Seamlessly share data between your host app and App Extensions using App Groups.
+*   **Smart Batching & Uploads:** Automatically or manually flush data and batch network uploads.
+*   **Error Tracking:** Built-in configurable error reporting.
 
-### Key Capabilities
-- 📊 Advanced telemetry collection (typing metrics, sensor data, motion samples)
-- 🛡️ Secure keyboard permission management and Full Access detection
-- 📡 Efficient data upload with configurable intervals
-- 🚨 Integrated error tracking with Sentry
-- 📱 Device and app metadata capture
-- ⚙️ Dependency injection architecture for flexibility
-
-## Requirements
-
-- **iOS**: 16.0 or later
-- **Swift**: 6.2 or later
-- **Xcode**: 15.0 or later
+---
 
 ## Installation
+To install NX10CoreSDK using Swift Package Manager you can follow the tutorial published by Apple using the URL for this repo with the current version:
 
-### Swift Package Manager
+In Xcode, select “File” → “Add Packages...”
+Enter https://github.com/nx10-devs/ios-sdk.git
+or you can add the following dependency to your Package.swift:
+```
+.package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.3")
 
-Add NX10Core to your project using Swift Package Manager:
-
-1. In Xcode, go to **File → Add Packages**
-2. Enter the repository URL: `https://github.com/nx10-devs/ios-sdk.git`
-3. Select version range (recommended: up to next major)
-4. Select your target and click **Add Package**
-
-Or add directly to your `Package.swift`:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.2")
-]
 ```
 
-### Dependencies
-- [Sentry](https://github.com/getsentry/sentry-swift) - For error tracking and crash reporting
-
-## Quick Start
-
-### 1. Initialise NX10Core
-
-```swift
-import NX10Core
-
-NX10Core.shared.configure(apiKey: "api_key, appGroup: "group.client", errorTrackingEnabled: true)
+And for the targets in section 
 ```
-
-### 2. Basic Telemetry Collection
-
-```swift
-// Start collecting telemetry data
-nxCore.shared.telemetryCollector.shouldStartSession()
-
-// Stop collecting telemetry data
-nx10Core.shared.telemetryService.stopTelemetry()
+targets: [
+        .target(
+            name: "YourAppTargetName",
+            dependencies: [
+                .product(name: "NX10CoreSDK", package: "ios-sdk")
+            ]
+        ),
 ```
+---
 
-### 3. Sensor Data Collection
+## Configuration
 
-Motion tracking beings automatically in the background using `CMMotionManager()`
-Use the pass the arguments to their corresponding parameter e.g. `began` should sit with `at:(began: began, nil, nil))`
+Before tracking any data, you must initialize the SDK. Because `NX10CoreSDK` supports extensions, it relies on an **App Group ID** to securely share telemetry data between your main app and its extensions.
 
+The configuration method is asynchronous and should be called as early as possible in your app or extension's lifecycle.
+
+### Parameters
+*   `apiKey`: Your NX10 project API key.
+*   `appGroupdID`: The App Group identifier configured in your Xcode project's Signing & Capabilities (e.g., `group.com.yourcompany.app`). **Note: This must be the same in both your host app and your extension.**
+*   `errorTrackingEnabled`: Boolean to enable/disable automated error reporting.
+*   `shouldStartSession`: Boolean to dictate whether a new telemetry session should begin immediately.
+
+### Initialisation Examples
+
+**1. In a standard App (SwiftUI Example):**
 ```swift
-// Collect touch events
-nx10Core.shared.telemetryService.appendTouch(at: (began: CGPoint(1, 1), movedTo: CGPoint(1, 1), endedAt: CGPoint(1, 1)))
-```
+import SwiftUI
+import NX10CoreSDK
 
-Telemetry data is automatically uploaded, and flushed periodically to keep memory usage efficient.
+@main
+struct YourApp: App {
+    init() {
+        Task {
+            do {
+                try await NX10Core.shared.configure(
+                    apiKey: "YOUR_API_KEY",
+                    appGroupdID: "group.your.app.identifier",
+                    errorTrackingEnabled: true,
+                    shouldStartSession: true
+                )
+            } catch {
+                print("NX10CoreSDK Configuration failed: \(error)")
+            }
+        }
+    }
 
-### 4. Full Access Detection
-
-For keyboard extensions full access uses network probing that returns if the user has enabled full access.
-
-```swift
-// Check if keyboard has Full Access permission
-let hasFullAccess = await nx10Core.shared.accessManagementService.probeFullAccessUsingNetworking(url: nil, timeout: 2.0)
-if hasFullAccess {
-    print("Keyboard has Full Access enabled")
-} else {
-    print("Full Access is required for full functionality")
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }
 ```
 
-## Core Features & Architecture
-
-### Telemetry Collector
-Records and manages all telemetry data including:
-- Typing metrics (keystrokes, typing speed, patterns)
-- Sensor data (gyroscope, accelerometer)
-- Motion samples
-- Touch events
-
-**Class**: `TelemetryCollector`
-
-### Telemetry Session
-Manages session-based data collection with defined capture windows:
-- Session initialization and termination
-- Data windowing and aggregation
-- Session state management
-
-**Class**: `TelemetrySession`
-
-### Network Service
-Handles secure data transmission with configurable parameters:
-- Configurable upload intervals
-- Batch data transmission
-- Network error handling
-
-**Class**: `NetworkService`
-
-### Access Management Service
-Detects and manages keyboard extension permissions:
-- Full Access detection via networking
-- Permission status monitoring
-- Access validation
-
-**Class**: `AccessManagementService`
-
-### Error Service
-Integrated error tracking and crash reporting:
-- Sentry integration for real-time error monitoring
-- Stack trace capture
-- Contextual error data
-
-**Class**: `ErrorService`
-
-### App Information Service
-Captures device and app metadata:
-- Device information (model, OS version)
-- App version and build info
-- System capability detection
-
-**Class**: `AppInformationService`
-
-## Key Classes
-
-| Class | Purpose |
-|-------|---------|
-| `NX10Core` | Main entry point with dependency injection |
-| `TelemetryCollector` | Collects and manages telemetry data |
-| `TelemetrySession` | Session management with capture windows |
-| `NetworkService` | Handles data upload and synchronization |
-| `AccessManagementService` | Full Access detection and permission management |
-| `ErrorService` | Error reporting with Sentry integration |
-| `AppInformationService` | Device and app metadata collection |
-
-## Usage Examples
-
-### Data Collection Workflow
-
-Two methods to begin using the NX10Core SDK
-
-Method one you can begin everything in one line
-
+**2. In a Custom Keyboard Extension (`UIInputViewController`):**
 ```swift
-import NX10Core
+import UIKit
+import NX10CoreSDK
 
 class KeyboardViewController: UIInputViewController {
-    let nxCore =  NX10Core.shared
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupNX10Core()
-    }
-
-    // Stopping telemetry
-     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        nx10Core?.telemetryService.stopTelemetry()
-    }
-    
-    func setupNX10Core() {
+        
         Task {
-            let ready = await nx10Core
-                .configure(apiKey: apiKey, appGroupdID: appGroup, errorTrackingEnabled: true)
-                .telemetryService?.shouldStartSession()
-            
-            if let ready = ready {
-                // Do stuff
+            do {
+                try await NX10Core.shared.configure(
+                    apiKey: "YOUR_API_KEY",
+                    appGroupdID: "group.your.app.identifier", // Must match the host app's App Group
+                    errorTrackingEnabled: true,
+                    shouldStartSession: true
+                )
+            } catch {
+                print("NX10CoreSDK Keyboard Configuration failed: \(error)")
             }
         }
     }
 }
 ```
 
-Method two you can defer starting a session to another time
+---
 
-```swift
-import NX10Core
+## Tracking Usage
 
-class KeyboardViewController: UIInputViewController {
-    let nxCore =  NX10Core.shared
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+All interaction tracking and data upload methods are routed through the `NX10Core.shared.telemetryService`.
 
-        setupNX10Core()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated: animated)
-        startNX10Core()
-    }
-    
-    // Stopping telemetry
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        nx10Core?.telemetryService.stopTelemetry()
-    }
-    
-    // Optionally start the session separately
-    func setupNX10Core() {
-            nx10Core.configure(apiKey: apiKey, appGroupdID: appGroup, errorTrackingEnabled: true)
+### Starting Telemetry tracking
+
+This step must be done after `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company")` is called but you've opted out of automatically starting telemetry collecting and uploading by selecting `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company", shouldStartSession: false)` where `shouldStartSession: false` is set to `false`
+
+```
+import SwiftUI
+import NX10CoreSDK
+   var body: some View {
+        VStack {
+        // Your View code here
         }
-    }
-    
-    func startNX10Core() {
-        Task {
-            _ = await nx10Core.telemetryService?.shouldStartSession()
+        .onAppear {
+            Task {
+                do {
+                   try await NX10Core.shared.startSession()
+                } catch {}
+            }
         }
     }
 }
 ```
 
-### Uploading Telemetry
+### Stopping Telemetry
+Stops the telemetry tracking. This is highly recommended when your app goes into the background or when a specific view is dismissed to preserve battery life and prevent unnecessary processing.
 
-This is an automatic process abstracted within the SDK itself
+Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` will also upload telemetry data that has been collected and reclaim memory by flushing the collected data.
 
-### Detecting Keyboard Permissions
-
+**In SwiftUI (App Backgrounding - Recommended):**
+Using `@Environment(\.scenePhase)` allows you to detect exactly when the entire application goes into the background.
 ```swift
-// Check Full Access status
-Task {
-    let fullAccessGranted = await nxCore.accessManagementService.checkFullAccess()
-    if fullAccessGranted {
-        // Do sommething 
+import SwiftUI
+import NX10CoreSDK
+
+struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        VStack {
+            Text("Your App Content")
+        }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .background {
+                // Stop telemetry when the app goes to the background
+                NX10Core.shared.telemetryService?.stopTelemetry()
+            }
+        }
     }
 }
 ```
 
-### Error Handling
-
+**In SwiftUI (View Disappearing):**
+If you only want to stop telemetry when a specific view is dismissed.
 ```swift
-// Sentry API is wrapped behind the ErrorService object
-// Sending surfaced errors from iOS or custom using NSError(...)
-nx10Core?.errorService.sendCustomError(error)
+import SwiftUI
+import NX10CoreSDK
 
-// Sending messages to the error service to add extra information to the error stack if needed
-nx10Core?.errorService.sendMessage("I'm a message)
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Text("Your App Content")
+        }
+        .onDisappear {
+            // Stop telemetry when this specific view is dismissed
+            NX10Core.shared.telemetryService?.stopTelemetry()
+        }
+    }
+}
 ```
 
-## Permissions
+**In UIKit:**
+If you are using View Controllers, you can stop telemetry inside of `viewDidDisappear`.
+```swift
+override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    
+    NX10Core.shared.telemetryService?.stopTelemetry()
+}
+```
 
-NX10Core requires the following permissions when used in a keyboard extension:
+### Tracking Key Presses
+If you are building a custom keyboard extension or tracking text input, you can log individual keystrokes.
+```swift
+// Log individual characters or interactions
+NX10Core.shared.telemetryService?.keyPressed("a")
+NX10Core.shared.telemetryService?.keyPressed(" ")
+NX10Core.shared.telemetryService?.keyPressed("b")
+```
 
-- **Full Access**: Required for comprehensive sensor data and system information access
-- **Motion & Fitness**: Required for gyroscope and accelerometer data collection
+### Tracking Touch Data
+You can log detailed touch paths by providing the coordinates for where a touch began, where it moved, and where it ended. 
+```swift
+// Example: Tracking a simple tap
+NX10Core.shared.telemetryService?.appendTouch(at: (
+    began: CGPoint(x: 150, y: 200), 
+    movedTo: nil, 
+    endedAt: nil
+))
 
-## Security & Privacy
+// Example: Tracking a swipe/drag
+NX10Core.shared.telemetryService?.appendTouch(at: (
+    began: CGPoint(x: 100, y: 200), 
+    movedTo: CGPoint(x: 150, y: 250), 
+    endedAt: CGPoint(x: 200, y: 300)
+))
+```
 
-- All data is collected locally before transmission
-- Sensitive data is encrypted during transmission
-- Compliant with iOS privacy guidelines
-- Users can disable data collection at any time
+---
 
-## Troubleshooting
+## Data Management & Uploads
 
-### Telemetry Not Collecting
-- Ensure `startSession()` is called
-- Check that Full Access permission is granted
-- Verify network connectivity
+The SDK buffers data to optimise performance, but you have manual control over when data is flushed and when it is uploaded to the NX10 servers. 
 
-### Upload Failures
-- Check network connection
-- Verify Sentry DSN configuration
-- Review error logs in Xcode console
+### 1. Flushing to keep memory overhead low
+```swift
+NX10Core.shared.telemetryService?.flushIfNeeded()
+```
 
-### Permission Issues
-- Ensure keyboard extension has Full Access enabled in Settings
-- Verify the app is properly configured as a keyboard extension
+### 2. Forcing an Upload
+Forces the SDK to immediately package the flushed telemetry data and upload it to the NX10 servers. 
+```swift
+NX10Core.shared.telemetryService?.attemptUploadAndflushNow()
+```
 
-## Support
+Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` does the same as `attemptUploadAndFlushNow()`
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/nx10-devs/ios-sdk).
+---
 
-## License
+## Best Practices for App Extensions (e.g., Custom Keyboards)
 
-NX10Core iOS SDK is released under the MIT License. See LICENSE file for details.
+App Extensions have strict memory limits and unpredictable lifecycles dictated by the iOS system. To ensure reliable telemetry collection:
 
-## Changelog
-
-### Version 1.0.0 (Initial Release)
-- Initial release of NX10Core SDK
-- Core telemetry collection features
-- Sensor data integration
-- Error tracking with Sentry
-- Full Access permission management
+1. **Always use App Groups:** The `appGroupdID` is critical. It allows your Keyboard Extension to write data to a shared folder that the Main App can also read.
+2. **Flush Frequently:** Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`, or periodically during long typing sessions).
+3. **Delegate Uploads to the Host App:** While a keyboard extension *can* call `attemptUploadAndflushNow()`, doing so can cause memory spikes or get interrupted. The best practice is to have the Keyboard Extension simply track and `flushIfNeeded()`, and let the **Main App** call `attemptUploadAndflushNow()` when the user opens the host application.
