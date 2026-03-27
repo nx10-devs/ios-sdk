@@ -22,6 +22,7 @@ public protocol NX10CoreProtocol: AnyObject {
         errorTrackingEnabled: Bool,
         shouldStartSession: Bool
     ) async throws
+    func startSession() async throws
 }
 
 public final class NX10Core: NX10CoreProtocol {
@@ -33,11 +34,12 @@ public final class NX10Core: NX10CoreProtocol {
     public var accessManagementService: AccessManagementServicing?
     
     // MARK: Internal properties
-    var networkConfig: NetworkConfig?
-    var networkservice: Networking?
-    var appService: AppInformationServicing?
-    var motionTracker: MotionTracker?
-    var touchTracker: TouchTracker?
+    let networkConfig: NetworkConfig?
+    let networkservice: Networking?
+    let appService: AppInformationServicing?
+    let motionTracker: MotionTracker?
+    let touchTracker: TouchTracker?
+    let analyticsService: AnalyticsServicing
     
     private var isConfigured = false
     
@@ -57,6 +59,7 @@ public final class NX10Core: NX10CoreProtocol {
         let accessManagementService = AccessManagementService(
             errorService: errorService
         )
+        let analyticsService = AnalyticsService(networkService: networkService, networkConfig: networkConfig)
         
         // MARK: Retention assignments
         self.appService = appService
@@ -73,8 +76,10 @@ public final class NX10Core: NX10CoreProtocol {
             appService: appService,
             motionTracker: motionTracker,
             touchTracker: touchTracker,
-            errorService: errorService
+            errorService: errorService,
+            anaalytics: analyticsService
         )
+        self.analyticsService = analyticsService
     }
     
     @MainActor public func configure(
@@ -131,7 +136,7 @@ public final class NX10Core: NX10CoreProtocol {
 }
 
 extension NX10Core {
-    fileprivate func startSession() async throws {
+    public func startSession() async throws {
         do {
             try await self.telemetryService?.shouldStartSession()
         } catch {

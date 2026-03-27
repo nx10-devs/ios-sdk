@@ -13,6 +13,8 @@ public protocol Networking {
     var isReady: Bool { get }
     func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse
     func upload(_ payload: TelemetryV2Payload) async throws -> Bool
+    func post(_ payload: Encodable, for url: URL) async throws -> Bool
+    
     init(config: NetworkConfig)
 }
 
@@ -24,6 +26,65 @@ public final class NetworkService: Networking {
     
     public init(config: NetworkConfig) {
         self.config = config
+    }
+    
+    public func post(_ payload: Encodable, for url: URL) async throws -> Bool {
+        print("LOG: Sending payload \(payload) for url \(url)")
+        
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.withoutEscapingSlashes] // optional
+        
+        var request = URLRequest(url: url)
+        do {
+            let json = try encoder.encode(payload)
+            guard
+                let sessionToken = config.getToken()
+            else {
+                print("LOG: Missing session token")
+                throw APIError.missingToken
+            }
+            
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
+            request.httpBody = json
+            
+            request.allowsCellularAccess = true
+            request.allowsExpensiveNetworkAccess = true
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        let config = URLSessionConfiguration.default
+        config.allowsCellularAccess = true
+        config.allowsExpensiveNetworkAccess = true
+        config.allowsConstrainedNetworkAccess = true
+        config.waitsForConnectivity = true
+        
+        do {
+            let (data, response) = try await URLSession(configuration: config).data(for: request)
+            
+            guard
+                let httpResponse = response as? HTTPURLResponse
+            else {
+                print("LOG: failed to send analytics \(payload)")
+                throw APIError.badRequest
+            }
+            
+            if
+                let error = APIError.errorFor(code: httpResponse.statusCode)
+            {
+                print("LOG: Data: \(data.asString)")
+                
+                return false
+            }
+            
+            return true
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        return false
     }
     
     public func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse {
@@ -54,7 +115,7 @@ public final class NetworkService: Networking {
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = json
-
+            
             request.allowsCellularAccess = true
             request.allowsExpensiveNetworkAccess = true
         } catch {
@@ -123,7 +184,7 @@ public final class NetworkService: Networking {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
             request.httpBody = json
-
+            
             request.allowsCellularAccess = true
             request.allowsExpensiveNetworkAccess = true
         } catch {

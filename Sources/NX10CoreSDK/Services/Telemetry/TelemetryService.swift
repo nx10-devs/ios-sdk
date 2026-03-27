@@ -20,6 +20,7 @@ public class TelemetryService {
     private let accessManagementService: AccessManagementServicing
     private let appService: AppInformationServicing
     private let motionTracker: MotionTracker
+    private let analytics: AnalyticsService
     
     private var sessionStarted = false
     
@@ -27,10 +28,11 @@ public class TelemetryService {
         networkConfig: NetworkConfig,
          networkservice: Networking,
         accessManagementService: AccessManagementServicing!,
-         appService: AppInformationServicing!,
-         motionTracker: MotionTracker,
+        appService: AppInformationServicing!,
+        motionTracker: MotionTracker,
         touchTracker: TouchTracker,
         errorService: ErrorServicing,
+        anaalytics: AnalyticsService,
         sessionStarted: Bool = false
     ) {
         self.networkConfig = networkConfig
@@ -41,6 +43,7 @@ public class TelemetryService {
         self.touchTracker = touchTracker
         self.errorService = errorService
         self.sessionStarted = sessionStarted
+        self.analytics = anaalytics
         
         self.telemetrySession = TelemetrySession()
         self.telemetryHandler = TelemetryHandler(networkingService: networkservice, config: networkConfig, appService: appService)
@@ -51,11 +54,13 @@ public class TelemetryService {
         telemetryCollector.attemptUploadAndflushNow()
         telemetryCollector.stopTimer()
         motionTracker.stop()
+        analytics.sendAnalytics(.init(eventName: .telemetryEnded))
     }
     
     @MainActor public func startTelemetryEventLoop() {
         print("LOG: Attempting to start gyro and accelerometer reading")
         telemetryCollector.startTimer()
+        analytics.sendAnalytics(.init(eventName: .telemetryStarted))
     }
     
     @MainActor public func startTrackingMotion() {

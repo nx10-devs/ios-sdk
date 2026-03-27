@@ -82,6 +82,12 @@ public final class NetworkConfig: NetworkConfigurating {
             block(endpointType.typeString, version.versionString)
         case .saaq(let version):
             block(endpointType.typeString, version.versionString)
+        case .saaqTriggered(version: let version):
+            block(endpointType.typeString, version.versionString)
+        case .analytics(version: let version):
+            block(endpointType.typeString, version.versionString)
+        case .attributes(version: let version):
+            block(endpointType.typeString, version.versionString)
         }
         
         guard
@@ -114,6 +120,9 @@ public extension NetworkConfig {
         case startSession(version: Version)
         case telemetry(version: Version)
         case saaq(version: Version)
+        case saaqTriggered(version: Version)
+        case analytics(version: Version)
+        case attributes(version: Version)
         
         public enum Version: String {
             case old1 = "1"
@@ -140,6 +149,12 @@ public extension NetworkConfig {
                 return "telemetry"
             case .saaq:
                 return "saaq"
+            case .saaqTriggered:
+                return "saaq-triggered"
+            case .analytics:
+                return "analytics"
+            case .attributes:
+                return "attributes"
             }
         }
     }
