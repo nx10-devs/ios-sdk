@@ -8,14 +8,14 @@
 import Foundation
 
 public enum AnalyticEvent: String, Encodable {
-    case sessionStarted = "session-started"
-    case sessionEnded = "session-ended"
-    case telemetryStarted = "telemetry-started"
-    case telemetryEnded = "telemetry-ended"
-    case appOpened = "app-opened"
-    case appClosed = "app-closed"
-    case appBackgrounded = "app-backgrounded"
-    case appForegrounded = "app-foregrounded"
+    case sessionStarted = "session_started"
+    case sessionEnded = "session_ended"
+    case telemetryStarted = "telemetry_started"
+    case telemetryEnded = "telemetry_ended"
+    case appOpened = "app_opened"
+    case appClosed = "app_closed"
+    case appBackgrounded = "app_backgrounded"
+    case appForegrounded = "app_foregrounded"
 }
 
 public extension AnalyticsService {
