@@ -14,9 +14,15 @@ With built-in App Group support, the SDK securely batches and shares telemetry d
 ---
 
 ## Installation
+To install NX10CoreSDK using Swift Package Manager you can follow the tutorial published by Apple using the URL for this repo with the current version:
 
-*(Note: Provide your specific installation instructions here, e.g., Swift Package Manager, CocoaPods, or manual framework linking).*
+In Xcode, select “File” → “Add Packages...”
+Enter (https://github.com/nx10-devs/ios-sdk.git
+or you can add the following dependency to your Package.swift:
+```
+.package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.3")
 
+```
 ---
 
 ## Configuration
@@ -31,7 +37,7 @@ The configuration method is asynchronous and should be called as early as possib
 *   `errorTrackingEnabled`: Boolean to enable/disable automated error reporting.
 *   `shouldStartSession`: Boolean to dictate whether a new telemetry session should begin immediately.
 
-### Initialization Examples
+### Initialisation Examples
 
 **1. In a standard App (SwiftUI Example):**
 ```swift
@@ -94,52 +100,29 @@ class KeyboardViewController: UIInputViewController {
 
 All interaction tracking and data upload methods are routed through the `NX10Core.shared.telemetryService`.
 
-### Tracking Key Presses
-If you are building a custom keyboard extension or tracking text input, you can log individual keystrokes.
-```swift
-// Log individual characters or interactions
-NX10Core.shared.telemetryService?.keyPressed("a")
-NX10Core.shared.telemetryService?.keyPressed(" ")
-NX10Core.shared.telemetryService?.keyPressed("b")
+### Starting Telemetry tracking
+
+This step must be done after `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.compaby")` is called but you've opted out of automatically starting telemetry collecting and uploading by selecting `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.compaby", shouldStartSession: false)` where `shouldStartSession: false` is set to `false`
+
+```
+import SwiftUI
+import NX10CoreSDK
+   var body: some View {
+        VStack {
+        // Your View code here
+        }
+        .onAppear {
+            Task {
+                do {
+                   try await NX10Core.shared.startSession()
+                } catch {}
+            }
+        }
+    }
+}
 ```
 
-### Tracking Touch Data
-You can log detailed touch paths by providing the coordinates for where a touch began, where it moved, and where it ended. 
-```swift
-// Example: Tracking a simple tap
-NX10Core.shared.telemetryService?.appendTouch(at: (
-    began: CGPoint(x: 150, y: 200), 
-    movedTo: nil, 
-    endedAt: nil
-))
-
-// Example: Tracking a swipe/drag
-NX10Core.shared.telemetryService?.appendTouch(at: (
-    began: CGPoint(x: 100, y: 200), 
-    movedTo: CGPoint(x: 150, y: 250), 
-    endedAt: CGPoint(x: 200, y: 300)
-))
-```
-
----
-
-## Data Management & Uploads
-
-The SDK buffers data to optimize performance, but you have manual control over when data is flushed to the shared App Group container and when it is uploaded to the NX10 servers. 
-
-### 1. Flushing Data to Disk
-Saves the current telemetry queue locally to the shared App Group container. **Always use this in extensions** to ensure data isn't lost if the extension is abruptly terminated by iOS.
-```swift
-NX10Core.shared.telemetryService?.flushIfNeeded()
-```
-
-### 2. Forcing an Upload
-Forces the SDK to immediately package the flushed telemetry data and upload it to the NX10 servers. 
-```swift
-NX10Core.shared.telemetryService?.attemptUploadAndflushNow()
-```
-
-### 3. Stopping Telemetry
+### Stopping Telemetry
 Stops the telemetry tracking. This is highly recommended when your app goes into the background or when a specific view is dismissed to preserve battery life and prevent unnecessary processing.
 
 **In SwiftUI (App Backgrounding - Recommended):**
@@ -192,6 +175,51 @@ override func viewDidDisappear(_ animated: Bool) {
     
     NX10Core.shared.telemetryService?.stopTelemetry()
 }
+```
+
+### Tracking Key Presses
+If you are building a custom keyboard extension or tracking text input, you can log individual keystrokes.
+```swift
+// Log individual characters or interactions
+NX10Core.shared.telemetryService?.keyPressed("a")
+NX10Core.shared.telemetryService?.keyPressed(" ")
+NX10Core.shared.telemetryService?.keyPressed("b")
+```
+
+### Tracking Touch Data
+You can log detailed touch paths by providing the coordinates for where a touch began, where it moved, and where it ended. 
+```swift
+// Example: Tracking a simple tap
+NX10Core.shared.telemetryService?.appendTouch(at: (
+    began: CGPoint(x: 150, y: 200), 
+    movedTo: nil, 
+    endedAt: nil
+))
+
+// Example: Tracking a swipe/drag
+NX10Core.shared.telemetryService?.appendTouch(at: (
+    began: CGPoint(x: 100, y: 200), 
+    movedTo: CGPoint(x: 150, y: 250), 
+    endedAt: CGPoint(x: 200, y: 300)
+))
+```
+
+---
+
+## Data Management & Uploads
+
+The SDK buffers data to optimize performance, but you have manual control over when data is flushed to the shared App Group container and when it is uploaded to the NX10 servers. 
+
+### 1. Flushing Data to Disk
+Saves the current telemetry queue locally to the shared App Group container. **Always use this in extensions** to ensure data isn't lost if the extension is abruptly terminated by iOS.
+```swift
+NX10Core.shared.telemetryService?.flushIfNeeded()
+```
+
+### 2. Forcing an Upload
+Forces the SDK to immediately package the flushed telemetry data and upload it to the NX10 servers. 
+```swift
+NX10Core.shared.telemetryService?.attemptUploadAndflushNow()
 ```
 
 ---
