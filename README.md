@@ -136,6 +136,8 @@ import NX10CoreSDK
 ### Stopping Telemetry
 Stops the telemetry tracking. This is highly recommended when your app goes into the background or when a specific view is dismissed to preserve battery life and prevent unnecessary processing.
 
+Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` will also upload telemetry data that has been collected and reclaim memory by flushing the collected data.
+
 **In SwiftUI (App Backgrounding - Recommended):**
 Using `@Environment(\.scenePhase)` allows you to detect exactly when the entire application goes into the background.
 ```swift
@@ -232,6 +234,8 @@ Forces the SDK to immediately package the flushed telemetry data and upload it t
 ```swift
 NX10Core.shared.telemetryService?.attemptUploadAndflushNow()
 ```
+
+Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` does the same as `attemptUploadAndFlushNow()`
 
 ---
 
