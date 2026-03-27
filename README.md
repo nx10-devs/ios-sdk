@@ -17,7 +17,7 @@ With built-in App Group support, the SDK securely batches and shares telemetry d
 To install NX10CoreSDK using Swift Package Manager you can follow the tutorial published by Apple using the URL for this repo with the current version:
 
 In Xcode, select “File” → “Add Packages...”
-Enter (https://github.com/nx10-devs/ios-sdk.git
+Enter https://github.com/nx10-devs/ios-sdk.git
 or you can add the following dependency to your Package.swift:
 ```
 .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.3")
