@@ -10,7 +10,6 @@ import Foundation
 
 @MainActor
 public protocol AccessManagementServicing {
-    var isFullAccessEnabled: Bool { get }
     var isReady: Bool { get }
     
     func setAppGroupID(_ appGroupID: String)
@@ -19,9 +18,10 @@ public protocol AccessManagementServicing {
         url: URL?,
         timeout: TimeInterval,
         completion: ((_ enabled: Bool) -> Void)?
-    )
+    ) async
     func stopFullAccessMonitoring()
-    
+    func isFullAccessEnabled() async -> Bool
+
     init(errorService: ErrorServicing)
 }
 
@@ -53,11 +53,14 @@ public final class AccessManagementService: AccessManagementServicing  {
         UserDefaults(suiteName: appGroupID)
     }
     
-    public var isFullAccessEnabled: Bool {
+    public func isFullAccessEnabled() async -> Bool {
         // If we cannot open the shared defaults, assume no Full Access.
-        guard let defaults = sharedDefaults else { return false }
-        // The container app is responsible for setting this flag.
-        return defaults.bool(forKey: Key.fullAccessFlag)
+        if let defaults = sharedDefaults {
+            return defaults.bool(forKey: Key.fullAccessFlag)
+
+        } else {
+            return await probeFullAccessUsingNetworking()
+        }
     }
     
     // MARK: - Keyboard extension: networking-based heuristic
@@ -75,7 +78,9 @@ public final class AccessManagementService: AccessManagementServicing  {
         timeout: TimeInterval = 2.0
     ) async -> Bool {
         
-        if isFullAccessEnabled { return isFullAccessEnabled }
+        if await isFullAccessEnabled() {
+            return await isFullAccessEnabled()
+        }
         accessAttemptCounter += 1
         
         let probeURL = url ?? URL(string: "https://www.apple.com")!
@@ -143,10 +148,10 @@ public final class AccessManagementService: AccessManagementServicing  {
         url: URL? = nil,
         timeout: TimeInterval = 2.0,
         completion: ((_ enabled: Bool) -> Void)?
-    ) {
+    ) async {
         // If already granted, ensure no timer is running
         print("checking for full access...")
-        if isFullAccessEnabled {
+        if await isFullAccessEnabled() {
             print("full access enabled, exiting probing early")
             completion?(true)
             stopFullAccessMonitoring()
@@ -159,16 +164,18 @@ public final class AccessManagementService: AccessManagementServicing  {
         fullAccessTimer = nil
         // Schedule a repeating timer on the main run loop (we are @MainActor)
         fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            // If Full Access is now enabled, stop monitoring
-            if self.isFullAccessEnabled {
-                print("full access enabled, exiting probing")
-                self.stopFullAccessMonitoring()
-                return
-            }
-            // Perform a lightweight probe asynchronously
+            
+
             Task { [weak self] in
                 guard let self else { return }
+                // If Full Access is now enabled, stop monitoring
+                if await self.isFullAccessEnabled() {
+                    print("full access enabled, exiting probing")
+                    await self.stopFullAccessMonitoring()
+                    return
+                }
+                // Perform a lightweight probe asynchronously
+                
                 let success = await self.probeFullAccessUsingNetworking(url: url, timeout: timeout)
                 if success {
                     completion?(true)

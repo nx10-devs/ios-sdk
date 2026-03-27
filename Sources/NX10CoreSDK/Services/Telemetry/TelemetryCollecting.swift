@@ -81,7 +81,7 @@ public final class TelemetryCollector: TelemetryCollecting {
         Task {
             do {
                 _ = try await uploader.upload(payload)
-                print("LOG: Upload succesfull")
+                print("LOG: Upload succesful")
                 session.reset()
             } catch {
                 print(error.localizedDescription)
