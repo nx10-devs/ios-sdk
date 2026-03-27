@@ -113,7 +113,7 @@ All interaction tracking and data upload methods are routed through the `NX10Cor
 
 ### Starting Telemetry tracking
 
-This step must be done after `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.compaby")` is called but you've opted out of automatically starting telemetry collecting and uploading by selecting `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.compaby", shouldStartSession: false)` where `shouldStartSession: false` is set to `false`
+This step must be done after `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company")` is called but you've opted out of automatically starting telemetry collecting and uploading by selecting `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company", shouldStartSession: false)` where `shouldStartSession: false` is set to `false`
 
 ```
 import SwiftUI
