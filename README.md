@@ -8,7 +8,7 @@ With built-in App Group support, the SDK securely batches and shares telemetry d
 *   **Motion & Touch Telemetry:** Track precise touch paths (began, moved, ended).
 *   **Keystroke Logging:** Ideal for custom keyboard extensions tracking character input.
 *   **Cross-Extension Support:** Seamlessly share data between your host app and App Extensions using App Groups.
-*   **Smart Batching & Uploads:** Automatically or manually flush data to disk and batch network uploads.
+*   **Smart Batching & Uploads:** Automatically or manually flush data and batch network uploads.
 *   **Error Tracking:** Built-in configurable error reporting.
 
 ---
@@ -221,10 +221,9 @@ NX10Core.shared.telemetryService?.appendTouch(at: (
 
 ## Data Management & Uploads
 
-The SDK buffers data to optimize performance, but you have manual control over when data is flushed to the shared App Group container and when it is uploaded to the NX10 servers. 
+The SDK buffers data to optimise performance, but you have manual control over when data is flushed and when it is uploaded to the NX10 servers. 
 
-### 1. Flushing Data to Disk
-Saves the current telemetry queue locally to the shared App Group container. **Always use this in extensions** to ensure data isn't lost if the extension is abruptly terminated by iOS.
+### 1. Flushing to keep memory overhead low
 ```swift
 NX10Core.shared.telemetryService?.flushIfNeeded()
 ```
@@ -243,6 +242,6 @@ Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` does the same 
 
 App Extensions have strict memory limits and unpredictable lifecycles dictated by the iOS system. To ensure reliable telemetry collection:
 
-1. **Always use App Groups:** The `appGroupdID` is critical. It allows your Keyboard Extension to write telemetry data to a shared folder that the Main App can also read.
-2. **Flush Frequently:** Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`, or periodically during long typing sessions) to ensure buffered data is safely written to disk before the OS suspends the extension.
+1. **Always use App Groups:** The `appGroupdID` is critical. It allows your Keyboard Extension to write data to a shared folder that the Main App can also read.
+2. **Flush Frequently:** Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`, or periodically during long typing sessions).
 3. **Delegate Uploads to the Host App:** While a keyboard extension *can* call `attemptUploadAndflushNow()`, doing so can cause memory spikes or get interrupted. The best practice is to have the Keyboard Extension simply track and `flushIfNeeded()`, and let the **Main App** call `attemptUploadAndflushNow()` when the user opens the host application.
