@@ -23,6 +23,17 @@ or you can add the following dependency to your Package.swift:
 .package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.3")
 
 ```
+
+And for the targets in section 
+```
+targets: [
+        .target(
+            name: "YourAppTargetName",
+            dependencies: [
+                .product(name: "NX10CoreSDK", package: "ios-sdk")
+            ]
+        ),
+```
 ---
 
 ## Configuration
