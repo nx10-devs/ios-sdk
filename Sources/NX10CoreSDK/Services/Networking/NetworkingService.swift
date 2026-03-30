@@ -61,6 +61,10 @@ public final class NetworkService: Networking {
         config.allowsConstrainedNetworkAccess = true
         config.waitsForConnectivity = true
         
+        if isDebug {
+            print("LOG: URL:\(url)\npayload:\(payload)\nData: \(request.httpBody?.asString ?? "nil")")
+        }
+        
         do {
             let (data, response) = try await URLSession(configuration: config).data(for: request)
             
@@ -71,11 +75,13 @@ public final class NetworkService: Networking {
                 throw APIError.badRequest
             }
             
+            if isDebug {
+                print("LOG: URL:\(url)\npayload:\(payload)\nData: \(data.asString)")
+            }
+            
             if
                 let error = APIError.errorFor(code: httpResponse.statusCode)
             {
-                print("LOG: Data: \(data.asString)")
-                
                 return false
             }
             
@@ -128,12 +134,20 @@ public final class NetworkService: Networking {
         config.allowsConstrainedNetworkAccess = true
         config.waitsForConnectivity = true
         
+        if isDebug {
+            print("LOG: URL:\(url)\npayload:\(payload)\nData: \(request.httpBody?.asString ?? "nil")")
+        }
+        
         let (data, response) = try await URLSession(configuration: config).data(for: request)
         
         guard
             let httpResponse = response as? HTTPURLResponse
         else {
             throw APIError.unknown
+        }
+        
+        if isDebug {
+            print("LOG: URL:\(url)\npayload:\(payload)\nData: \(data.asString)")
         }
         
         if
@@ -198,12 +212,20 @@ public final class NetworkService: Networking {
         config.allowsConstrainedNetworkAccess = true
         config.waitsForConnectivity = true
         
+        if isDebug {
+            print("LOG: URL:\(url)\npayload:\(payload)\nData: \(request.httpBody?.asString ?? "nil")")
+        }
+        
         let (data, response) = try await URLSession(configuration: config).data(for: request)
         
         guard
             let httpResponse = response as? HTTPURLResponse
         else {
             throw APIError.unknown
+        }
+        
+        if isDebug {
+            print("LOG: URL:\(url)\npayload:\(payload)\nData: \(data.asString)")
         }
         
         if

@@ -8,18 +8,21 @@
 import Foundation
 
 public enum AnalyticEvent: String, Encodable {
+    
+    // SDK keys
     case sessionStarted = "session_started"
-    case sessionEnded = "session_ended"
     case telemetryStarted = "telemetry_started"
     case telemetryEnded = "telemetry_ended"
-    case appOpened = "app_opened"
-    case appClosed = "app_closed"
+    case saaqShown = "saaq_shown"
+    
+    // Integration keys
     case appBackgrounded = "app_backgrounded"
     case appForegrounded = "app_foregrounded"
+    case appOpened = "app_opened"
 }
 
 public extension AnalyticsService {
-    public struct Payload: Encodable {
+    public struct Payload: Encodable, Hashable {
         
         public let eventName: AnalyticEvent
         public let sourceName: String
@@ -29,6 +32,10 @@ public extension AnalyticsService {
             self.eventName = eventName
             self.sourceName = sourceName == nil ? "ios-sdk" : sourceName!
             self.clientTimestamp = clientTimestamp == nil ? Date().iso8601 : clientTimestamp!
+        }
+        
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(clientTimestamp)
         }
     }
 }
