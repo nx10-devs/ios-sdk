@@ -24,7 +24,6 @@ public enum APIError: Error {
     case malformedURL
     case missingToken
     
-    
     public static func errorFor(code: Int) -> Self? {
         switch code {
         case 404:

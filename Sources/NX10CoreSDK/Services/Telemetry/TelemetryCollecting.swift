@@ -80,7 +80,12 @@ public final class TelemetryCollector: TelemetryCollecting {
 
         Task {
             do {
-                _ = try await uploader.upload(payload)
+                guard
+                    let url = try uploader.url(for: .telemetry(version: .v2))
+                else {
+                    throw APIError.malformedURL
+                }
+                let _ :GenericResponse? = try await uploader.post(payload, for: url)
                 print("LOG: Upload succesful")
                 session.reset()
             } catch {

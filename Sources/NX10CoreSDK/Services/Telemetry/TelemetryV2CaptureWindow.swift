@@ -74,10 +74,17 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
             touchKbEvents: touchKbEvents,
             touchEvents: touchEvents
         )
+        
 
         Task {
             do {
-                _ = try await uploader.upload(payload)
+                guard
+                    let url = try uploader.url(for: .telemetry(version: .v2))
+                else {
+                    throw APIError.malformedURL
+                }
+                
+                let _ :TelemetryV2Response? = try await uploader.post(payload, for: url)
                 
                 // TODO: Flush telemetry
                 

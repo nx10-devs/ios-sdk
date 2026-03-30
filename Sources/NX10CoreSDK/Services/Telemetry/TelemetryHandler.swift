@@ -19,6 +19,7 @@ internal import UIKit
 @MainActor
 public protocol TelemetryHandling {
     init (networkingService: Networking, config: NetworkConfig, appService: AppInformationServicing)
+    
     func startSession() async throws -> Bool
 }
 
@@ -43,26 +44,41 @@ public final class TelemetryHandler: TelemetryHandling {
                 throw NSError(domain: "failed-to-start-session-missing-api-key", code: -0003, userInfo: nil)
             }
             
-            let result = try await networkingService.startSession(
-                with: .init(
-                    apiKey: apiKey,
-                    identifiers: .init(
-                        deviceId: applicationService.deviceID,
-                        email: nil,
-                        phoneNumber: nil
-                    ),
-                    sdkProvided: .init(
-                        device: applicationService.deviceInfo(),
-                        sdkVersion: applicationService.appVersionNumber,
-                        sdkType: "ios-keyboard"
-                    ),
-                    appProvided: .init(
-                        metaData: nil,
-                        applicationVersion: applicationService.appVersionNumber,
-                        buildNumber: applicationService.appBuildNumber
-                    )
+            
+            guard
+                let url = try networkingService.url(for: .startSession(version: .v1))
+            else {
+                throw APIError.malformedURL
+            }
+            
+            let payload = StartSessionRequestPayload(
+                apiKey: apiKey,
+                identifiers: .init(
+                    deviceId: applicationService.deviceID,
+                    email: nil,
+                    phoneNumber: nil
+                ),
+                sdkProvided: .init(
+                    device: applicationService.deviceInfo(),
+                    sdkVersion: applicationService.appVersionNumber,
+                    sdkType: "ios-keyboard"
+                ),
+                appProvided: .init(
+                    metaData: nil,
+                    applicationVersion: applicationService.appVersionNumber,
+                    buildNumber: applicationService.appBuildNumber
                 )
             )
+            let result: StartSessionAPIResponse? = try await networkingService.post(
+                payload,
+                for: url
+            )
+            
+            guard
+                let result = result
+            else {
+                return false
+            }
             
             config.storeEndpoints(result.data.endpoints)
             config.setToken(result.data.token)

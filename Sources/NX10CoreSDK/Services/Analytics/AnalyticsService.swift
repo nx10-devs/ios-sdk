@@ -16,7 +16,8 @@ public class AnalyticsService: AnalyticsServicing {
     private let networkService: Networking
     private let networkConfig: NetworkConfig
     private var payloadStorage = Set<AnalyticsService.Payload>()
-    
+    private struct EmptyResponse: Decodable {}
+
     public init(networkService: Networking, networkConfig: NetworkConfig) {
         self.networkService = networkService
         self.networkConfig = networkConfig
@@ -42,7 +43,7 @@ public class AnalyticsService: AnalyticsServicing {
                     }
                     return
                 }
-                try await networkService.post(payload, for: url)
+                let _: EmptyResponse? = try await networkService.post(payload, for: url)
             } catch {
                 
                 print(error.localizedDescription)
@@ -50,3 +51,4 @@ public class AnalyticsService: AnalyticsServicing {
         }
     }
 }
+
