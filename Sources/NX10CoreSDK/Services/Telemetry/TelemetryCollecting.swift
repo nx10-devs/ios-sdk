@@ -85,7 +85,7 @@ public final class TelemetryCollector: TelemetryCollecting {
                 else {
                     throw APIError.malformedURL
                 }
-                let _ :GenericResponse? = try await uploader.post(payload, for: url)
+                let _ :SaaQTrigger? = try await uploader.post(payload, for: url)
                 print("LOG: Upload succesful")
                 session.reset()
             } catch {
