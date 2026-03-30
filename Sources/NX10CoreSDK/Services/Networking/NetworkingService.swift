@@ -11,8 +11,12 @@ import Foundation
 public protocol Networking {
     var config: NetworkConfig { get }
     var isReady: Bool { get }
+    
+    // MARK: Deprecated. Replace with post(...)
     func startSession(with payload: StartSessionRequestPayload) async throws -> StartSessionAPIResponse
     func upload(_ payload: TelemetryV2Payload) async throws -> Bool
+    
+    // MARK: Use post here for all POST requests
     func post(_ payload: Encodable, for url: URL) async throws -> Bool
     
     init(config: NetworkConfig)
