@@ -279,7 +279,8 @@ struct MyApp: App {
                 .nx10SaaQPromptPresenter() // Opt-in once
         }
     }
-}```
+}
+```
 
 UIKit integration (opt-in)
 Start the presenter once in your SceneDelegate or AppDelegate.
@@ -294,7 +295,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         SaaQPromptWindowPresenter.shared.start() // Opt-in once for UIKit apps
         // ... your usual setup
     }
-}```
+}
+```
 
 To stop observing and tear down the overlay window, call:
 `SaaQPromptWindowPresenter.shared.stop()`
