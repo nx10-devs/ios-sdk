@@ -355,9 +355,9 @@ let prompt = SaaQTrigger.Prompt(
 SaaQPromptController.shared.present(prompt: prompt)
 ```
 
-// Notes:
-// - The SDK manages the overlay and presentation; clients simply opt in.
-// - The overlay uses a high window level on UIKit (`.alert + 1`) to sit above your UI.
-// - In SwiftUI, apply `.nx10SaaQPromptPresenter()` only once at the root.
-// - If you change the SaaQ models, ensure `SaaQPromptOneView` and the presenter are updated accordingly.
-// - The SDK can extend the default `onConfirm`/`onClose` behaviors to integrate with telemetry or networking as needed.
+### Notes:
+- The SDK manages the overlay and presentation; clients simply opt in.
+- The overlay uses a high window level on UIKit (`.alert + 1`) to sit above your UI.
+- In SwiftUI, apply `.nx10SaaQPromptPresenter()` only once at the root.
+- If you change the SaaQ models, ensure `SaaQPromptOneView` and the presenter are updated accordingly.
+- The SDK can extend the default `onConfirm`/`onClose` behaviors to integrate with telemetry or networking as needed.
