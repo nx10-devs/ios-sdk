@@ -316,7 +316,7 @@ Dismiss when needed
 ### Example prompt data
 The SDK expects the SaaQ trigger model to follow this shape:
 
-/*
+```swift
 {
   "status": "success",
   "data": {
@@ -334,7 +334,7 @@ The SDK expects the SaaQ trigger model to follow this shape:
     }
   }
 }
-*/
+```
 
 For testing without networking, you can construct a prompt manually and present it:
 
