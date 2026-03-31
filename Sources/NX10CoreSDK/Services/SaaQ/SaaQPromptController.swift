@@ -4,7 +4,8 @@ import SwiftUI
 public final class SaaQPromptController: ObservableObject {
     public static let shared = SaaQPromptController()
     @Published public private(set) var payload: SaaQTrigger.Payload?
-
+    
+    var didAnswerSaaQ: ((SaaQTriggerAnswer) -> Void)?
 
     private init() {}
 
@@ -36,8 +37,12 @@ struct SaaQPromptOverlay: View {
 
                     SaaQPromptOneView(
                         payload: payload,
-                        onConfirm: { _ in controller.dismiss() },
-                        onClose: { controller.dismiss() }
+                        onConfirm: { saaqAnswer in
+                            didAnswerAndDismiss(with: saaqAnswer)
+                        },
+                        onClose: { saaqAnswer in
+                            didAnswerAndDismiss(with: saaqAnswer)
+                        }
                     )
                     .transition(.scale.combined(with: .opacity))
                     .zIndex(1)
@@ -45,6 +50,11 @@ struct SaaQPromptOverlay: View {
             }
         }
         .animation(.easeInOut, value: controller.payload != nil)
+    }
+    
+    func didAnswerAndDismiss(with saaqAnswer: SaaQTriggerAnswer) {
+            controller.didAnswerSaaQ?(saaqAnswer)
+            controller.dismiss()
     }
 }
 

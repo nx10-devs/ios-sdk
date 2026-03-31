@@ -41,6 +41,21 @@ public final class SaaQService: SaaQServiceProtocol {
         self.telemetryService.setSaaQPromptCallBack { [weak self] trigger in
             self?.present(trigger: trigger)
         }
+        
+        promptController.didAnswerSaaQ = { answer in
+            do {
+                guard
+                    let url = try networkService.url(for: .saaq(version: .v1))
+                else {
+                    return
+                }
+                Task {
+                    let _: GenericResponse? = try await networkService.post(answer, for: url)
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
     }
     
     // MARK: SwiftUI

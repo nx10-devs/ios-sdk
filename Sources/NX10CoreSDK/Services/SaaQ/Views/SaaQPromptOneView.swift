@@ -8,11 +8,8 @@
 import SwiftUI
 
 public struct SaaQPromptOneView: View {
-    // Core configuration
-   
-   
-    private let onConfirm: (Int) -> Void
-    private let onClose: () -> Void
+    private let onConfirm: (_ payload: SaaQTriggerAnswer) -> Void
+    private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
     private let saaqPayload: SaaQTrigger.Payload
     private var confirmButtonEnabled: Bool { saaqPayload.prompt.confirmButtonEnabled }
     private var range: ClosedRange<Double> { 0...Double(saaqPayload.prompt.rangeSize) }
@@ -25,15 +22,18 @@ public struct SaaQPromptOneView: View {
         // If API enables confirm, it's always enabled. Otherwise, require a slider change.
         return confirmButtonEnabled ? false : !hasChanged
     }
-
+    @State private var promptDisplayTimestamp: String = ""
+    @State private var promptClosedTimestamp: String = ""
+    
     // Slider state
     @State private var value: Double
 
     // MARK: - Initializers
 
     public init(payload: SaaQTrigger.Payload,
-                onConfirm: @escaping (Int) -> Void = { _ in },
-                onClose: @escaping () -> Void = {}) {
+                onConfirm: @escaping (_ payload: SaaQTriggerAnswer) -> Void,
+                onClose: @escaping (_ answer: SaaQTriggerAnswer) -> Void
+    ) {
         
         self.saaqPayload = payload
         self.onConfirm = onConfirm
@@ -71,7 +71,7 @@ public struct SaaQPromptOneView: View {
 
                 // Confirm button (shown only if enabled by API)
                 
-                Button(action: { onConfirm(Int(value)) }) {
+                Button(action: { onConfirm(buildSaaqAnswer(with: Int(value), and: .answered)) }) {
                     Text("Confirm")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -97,7 +97,7 @@ public struct SaaQPromptOneView: View {
 
             // Close button (only if dismissable)
             if dismissable {
-                Button(action: onClose) {
+                Button(action: { onClose(buildSaaqAnswer(with: saaqPayload.prompt.startingValue, and: .dismissed)) }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 24, weight: .regular))
                         .foregroundStyle(.black)
@@ -107,6 +107,23 @@ public struct SaaQPromptOneView: View {
             }
         }
         .padding()
+        .onAppear {
+            promptDisplayTimestamp = Date().iso8601
+        }
+        .onDisappear {
+            
+        }
+    }
+    
+    private func buildSaaqAnswer(with value: Int, and type: SaaQTriggerAnswer.SaaQAnswer.SaaQType) -> SaaQTriggerAnswer {
+        SaaQTriggerAnswer(
+            triggerID: saaqPayload.triggerID,
+            answer: .init(type: type, data: .init(selectedValue: value, selectedValues: nil)),
+            deviceSendTimestamp: Date().iso8601, // Sent now
+            promptDisplayTimestamp: promptDisplayTimestamp,
+            promptClosedTimestamp: Date().iso8601,
+            promptAnswerTimestamp: Date().iso8601
+        )
     }
 }
 
@@ -138,11 +155,11 @@ private struct ConfirmButtonStyle: ButtonStyle {
 #Preview("SaaQTrigger.Prompt") {
     VStack {
         
-        SaaQPromptOneView(payload: SaaQTrigger.sampleData(with: true, and: true).data)
+        SaaQPromptOneView(payload: SaaQTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
             .padding()
             .background(Color.black)
 
-        SaaQPromptOneView(payload:  SaaQTrigger.sampleData(with: false, and: false).data)
+        SaaQPromptOneView(payload:  SaaQTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
             .padding()
             .background(Color.black)
     }
