@@ -12,6 +12,11 @@ import Combine
 
 @MainActor
 public protocol TelemetryCollectorActions {
+    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
+    // TODO: This is a temporary solution for SaaQ Triggers
+    var didRecieveSaaQTrigger: ((SaaQTrigger) -> Void)? { get set }
+    //
+    
     func keyPressed(_ key: String)
     func keyReleased(_ key: String)
 
@@ -34,6 +39,11 @@ public final class TelemetryCollector: TelemetryCollecting {
 
     private let session: TelemetrySession
     private let uploader: Networking
+    
+    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
+    // TODO: This is a temporary solution for SaaQ Triggers
+    public var didRecieveSaaQTrigger: ((SaaQTrigger) -> Void)?
+    //
     
     public init(session: TelemetrySession, uploader: Networking, timer: Timer? = nil) {
         self.session = session
@@ -69,7 +79,6 @@ public final class TelemetryCollector: TelemetryCollecting {
 
     // MARK: - Flush
     @MainActor public func flushIfNeeded() {
-        guard session.hasAnyData() else { return }
         attemptUploadAndflushNow()
     }
 
@@ -86,7 +95,14 @@ public final class TelemetryCollector: TelemetryCollecting {
                 else {
                     throw APIError.malformedURL
                 }
-                let _ :SaaQTrigger? = try await uploader.post(payload, for: url)
+                
+                /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
+                // TODO: This is a temporary solution for SaaQ Triggers
+                let saaqTrigger :SaaQTrigger? = try await uploader.post(payload, for: url)
+                if let saaqTrigger = saaqTrigger {
+                    didRecieveSaaQTrigger?(saaqTrigger)
+                }
+                // End of Solution
                 print("LOG: Upload succesful")
                 session.reset()
             } catch {

@@ -50,6 +50,11 @@ public class TelemetryService {
         self.telemetryCollector = TelemetryCollector(session: telemetrySession, uploader: networkservice)
     }
     
+    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
+    func setSaaQPromptCallBack(_ completion: ((SaaQTrigger) -> Void)?) {
+        telemetryCollector.didRecieveSaaQTrigger = completion
+    }
+    
     @MainActor public func stopTelemetry() {
         telemetryCollector.attemptUploadAndflushNow()
         telemetryCollector.stopTimer()

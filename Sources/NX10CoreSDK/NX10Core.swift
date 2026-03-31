@@ -136,9 +136,13 @@ extension NX10Core {
     public func startSession() async throws {
         if isStartingSession { return }
         isStartingSession = true
+        
         defer { isStartingSession = false }
         do {
             try await self.telemetryService?.shouldStartSession()
+            telemetryService?.setSaaQPromptCallBack { saaqTrigger in
+                SaaQPromptController.shared.present(trigger: saaqTrigger)
+            }
         } catch {
             if isDebug {
                 print("start session failed")
