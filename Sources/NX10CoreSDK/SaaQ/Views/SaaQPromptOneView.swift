@@ -141,7 +141,7 @@ private struct ConfirmButtonStyle: ButtonStyle {
 #Preview("SaaQTrigger.Prompt") {
     VStack {
         let sample1 = SaaQTrigger.Prompt(
-            blockType: "saaqType1",
+            blockType: .saaqType1,
             questionText: "How are you?",
             dismissable: false,
             leftAnchorValue: "Low",
@@ -149,15 +149,14 @@ private struct ConfirmButtonStyle: ButtonStyle {
             rangeSize: 100,
             startingValue: 75,
             confirmButtonEnabled: false,
-            id: "demo2",
-            blockName: "Test"
+            id: "demo2"
         )
         SaaQPromptOneView(triggerPrompt: sample1)
             .padding()
             .background(Color.black)
         
         let sample2 = SaaQTrigger.Prompt(
-            blockType: "saaqType1",
+            blockType: .saaqType1,
             questionText: "How are you?",
             dismissable: true,
             leftAnchorValue: "Low",
@@ -165,8 +164,7 @@ private struct ConfirmButtonStyle: ButtonStyle {
             rangeSize: 100,
             startingValue: 75,
             confirmButtonEnabled: true,
-            id: "demo2",
-            blockName: "Test"
+            id: "demo2"
         )
         SaaQPromptOneView(triggerPrompt: sample2)
             .padding()
