@@ -16,6 +16,7 @@ public struct SaaQPromptOneView: View {
     private let startingValue: Double
     private let dismissable: Bool
     private let confirmButtonEnabled: Bool
+    private let required: Bool
     private let onConfirm: (Int) -> Void
     private let onClose: () -> Void
 
@@ -25,6 +26,7 @@ public struct SaaQPromptOneView: View {
     // MARK: - Initializers
 
     public init(triggerPrompt: SaaQTrigger.Prompt,
+                required: Bool = false,
                 onConfirm: @escaping (Int) -> Void = { _ in },
                 onClose: @escaping () -> Void = {}) {
         self.title = triggerPrompt.questionText
@@ -34,6 +36,7 @@ public struct SaaQPromptOneView: View {
         self.startingValue = Double(triggerPrompt.startingValue)
         self.dismissable = triggerPrompt.dismissable
         self.confirmButtonEnabled = triggerPrompt.confirmButtonEnabled
+        self.required = required
         self.onConfirm = onConfirm
         self.onClose = onClose
         self._value = State(initialValue: Double(triggerPrompt.startingValue))
@@ -41,7 +44,7 @@ public struct SaaQPromptOneView: View {
 
     private var hasChanged: Bool { value != startingValue }
     private var isConfirmDisabled: Bool {
-        !confirmButtonEnabled && !hasChanged
+        !confirmButtonEnabled || (required && !hasChanged)
     }
 
     public var body: some View {
@@ -53,7 +56,7 @@ public struct SaaQPromptOneView: View {
                 Text(title)
                     .font(.title3.weight(.semibold))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
                     .padding(.top, 8)
                 
                 // Slider + labels
@@ -63,11 +66,11 @@ public struct SaaQPromptOneView: View {
                     HStack {
                         Text(leftLabel)
                             .font(.subheadline)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.primary)
                         Spacer()
                         Text(rightLabel)
                             .font(.subheadline)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.primary)
                     }
                 }
                 .padding(.horizontal)
@@ -103,7 +106,7 @@ public struct SaaQPromptOneView: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.primary)
                         .padding(10)
                 }
                 .padding(12)

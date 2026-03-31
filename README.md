@@ -245,3 +245,117 @@ App Extensions have strict memory limits and unpredictable lifecycles dictated b
 1. **Always use App Groups:** The `appGroupdID` is critical. It allows your Keyboard Extension to write data to a shared folder that the Main App can also read.
 2. **Flush Frequently:** Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`, or periodically during long typing sessions).
 3. **Delegate Uploads to the Host App:** While a keyboard extension *can* call `attemptUploadAndflushNow()`, doing so can cause memory spikes or get interrupted. The best practice is to have the Keyboard Extension simply track and `flushIfNeeded()`, and let the **Main App** call `attemptUploadAndflushNow()` when the user opens the host application.
+
+## NX10CoreSDK – SaaQ Prompt Presentation
+
+This guide explains how to opt into the SaaQ prompt UI and let the NX10CoreSDK present it at the top of your app's view hierarchy. The SDK abstracts the presentation logic; clients only need to opt in once.
+
+- SwiftUI apps: opt in with a single view modifier at the root.
+- UIKit apps: opt in by starting a presenter that manages its own overlay window.
+
+### What gets presented
+The prompt UI is a glass-style alert that contains:
+- A title (the question)
+- A slider between two labels (left/right anchors)
+- A Confirm button (shown only when enabled by the API)
+- An optional Close (xmark) button in the top-right (shown when `dismissable` is true)
+
+### Confirm button behavior:
+// - If `confirmButtonEnabled` is false, the button is disabled.
+// - If `required` is true (enforced by the view) and the user has not changed the slider from its starting value, the button is disabled.
+
+### SwiftUI integration (opt-in)
+Apply the presenter once at the root of your SwiftUI app.
+
+```swift
+import SwiftUI
+import NX10CoreSDK
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .nx10SaaQPromptPresenter() // Opt-in once
+        }
+    }
+}```
+
+UIKit integration (opt-in)
+Start the presenter once in your SceneDelegate or AppDelegate.
+```swift
+import UIKit
+import NX10CoreSDK
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        SaaQPromptWindowPresenter.shared.start() // Opt-in once for UIKit apps
+        // ... your usual setup
+    }
+}```
+
+To stop observing and tear down the overlay window, call:
+`SaaQPromptWindowPresenter.shared.stop()`
+
+### Presenting and dismissing the prompt
+From anywhere in your app (or from within the SDK), present or dismiss via the shared controller:
+
+Present using a full trigger payload
+`SaaQPromptController.shared.present(trigger: trigger)`
+
+Or present using a prompt directly
+`SaaQPromptController.shared.present(prompt: trigger.data.prompt)`
+
+Dismiss when needed
+`SaaQPromptController.shared.dismiss()`
+
+### Example prompt data
+The SDK expects the SaaQ trigger model to follow this shape:
+
+/*
+{
+  "status": "success",
+  "data": {
+    "triggerID": "69cb8dcceb3c8678406023cd",
+    "prompt": {
+      "blockType": "saaqType1",
+      "questionText": "How are you feeling?",
+      "dismissable": false,
+      "leftAnchorValue": "Bad",
+      "rightAnchorValue": "Good",
+      "rangeSize": 1,
+      "startingValue": 1,
+      "confirmButtonEnabled": true,
+      "id": "69cb8db5fb320e0d9a3bb718"
+    }
+  }
+}
+*/
+
+For testing without networking, you can construct a prompt manually and present it:
+
+```swift
+let prompt = SaaQTrigger.Prompt(
+    blockType: "saaqType1",
+    questionText: "How are you?",
+    dismissable: true,
+    leftAnchorValue: "Low",
+    rightAnchorValue: "High",
+    rangeSize: 100,
+    startingValue: 50,
+    confirmButtonEnabled: true,
+    id: "local-demo",
+    blockName: nil
+)
+
+SaaQPromptController.shared.present(prompt: prompt)
+```
+
+// Notes:
+// - The SDK manages the overlay and presentation; clients simply opt in.
+// - The overlay uses a high window level on UIKit (`.alert + 1`) to sit above your UI.
+// - In SwiftUI, apply `.nx10SaaQPromptPresenter()` only once at the root.
+// - If you change the SaaQ models, ensure `SaaQPromptOneView` and the presenter are updated accordingly.
+// - The SDK can extend the default `onConfirm`/`onClose` behaviors to integrate with telemetry or networking as needed.
