@@ -42,6 +42,7 @@ public final class NX10Core: NX10CoreProtocol {
     let analyticsService: AnalyticsServicing
     
     private var isConfigured = false
+    private var isStartingSession = false
     
     @MainActor private init () {
         // MARK: Independant objects
@@ -108,7 +109,7 @@ public final class NX10Core: NX10CoreProtocol {
         guard
             networkConfigReady,
             accessManagementServiceReady,
-            networkConfigReady
+            networkingServiceReady
         else {
             if isDebug {
                 fatalError("API's failed to load correctly")
@@ -117,15 +118,11 @@ public final class NX10Core: NX10CoreProtocol {
         }
         
         if shouldStartSession {
-            telemetryService?.startTimer()   
-        }
-        
-        if shouldStartSession {
             print("should start session")
             await accessManagementService?.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [weak self] enabled in
                 if enabled {
                     Task {
-                        await try self?.startSession()
+                        try await self?.startSession()
                     }
                 }
             }
@@ -137,6 +134,9 @@ public final class NX10Core: NX10CoreProtocol {
 
 extension NX10Core {
     public func startSession() async throws {
+        if isStartingSession { return }
+        isStartingSession = true
+        defer { isStartingSession = false }
         do {
             try await self.telemetryService?.shouldStartSession()
         } catch {
@@ -148,3 +148,4 @@ extension NX10Core {
         }
     }
 }
+
