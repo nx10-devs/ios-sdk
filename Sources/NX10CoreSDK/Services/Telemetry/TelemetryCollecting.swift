@@ -48,6 +48,7 @@ public final class TelemetryCollector: TelemetryCollecting {
         let uploadInterval = uploader.config.uploadInterval
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: uploadInterval, repeats: true) { [weak self] _ in
+            print("LOG: Timer fired, attempting to upload and flush")
             self?.flushIfNeeded()
         }
     }

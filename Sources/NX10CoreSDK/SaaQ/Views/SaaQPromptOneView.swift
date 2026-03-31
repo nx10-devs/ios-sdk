@@ -1,5 +1,5 @@
 //
-//  SaaQPromptOne.swift
+//  SaaQPromptOneView.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 30/03/2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct SaaQPromptOne: View {
+public struct SaaQPromptOneView: View {
     // Core configuration
     private let title: String
     private let leftLabel: String
@@ -152,7 +152,7 @@ private struct ConfirmButtonStyle: ButtonStyle {
             id: "demo2",
             blockName: "Test"
         )
-        SaaQPromptOne(triggerPrompt: sample1)
+        SaaQPromptOneView(triggerPrompt: sample1)
             .padding()
             .background(Color.black)
         
@@ -168,7 +168,7 @@ private struct ConfirmButtonStyle: ButtonStyle {
             id: "demo2",
             blockName: "Test"
         )
-        SaaQPromptOne(triggerPrompt: sample2)
+        SaaQPromptOneView(triggerPrompt: sample2)
             .padding()
             .background(Color.black)
     }
