@@ -19,7 +19,7 @@ public struct SaaQPromptOneView: View {
     private var title: String { saaqPayload.prompt.questionText }
     private var leftLabel: String { saaqPayload.prompt.leftAnchorValue }
     private var rightLabel: String { saaqPayload.prompt.rightAnchorValue }
-    private var dismissable: Bool { saaqPayload.prompt.dismissable }
+    private var dismissable: Bool { saaqPayload.dismissable }
     private var hasChanged: Bool { value != saaqPayload.prompt.startingValue.asDouble }
     private var isConfirmDisabled: Bool {
         // If API enables confirm, it's always enabled. Otherwise, require a slider change.
