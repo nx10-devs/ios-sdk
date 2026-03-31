@@ -261,8 +261,8 @@ The prompt UI is a glass-style alert that contains:
 - An optional Close (xmark) button in the top-right (shown when `dismissable` is true)
 
 ### Confirm button behavior:
-// - If `confirmButtonEnabled` is false, the button is disabled.
-// - If `required` is true (enforced by the view) and the user has not changed the slider from its starting value, the button is disabled.
+- If `confirmButtonEnabled` is false, the button is disabled.
+- If `required` is true (enforced by the view) and the user has not changed the slider from its starting value, the button is disabled.
 
 ### SwiftUI integration (opt-in)
 Apply the presenter once at the root of your SwiftUI app.
