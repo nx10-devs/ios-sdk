@@ -9,48 +9,42 @@ import SwiftUI
 
 public struct SaaQPromptOneView: View {
     // Core configuration
-    private let title: String
-    private let leftLabel: String
-    private let rightLabel: String
-    private let range: ClosedRange<Double>
-    private let startingValue: Double
-    private let dismissable: Bool
-    private let confirmButtonEnabled: Bool
-    private let required: Bool
+   
+   
     private let onConfirm: (Int) -> Void
     private let onClose: () -> Void
+    private let saaqPayload: SaaQTrigger.Payload
+    private var confirmButtonEnabled: Bool { saaqPayload.prompt.confirmButtonEnabled }
+    private var range: ClosedRange<Double> { 0...Double(saaqPayload.prompt.rangeSize) }
+    private var title: String { saaqPayload.prompt.questionText }
+    private var leftLabel: String { saaqPayload.prompt.leftAnchorValue }
+    private var rightLabel: String { saaqPayload.prompt.rightAnchorValue }
+    private var dismissable: Bool { saaqPayload.prompt.dismissable }
+    private var hasChanged: Bool { value != saaqPayload.prompt.startingValue.asDouble }
+    private var isConfirmDisabled: Bool {
+        // If API enables confirm, it's always enabled. Otherwise, require a slider change.
+        return confirmButtonEnabled ? false : !hasChanged
+    }
 
     // Slider state
     @State private var value: Double
 
     // MARK: - Initializers
 
-    public init(triggerPrompt: SaaQTrigger.Prompt,
-                required: Bool = false,
+    public init(payload: SaaQTrigger.Payload,
                 onConfirm: @escaping (Int) -> Void = { _ in },
                 onClose: @escaping () -> Void = {}) {
-        self.title = triggerPrompt.questionText
-        self.leftLabel = triggerPrompt.leftAnchorValue
-        self.rightLabel = triggerPrompt.rightAnchorValue
-        self.range = 0...Double(triggerPrompt.rangeSize)
-        self.startingValue = Double(triggerPrompt.startingValue)
-        self.dismissable = triggerPrompt.dismissable
-        self.confirmButtonEnabled = triggerPrompt.confirmButtonEnabled
-        self.required = required
+        
+        self.saaqPayload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
-        self._value = State(initialValue: Double(triggerPrompt.startingValue))
-    }
-
-    private var hasChanged: Bool { value != startingValue }
-    private var isConfirmDisabled: Bool {
-        !confirmButtonEnabled || (required && !hasChanged)
+        self._value = State(initialValue: Double(payload.prompt.startingValue))
     }
 
     public var body: some View {
         ZStack(alignment: .topTrailing) {
             // Card background with glass effect
-            
+         
             VStack(spacing: 20) {
                 // Title
                 Text(title)
@@ -106,7 +100,7 @@ public struct SaaQPromptOneView: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.black)
                         .padding(10)
                 }
                 .padding(12)
@@ -143,33 +137,12 @@ private struct ConfirmButtonStyle: ButtonStyle {
 
 #Preview("SaaQTrigger.Prompt") {
     VStack {
-        let sample1 = SaaQTrigger.Prompt(
-            blockType: .saaqType1,
-            questionText: "How are you?",
-            dismissable: false,
-            leftAnchorValue: "Low",
-            rightAnchorValue: "High",
-            rangeSize: 100,
-            startingValue: 75,
-            confirmButtonEnabled: false,
-            id: "demo2"
-        )
-        SaaQPromptOneView(triggerPrompt: sample1)
+        
+        SaaQPromptOneView(payload: SaaQTrigger.sampleData(with: true, and: true).data)
             .padding()
             .background(Color.black)
-        
-        let sample2 = SaaQTrigger.Prompt(
-            blockType: .saaqType1,
-            questionText: "How are you?",
-            dismissable: true,
-            leftAnchorValue: "Low",
-            rightAnchorValue: "High",
-            rangeSize: 100,
-            startingValue: 75,
-            confirmButtonEnabled: true,
-            id: "demo2"
-        )
-        SaaQPromptOneView(triggerPrompt: sample2)
+
+        SaaQPromptOneView(payload:  SaaQTrigger.sampleData(with: false, and: false).data)
             .padding()
             .background(Color.black)
     }

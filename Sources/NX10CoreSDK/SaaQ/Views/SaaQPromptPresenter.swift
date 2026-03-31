@@ -3,22 +3,22 @@ import SwiftUI
 @MainActor
 public final class SaaQPromptController: ObservableObject {
     public static let shared = SaaQPromptController()
-    @Published public private(set) var prompt: SaaQTrigger.Prompt?
+    @Published public private(set) var payload: SaaQTrigger.Payload?
 
     private init() {}
 
     // Public API to present a prompt directly
-    public func present(prompt: SaaQTrigger.Prompt) {
-        withAnimation { self.prompt = prompt }
+    public func present(prompt: SaaQTrigger.Payload) {
+        withAnimation { self.payload = prompt }
     }
 
     // Convenience to present from a full trigger payload
     public func present(trigger: SaaQTrigger) {
-        withAnimation { self.prompt = trigger.data.prompt }
+        withAnimation { self.payload = trigger.data }
     }
 
     public func dismiss() {
-        withAnimation { self.prompt = nil }
+        withAnimation { self.payload = nil }
     }
 }
 
@@ -27,14 +27,14 @@ struct SaaQPromptOverlay: View {
 
     var body: some View {
         Group {
-            if let prompt = controller.prompt {
+            if let payload = controller.payload {
                 ZStack {
                     Color.black.opacity(0.35)
                         .ignoresSafeArea()
                         .transition(.opacity)
 
                     SaaQPromptOneView(
-                        triggerPrompt: prompt,
+                        payload: payload,
                         onConfirm: { _ in controller.dismiss() },
                         onClose: { controller.dismiss() }
                     )
@@ -43,7 +43,7 @@ struct SaaQPromptOverlay: View {
                 }
             }
         }
-        .animation(.easeInOut, value: controller.prompt != nil)
+        .animation(.easeInOut, value: controller.payload != nil)
     }
 }
 

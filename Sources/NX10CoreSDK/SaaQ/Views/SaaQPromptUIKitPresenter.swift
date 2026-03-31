@@ -16,11 +16,11 @@ public final class SaaQPromptWindowPresenter {
     /// This installs an observer that shows an overlay window whenever the SDK requests a SaaQ prompt.
     public func start() {
         guard cancellable == nil else { return }
-        cancellable = SaaQPromptController.shared.$prompt
+        cancellable = SaaQPromptController.shared.$payload
             .receive(on: RunLoop.main)
-            .sink { [weak self] prompt in
+            .sink { [weak self] payload in
                 guard let self else { return }
-                if prompt != nil {
+                if payload != nil {
                     self.showWindow()
                 } else {
                     self.hideWindow()

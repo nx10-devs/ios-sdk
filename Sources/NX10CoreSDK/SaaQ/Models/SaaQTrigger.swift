@@ -1,5 +1,9 @@
 import Foundation
 
+extension Int {
+    var asDouble: Double { Double(self) }
+}
+
 public struct SaaQTrigger: Codable, Identifiable {
     public let status: String
     public let data: Payload
@@ -32,16 +36,16 @@ public extension SaaQTrigger.Prompt {
 }
 
 public extension SaaQTrigger {
-    public static var sampleTrigger: SaaQTrigger {
+    public static func sampleData(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTrigger {
         let prompt = Prompt(
             blockType: SaaQTrigger.Prompt.BlockType.saaqType1,
             questionText: "How are you?",
-            dismissable: true,
+            dismissable: dismissable,
             leftAnchorValue: "Low",
             rightAnchorValue: "High",
             rangeSize: 100,
             startingValue: 75,
-            confirmButtonEnabled: true,
+            confirmButtonEnabled: confirmButtonEnabled,
             id: "demo2"
         )
         return SaaQTrigger(status: "success", data: .init(triggerID: "trigger_id", prompt: prompt))
