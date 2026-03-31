@@ -7,7 +7,7 @@
 
 @MainActor
 public protocol SaaQServiceProtocol {
-    func configure()
+    func start()
     func present(prompt: SaaQTrigger.Payload)
     func present(trigger: SaaQTrigger)
     func dismiss()
@@ -36,14 +36,14 @@ public final class SaaQService: SaaQServiceProtocol {
         self.promptController = promptController
         self.promptPresenter = promptPresenter
         self.telemetryService = telemetryService
-    }
-    
-    public func configure() {
-        telemetryService.setSaaQPromptCallBack { [weak self] trigger in
+        
+        // Opt in to trigger observation
+        self.telemetryService.setSaaQPromptCallBack { [weak self] trigger in
             self?.present(trigger: trigger)
         }
     }
     
+    // MARK: SwiftUI
     public func present(prompt: SaaQTrigger.Payload) {
         promptController.present(prompt: prompt)
     }
@@ -54,6 +54,11 @@ public final class SaaQService: SaaQServiceProtocol {
     
     public func dismiss() {
         promptController
+    }
+    
+    // MARK: UIKit integration necessary step
+    public func start() {
+        promptPresenter.start()
     }
 }
 

@@ -5,6 +5,7 @@ public final class SaaQPromptController: ObservableObject {
     public static let shared = SaaQPromptController()
     @Published public private(set) var payload: SaaQTrigger.Payload?
 
+
     private init() {}
 
     // Public API to present a prompt directly

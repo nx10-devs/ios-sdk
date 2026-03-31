@@ -145,7 +145,6 @@ extension NX10Core {
         defer { isStartingSession = false }
         do {
             try await self.telemetryService.shouldStartSession()
-            saaqService.configure()
         } catch {
             if isDebug {
                 print("start session failed")
