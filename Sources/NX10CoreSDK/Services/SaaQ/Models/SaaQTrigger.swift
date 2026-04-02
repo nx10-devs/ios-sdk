@@ -42,9 +42,7 @@ public extension SaaQTrigger {
         public let multipleSelect: Bool?
         public let options: [Feeling]?
         
-        func getRangeSize() -> ClosedRange<Double> {
-            rangeSize > 1 ? 0...Double(rangeSize-1) : 0...Double(rangeSize)
-        }
+        func getRangeSize() -> ClosedRange<Double> { 0...Double(rangeSize-1) }
 
         public init(blockType: BlockType,
                     questionText: String,
