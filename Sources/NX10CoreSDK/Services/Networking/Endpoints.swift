@@ -14,7 +14,8 @@ enum Endpoints: String {
     var string: String {
         switch self {
         case .startSession:
-            return isDebug ? "https://control-plane.affectstack-stage.com/routes/sessions/start" : ""
+            guard isDebug else  { fatalError("PROD Not Ready") }
+            return "https://control-plane.affectstack-stage.com/routes/sessions/start"
         }
     }
 }

@@ -7,9 +7,10 @@
 
 import Foundation
 import UIKit
+import JWTDecode
 
 @MainActor
-public protocol NetworkConfigurating {
+public protocol NetworkConfiguring {
     var apiKey: String? { get }
     var uploadInterval: TimeInterval { get }
     var isReady: Bool { get }
@@ -23,7 +24,7 @@ public protocol NetworkConfigurating {
     init(configLoader: ConfigService)
 }
 
-public final class NetworkConfig: NetworkConfigurating {
+public final class NetworkConfig: NetworkConfiguring {
     public var apiKey: String?
     private let configLoader: ConfigService
     
@@ -106,6 +107,10 @@ public final class NetworkConfig: NetworkConfigurating {
     }
     
     public func setToken(_ token: String) {
+        if isDebug, let jwt = try? decode(jwt: token) {
+            print("LOG: Token: ", jwt)
+            print("LOG: Session: ", jwt["sub"])
+        }
         print("LOG: Storing token \(token)") // WARNING: Remove for security. Store securely. This is only for TESITNG purposes
         self.token = token
     }

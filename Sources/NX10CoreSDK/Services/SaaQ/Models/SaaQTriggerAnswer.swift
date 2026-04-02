@@ -14,7 +14,6 @@ public struct SaaQTriggerAnswer: Encodable {
     public let deviceSendTimestamp: String
     public let promptDisplayTimestamp: String
     public let promptClosedTimestamp: String
-    public let promptAnswerTimestamp: String
     public let metaData: MetaData?
     
     public init(
@@ -23,7 +22,6 @@ public struct SaaQTriggerAnswer: Encodable {
         deviceSendTimestamp: String,
         promptDisplayTimestamp: String,
         promptClosedTimestamp: String,
-        promptAnswerTimestamp: String,
         metaData: MetaData? = nil
     ) {
         self.triggerID = triggerID
@@ -31,7 +29,6 @@ public struct SaaQTriggerAnswer: Encodable {
         self.deviceSendTimestamp = deviceSendTimestamp
         self.promptDisplayTimestamp = promptDisplayTimestamp
         self.promptClosedTimestamp = promptClosedTimestamp
-        self.promptAnswerTimestamp = promptAnswerTimestamp
         self.metaData = metaData
     }
     

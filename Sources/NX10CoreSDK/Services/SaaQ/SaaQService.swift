@@ -45,7 +45,7 @@ public final class SaaQService: SaaQServiceProtocol {
         promptController.didAnswerSaaQ = { answer in
             do {
                 guard
-                    let url = try networkService.url(for: .saaq(version: .v1))
+                    let url = try networkService.url(for: .saaqTriggered(version: .v1))
                 else {
                     return
                 }

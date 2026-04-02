@@ -25,7 +25,7 @@ public protocol TelemetryHandling {
 
 public final class TelemetryHandler: TelemetryHandling {
     private let networkingService: Networking
-    private let config: NetworkConfigurating
+    private let config: NetworkConfiguring
     private let applicationService: AppInformationServicing
     
     public init (networkingService: Networking, config: NetworkConfig, appService: AppInformationServicing) {

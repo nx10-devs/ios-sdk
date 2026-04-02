@@ -35,7 +35,7 @@ struct SaaQPromptOverlay: View {
                         .ignoresSafeArea()
                         .transition(.opacity)
 
-                    SaaQPromptOneView(
+                    SaaQPromptSliderView(
                         payload: payload,
                         onConfirm: { saaqAnswer in
                             didAnswerAndDismiss(with: saaqAnswer)

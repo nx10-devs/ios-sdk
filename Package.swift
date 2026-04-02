@@ -15,6 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "9.6.0"),
+        .package(url: "https://github.com/auth0/JWTDecode.swift.git", from: "4.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -23,6 +24,7 @@ let package = Package(
             name: "NX10CoreSDK",
             dependencies: [
                 .product(name: "Sentry", package: "sentry-cocoa"),
+                .product(name: "JWTDecode", package: "JWTDecode.swift"),
             ],
             resources: [
                 .process("Assets/NX10CoreConfig.plist")

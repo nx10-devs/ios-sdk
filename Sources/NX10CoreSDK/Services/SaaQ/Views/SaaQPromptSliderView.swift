@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct SaaQPromptOneView: View {
+public struct SaaQPromptSliderView: View {
     private let onConfirm: (_ payload: SaaQTriggerAnswer) -> Void
     private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
     private let saaqPayload: SaaQTrigger.Payload
@@ -52,6 +52,9 @@ public struct SaaQPromptOneView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.primary)
                     .padding(.top, 8)
+                
+                Divider()
+                    .padding(.horizontal)
                 
                 // Slider + labels
                 VStack(spacing: 12) {
@@ -110,9 +113,6 @@ public struct SaaQPromptOneView: View {
         .onAppear {
             promptDisplayTimestamp = Date().iso8601
         }
-        .onDisappear {
-            
-        }
     }
     
     private func buildSaaqAnswer(with value: Int, and type: SaaQTriggerAnswer.SaaQAnswer.SaaQType) -> SaaQTriggerAnswer {
@@ -121,8 +121,7 @@ public struct SaaQPromptOneView: View {
             answer: .init(type: type, data: .init(selectedValue: value, selectedValues: nil)),
             deviceSendTimestamp: Date().iso8601, // Sent now
             promptDisplayTimestamp: promptDisplayTimestamp,
-            promptClosedTimestamp: Date().iso8601,
-            promptAnswerTimestamp: Date().iso8601
+            promptClosedTimestamp: Date().iso8601
         )
     }
 }
@@ -155,11 +154,11 @@ private struct ConfirmButtonStyle: ButtonStyle {
 #Preview("SaaQTrigger.Prompt") {
     VStack {
         
-        SaaQPromptOneView(payload: SaaQTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
+        SaaQPromptSliderView(payload: SaaQTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
             .padding()
             .background(Color.black)
 
-        SaaQPromptOneView(payload:  SaaQTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
+        SaaQPromptSliderView(payload:  SaaQTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
             .padding()
             .background(Color.black)
     }
