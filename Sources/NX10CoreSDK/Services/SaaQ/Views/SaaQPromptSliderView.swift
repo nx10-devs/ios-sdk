@@ -12,7 +12,7 @@ public struct SaaQPromptSliderView: View {
     private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
     private let saaqPayload: SaaQTrigger.Payload
     private var confirmButtonEnabled: Bool { saaqPayload.prompt.confirmButtonEnabled }
-    private var range: ClosedRange<Double> { 0...Double(saaqPayload.prompt.rangeSize) }
+    private var range: ClosedRange<Double> { saaqPayload.prompt.getRangeSize() }
     private var title: String { saaqPayload.prompt.questionText }
     private var leftLabel: String { saaqPayload.prompt.leftAnchorValue }
     private var rightLabel: String { saaqPayload.prompt.rightAnchorValue }

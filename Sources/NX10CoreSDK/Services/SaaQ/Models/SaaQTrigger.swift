@@ -26,8 +26,11 @@ public struct SaaQTrigger: Decodable, Identifiable {
     public enum DisplayBlockType: String, Codable {
         case displayForcedImmediate = "displayForcedImmediate"
     }
+}
 
-    public struct Prompt: Codable, Identifiable {
+// MARK: Prompt
+public extension SaaQTrigger {
+    public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
         public let leftAnchorValue: String
@@ -36,6 +39,12 @@ public struct SaaQTrigger: Decodable, Identifiable {
         public let startingValue: Int
         public let confirmButtonEnabled: Bool
         public let id: String
+        public let multipleSelect: Bool?
+        public let options: [Feeling]?
+        
+        func getRangeSize() -> ClosedRange<Double> {
+            rangeSize > 1 ? 0...Double(rangeSize-1) : 0...Double(rangeSize)
+        }
 
         public init(blockType: BlockType,
                     questionText: String,
@@ -44,7 +53,9 @@ public struct SaaQTrigger: Decodable, Identifiable {
                     rangeSize: Int,
                     startingValue: Int,
                     confirmButtonEnabled: Bool,
-                    id: String
+                    id: String,
+                    multipleSelect: Bool? = nil,
+                    options: [Feeling]? = nil
         ) {
             self.blockType = blockType
             self.questionText = questionText
@@ -54,6 +65,8 @@ public struct SaaQTrigger: Decodable, Identifiable {
             self.startingValue = startingValue
             self.confirmButtonEnabled = confirmButtonEnabled
             self.id = id
+            self.multipleSelect = multipleSelect
+            self.options = options
         }
     }
 }
@@ -61,6 +74,16 @@ public struct SaaQTrigger: Decodable, Identifiable {
 public extension SaaQTrigger.Prompt {
     enum BlockType: String, Codable {
         case saaqType1 = "saaqType1"
+    }
+}
+
+public extension SaaQTrigger.Prompt {
+    public struct Feeling: Decodable {
+        public let suggestedEmoji: String
+        public let feelingsType: String
+        public let displanName: String
+        public let id: String
+        public let followonQuestion: [SaaQTrigger.Prompt]
     }
 }
 
