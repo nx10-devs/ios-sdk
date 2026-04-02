@@ -116,9 +116,10 @@ public struct SaaQPromptSliderView: View {
     }
     
     private func buildSaaqAnswer(with value: Int, and type: SaaQTriggerAnswer.SaaQAnswer.SaaQType) -> SaaQTriggerAnswer {
-        SaaQTriggerAnswer(
+        let data =  type == .dismissed ? nil : SaaQTriggerAnswer.factorySaaQData(selectedValue: value)
+        return SaaQTriggerAnswer(
             triggerID: saaqPayload.triggerID,
-            answer: .init(type: type, data: .init(selectedValue: value, selectedValues: nil)),
+            answer: .init(type: type, data: data),
             deviceSendTimestamp: Date().iso8601, // Sent now
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601

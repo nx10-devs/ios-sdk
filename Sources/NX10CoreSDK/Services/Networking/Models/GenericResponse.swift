@@ -8,5 +8,5 @@
 import Foundation
 
 public struct GenericResponse: Decodable {
-    public let success: Bool
+    public let status: String
 }

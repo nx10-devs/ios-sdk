@@ -16,6 +16,10 @@ public struct SaaQTriggerAnswer: Encodable {
     public let promptClosedTimestamp: String
     public let metaData: MetaData?
     
+    static func factorySaaQData(selectedValue: Int) -> SaaQAnswer.SaaQData {
+        return SaaQAnswer.SaaQData(selectedValue: selectedValue, selectedValues: nil)
+    }
+    
     public init(
         triggerID: String,
         answer: SaaQTriggerAnswer.SaaQAnswer,
