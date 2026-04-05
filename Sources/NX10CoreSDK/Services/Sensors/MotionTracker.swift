@@ -35,7 +35,7 @@ public final class MotionTracker {
             }
         } else {
             print("LOG: Gyro failed to start")
-            errorService.sendCustomError(NSError(domain: "Gyro not available", code: -1))
+            errorService.sendError(NSError(domain: "Gyro not available", code: -1))
         }
 
         if motionManager.isAccelerometerAvailable {
@@ -52,7 +52,7 @@ public final class MotionTracker {
             }
         } else {
             print("LOG: accelerometer failed to start")
-            errorService.sendCustomError(NSError(domain: "Accelerometer not available", code: -1))
+            errorService.sendError(NSError(domain: "Accelerometer not available", code: -1))
         }
     }
 

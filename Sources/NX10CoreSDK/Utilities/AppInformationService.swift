@@ -15,13 +15,14 @@ public protocol AppInformationServicing: AnyObject {
     var sdkType: String { get }
     var appBuildNumber: String { get }
     var appVersionNumber: String { get }
-    
+    var keyboardLanguage: String { get }
     @MainActor func deviceType() -> String
     @MainActor func deviceInfo() -> DeviceInfo
 }
 
 public final class AppInformationService: AppInformationServicing {
     public init() {}
+    public let keyboardLanguage: String = UITextInputMode.activeInputModes.first?.primaryLanguage ?? "en_GB"
     public let iOSVersion = "\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.minorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.patchVersion)"
     public let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? ""
     public let sdkType = "ios-keyboard"

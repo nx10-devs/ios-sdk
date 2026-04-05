@@ -91,7 +91,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
                 // Start a fresh window for the next batch.
                 start()
             } catch {
-                errorService.sendCustomError(error)
+                errorService.sendError(error)
                 if isDebug { debugPrint(error.localizedDescription) }
                 if isDebug {
                     fatalError("Failed to upload telemetry: \(error.localizedDescription)")

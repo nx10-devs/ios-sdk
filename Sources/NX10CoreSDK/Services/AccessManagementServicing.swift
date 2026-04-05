@@ -207,7 +207,7 @@ public final class AccessManagementService: AccessManagementServicing  {
     
     fileprivate func logFullAccessFailure(_ error: any Error) {
         if accessAttemptCounter >= maxFailureCount {
-            errorService.sendCustomError(error)
+            errorService.sendError(error)
             accessAttemptCounter = 0
         }
     }

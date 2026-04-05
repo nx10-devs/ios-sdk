@@ -41,7 +41,9 @@ public final class NX10Core: NX10CoreProtocol {
     let motionTracker: MotionTracker
     let touchTracker: TouchTracker
     let analyticsService: AnalyticsServicing
-
+    let attributesService: AttributesServicing
+    let appLifecycleService: AppLifecycleServicing
+    
     private var isConfigured = false
     private var isStartingSession = false
     
@@ -73,7 +75,10 @@ public final class NX10Core: NX10CoreProtocol {
             errorService: errorService,
             anaalytics: analyticsService
         )
+        let appLifecycleService = AppLifecyleService()
+        
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
+        let attributesService = AttributesService(networkService: networkService, errorService: errorService, appService: appService, appLifecycleService: appLifecycleService)
         
         // MARK: Retention assignments
         self.appService = appService
@@ -85,7 +90,9 @@ public final class NX10Core: NX10CoreProtocol {
         self.accessManagementService = accessManagementService
         self.telemetryService = telemetryService
         self.analyticsService = analyticsService
+        self.appLifecycleService = appLifecycleService
         self.saaqService = saaqService
+        self.attributesService = attributesService
     }
     
     @MainActor public func configure(
@@ -128,6 +135,7 @@ public final class NX10Core: NX10CoreProtocol {
                 if enabled {
                     Task {
                         try await self?.startSession()
+                        try await self?.attributesService.sendInitialMetadata()
                     }
                 }
             }
@@ -149,7 +157,7 @@ extension NX10Core {
             if isDebug {
                 print("start session failed")
             }
-            self.errorService.sendCustomError(error)
+            self.errorService.sendError(error)
             
             throw error
         }

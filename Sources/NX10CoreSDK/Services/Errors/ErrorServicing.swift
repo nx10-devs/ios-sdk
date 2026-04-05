@@ -10,8 +10,8 @@ import Sentry
 
 @MainActor
 public protocol ErrorServicing: AnyObject {
-    func sendCustomError(_ error: Error)
-    func sendError(_ error: ErrorType)
+    func sendError(_ error: Error)
+    func sendSDKError(_ error: ErrorType)
     func sendMessage(_ message: String)
     func setTrackingEnabled(_ enabled: Bool)
     init(configLoader: ConfigService)
@@ -28,11 +28,11 @@ public final class ErrorService: ErrorServicing {
         initialiseIfNeeded()
     }
     
-    public func sendCustomError(_ error: Error) {
+    public func sendError(_ error: Error) {
         SentrySDK.capture(error: error)
     }
     
-    public func sendError(_ error: ErrorType) {
+    public func sendSDKError(_ error: ErrorType) {
         SentrySDK.capture(error: error.error)
     }
     
