@@ -6,19 +6,19 @@ public final class SaaQPromptController: ObservableObject {
     @Published public private(set) var payload: SaaQTrigger.Payload?
     
     var didAnswerSaaQ: ((SaaQTriggerAnswer) -> Void)?
-
+    
     private init() {}
-
+    
     // Public API to present a prompt directly
     public func present(prompt: SaaQTrigger.Payload) {
         withAnimation { self.payload = prompt }
     }
-
+    
     // Convenience to present from a full trigger payload
     public func present(trigger: SaaQTrigger) {
         withAnimation { self.payload = trigger.data }
     }
-
+    
     public func dismiss() {
         withAnimation { self.payload = nil }
     }
@@ -26,7 +26,7 @@ public final class SaaQPromptController: ObservableObject {
 
 struct SaaQPromptOverlay: View {
     @ObservedObject var controller: SaaQPromptController = .shared
-
+    
     var body: some View {
         Group {
             if let payload = controller.payload {
@@ -48,33 +48,31 @@ struct SaaQPromptOverlay: View {
     }
     
     func didAnswerAndDismiss(with saaqAnswer: SaaQTriggerAnswer) {
-            controller.didAnswerSaaQ?(saaqAnswer)
-            controller.dismiss()
+        controller.didAnswerSaaQ?(saaqAnswer)
+        controller.dismiss()
     }
     
     private func openSaaQType1(with payload: SaaQTrigger.Payload) -> some View {
-        return SaaQPromptSliderView(
-            payload: payload,
-            onConfirm: { saaqAnswer in
-                didAnswerAndDismiss(with: saaqAnswer)
-            },
-            onClose: { saaqAnswer in
-                didAnswerAndDismiss(with: saaqAnswer)
-            }
+        return SaaQPromptOne(payload: payload,
+                             onConfirm: { saaqAnswer in
+            didAnswerAndDismiss(with: saaqAnswer)
+        },
+                             onClose: { saaqAnswer in
+            didAnswerAndDismiss(with: saaqAnswer)
+        }
         )
         .transition(.scale.combined(with: .opacity))
         .zIndex(1)
     }
     
     private func openSaaQType2(with payload: SaaQTrigger.Payload) -> some View {
-        return SaaQPromptSliderView(
-            payload: payload,
-            onConfirm: { saaqAnswer in
-                didAnswerAndDismiss(with: saaqAnswer)
-            },
-            onClose: { saaqAnswer in
-                didAnswerAndDismiss(with: saaqAnswer)
-            }
+        return SaaQPromptOne(payload: payload,
+                             onConfirm: { saaqAnswer in
+            didAnswerAndDismiss(with: saaqAnswer)
+        },
+                             onClose: { saaqAnswer in
+            didAnswerAndDismiss(with: saaqAnswer)
+        }
         )
         .transition(.scale.combined(with: .opacity))
         .zIndex(1)
