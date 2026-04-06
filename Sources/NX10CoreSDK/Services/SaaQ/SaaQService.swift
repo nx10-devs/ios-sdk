@@ -5,6 +5,8 @@
 //  Created by NX10 on 31/03/2026.
 //
 
+import Foundation
+
 @MainActor
 public protocol SaaQServiceProtocol {
     func start()
@@ -49,7 +51,8 @@ public final class SaaQService: SaaQServiceProtocol {
                 else {
                     return
                 }
-                Task {
+                
+                Task(name: "saaq-task", priority: .utility) {
                     let _: GenericResponse? = try await networkService.post(answer, for: url)
                 }
             } catch {

@@ -98,13 +98,15 @@ public final class TelemetryCollector: TelemetryCollecting {
                 
                 /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
                 // TODO: This is a temporary solution for SaaQ Triggers
-                let saaqTrigger: SaaQTrigger? = try await uploader.post(payload, for: url)
-                if let saaqTrigger = saaqTrigger {
-                    didRecieveSaaQTrigger?(saaqTrigger)
+                Task(name: "telemetry-task", priority: .utility) {
+                    let saaqTrigger: SaaQTrigger? = try await uploader.post(payload, for: url)
+                    if let saaqTrigger = saaqTrigger {
+                        didRecieveSaaQTrigger?(saaqTrigger)
+                    }
+                    // End of Solution
+                    print("LOG: Upload succesful")
+                    session.reset()
                 }
-                // End of Solution
-                print("LOG: Upload succesful")
-                session.reset()
             } catch {
                 print(error.localizedDescription)
             }

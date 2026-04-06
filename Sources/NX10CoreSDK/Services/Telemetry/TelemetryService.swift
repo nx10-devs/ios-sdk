@@ -59,13 +59,18 @@ public class TelemetryService {
         telemetryCollector.attemptUploadAndflushNow()
         telemetryCollector.stopTimer()
         motionTracker.stop()
-        analytics.sendAnalytics(.init(eventName: .telemetryEnded))
+        DispatchQueue.global(qos: .utility).async {
+            self.analytics.sendAnalytics(.init(eventName: .telemetryEnded))
+        }
+        
     }
     
     @MainActor public func startTelemetryEventLoop() {
         print("LOG: Attempting to start gyro and accelerometer reading")
         telemetryCollector.startTimer()
-        analytics.sendAnalytics(.init(eventName: .telemetryStarted))
+        DispatchQueue.global(qos: .utility).async {
+            self.analytics.sendAnalytics(.init(eventName: .telemetryStarted))
+        }
     }
     
     @MainActor public func startTrackingMotion() {
