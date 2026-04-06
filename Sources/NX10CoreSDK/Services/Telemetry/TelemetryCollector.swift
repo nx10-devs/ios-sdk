@@ -98,7 +98,7 @@ public final class TelemetryCollector: TelemetryCollecting {
                 
                 /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
                 // TODO: This is a temporary solution for SaaQ Triggers
-                let saaqTrigger :SaaQTrigger? = try await uploader.post(payload, for: url)
+                let saaqTrigger: SaaQTrigger? = try await uploader.post(payload, for: url)
                 if let saaqTrigger = saaqTrigger {
                     didRecieveSaaQTrigger?(saaqTrigger)
                 }
