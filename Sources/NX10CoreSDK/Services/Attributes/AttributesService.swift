@@ -14,7 +14,7 @@ public protocol AttributesServicing: AnyObject {
     func sendDeviceLog(_ deviceLog: AttributesService.DeviceLog) async
     func updateDeviceLog(_ deviceLog: AttributesService.DeviceLog) async
     func resetDeviceLog() async
-    func keyboardLanguageDidChange() async
+    func didChangeKeyboardLanguage() async
     func appDidChangeState(_ state: AttributesService.AppState) async
     
     init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: AppLifecycleServicing)
@@ -61,7 +61,9 @@ public class AttributesService: AttributesServicing {
             )
         )
         await sendDeviceLog(data)
-        beginObservingAppSate()
+        
+        // TODO: Confirm this feature
+//        beginObservingAppSate()
     }
     
     public func updateDeviceLog(_ deviceLog: DeviceLog) async {
@@ -72,7 +74,7 @@ public class AttributesService: AttributesServicing {
         await sendDeviceLog(.init(timestamp: Date().iso8601, data: nil))
     }
     
-    public func keyboardLanguageDidChange() async {
+    public func didChangeKeyboardLanguage() async {
         let keyboardLanguage = appService.keyboardLanguage
         let data = AttributesService.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
         do {
