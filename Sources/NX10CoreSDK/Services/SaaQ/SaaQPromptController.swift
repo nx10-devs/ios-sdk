@@ -34,18 +34,13 @@ struct SaaQPromptOverlay: View {
                     Color.black.opacity(0.35)
                         .ignoresSafeArea()
                         .transition(.opacity)
-
-                    SaaQPromptSliderView(
-                        payload: payload,
-                        onConfirm: { saaqAnswer in
-                            didAnswerAndDismiss(with: saaqAnswer)
-                        },
-                        onClose: { saaqAnswer in
-                            didAnswerAndDismiss(with: saaqAnswer)
-                        }
-                    )
-                    .transition(.scale.combined(with: .opacity))
-                    .zIndex(1)
+                    
+                    switch payload.prompt.blockType {
+                    case .saaqType1:
+                        openSaaQType1(with: payload)
+                    case .saaqType2:
+                        openSaaQType2(with: payload)
+                    }
                 }
             }
         }
@@ -55,6 +50,34 @@ struct SaaQPromptOverlay: View {
     func didAnswerAndDismiss(with saaqAnswer: SaaQTriggerAnswer) {
             controller.didAnswerSaaQ?(saaqAnswer)
             controller.dismiss()
+    }
+    
+    private func openSaaQType1(with payload: SaaQTrigger.Payload) -> some View {
+        return SaaQPromptSliderView(
+            payload: payload,
+            onConfirm: { saaqAnswer in
+                didAnswerAndDismiss(with: saaqAnswer)
+            },
+            onClose: { saaqAnswer in
+                didAnswerAndDismiss(with: saaqAnswer)
+            }
+        )
+        .transition(.scale.combined(with: .opacity))
+        .zIndex(1)
+    }
+    
+    private func openSaaQType2(with payload: SaaQTrigger.Payload) -> some View {
+        return SaaQPromptSliderView(
+            payload: payload,
+            onConfirm: { saaqAnswer in
+                didAnswerAndDismiss(with: saaqAnswer)
+            },
+            onClose: { saaqAnswer in
+                didAnswerAndDismiss(with: saaqAnswer)
+            }
+        )
+        .transition(.scale.combined(with: .opacity))
+        .zIndex(1)
     }
 }
 

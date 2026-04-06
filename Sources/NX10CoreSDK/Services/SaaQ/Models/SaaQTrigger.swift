@@ -72,6 +72,7 @@ public extension SaaQTrigger {
 public extension SaaQTrigger.Prompt {
     enum BlockType: String, Codable {
         case saaqType1 = "saaqType1"
+        case saaqType2 = "saaqType2"
     }
 }
 

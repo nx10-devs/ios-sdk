@@ -22,7 +22,7 @@ public protocol AppInformationServicing: AnyObject {
 
 public final class AppInformationService: AppInformationServicing {
     public init() {}
-    public let keyboardLanguage: String = UITextInputMode.activeInputModes.first?.primaryLanguage ?? "en_GB"
+    public let keyboardLanguage: String = UITextInputMode.activeInputModes.first?.primaryLanguage ?? "en-GB"
     public let iOSVersion = "\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.minorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.patchVersion)"
     public let deviceID = UIDevice.current.identifierForVendor?.uuidString ?? ""
     public let sdkType = "ios-keyboard"
