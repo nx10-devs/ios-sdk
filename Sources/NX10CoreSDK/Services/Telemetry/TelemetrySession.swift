@@ -13,6 +13,7 @@ public final class TelemetrySession {
     /// Epoch milliseconds marking the start of the current capture window.
     /// Used to generate V2 offsets (eventTimeMs - windowStartEpochMs).
     private(set) var windowStartEpochMs: Int64 = Int64(Date().timeIntervalSince1970 * 1000)
+    let telemetryQueue = DispatchQueue(label: "com.nx10.telemetry", qos: .default)
 
     // MARK: - Typing metrics
     public private(set) var totalKeyPresses = 0
@@ -70,37 +71,41 @@ public final class TelemetrySession {
 
     // MARK: - Typing
     public func recordKeyPress(_ key: String, now: TimeInterval = Date().timeIntervalSince1970) {
-        if lastKeyPressTime > 0 {
-            flightTimes.append(now - lastKeyPressTime)
-        }
-        lastKeyPressTime = now
-        totalKeyPresses += 1
-        keyPressStartTimes[key] = now
-
-        if key == "⌫" {
-            backspaceCount += 1
-            if !currentWord.isEmpty {
-                currentWord.removeLast()
-                erasedTextLength += 1
+        telemetryQueue.async { [unowned self] in
+            if lastKeyPressTime > 0 {
+                flightTimes.append(now - lastKeyPressTime)
             }
-            return
-        }
-
-        if key == " " || key == "\n" {
-            if !currentWord.isEmpty {
-                totalCharactersTyped += currentWord.count
-                currentWord = ""
+            lastKeyPressTime = now
+            totalKeyPresses += 1
+            keyPressStartTimes[key] = now
+            
+            if key == "⌫" {
+                backspaceCount += 1
+                if !currentWord.isEmpty {
+                    currentWord.removeLast()
+                    erasedTextLength += 1
+                }
+                return
             }
-            totalCharactersTyped += 1
-        } else {
-            currentWord += key
+            
+            if key == " " || key == "\n" {
+                if !currentWord.isEmpty {
+                    totalCharactersTyped += currentWord.count
+                    currentWord = ""
+                }
+                totalCharactersTyped += 1
+            } else {
+                currentWord += key
+            }
         }
     }
 
     public func recordKeyRelease(_ key: String, now: TimeInterval = Date().timeIntervalSince1970) {
-        guard let start = keyPressStartTimes[key] else { return }
-        holdTimes.append(now - start)
-        keyPressStartTimes.removeValue(forKey: key)
+        telemetryQueue.async { [weak self] in
+            guard let start = self?.keyPressStartTimes[key] else { return }
+            self?.holdTimes.append(now - start)
+            self?.keyPressStartTimes.removeValue(forKey: key)
+        }
     }
 
     public func typingSpeedWpm(now: TimeInterval = Date().timeIntervalSince1970) -> Int {
@@ -124,9 +129,21 @@ public final class TelemetrySession {
     }
 
     // MARK: - Sensors
-    public func appendGyro(_ sample: MotionSample) { gyro.append(sample) }
-    public func appendAccel(_ sample: MotionSample) { accel.append(sample) }
-    public func appendTouch(_ sample: TouchSample) { touches.append(sample) }
+    public func appendGyro(_ sample: MotionSample) {
+        telemetryQueue.async { [unowned self] in
+            gyro.append(sample)
+        }
+    }
+    public func appendAccel(_ sample: MotionSample) {
+        telemetryQueue.async { [unowned self] in
+            accel.append(sample)
+        }
+    }
+    public func appendTouch(_ sample: TouchSample) {
+        telemetryQueue.async { [unowned self] in
+            touches.append(sample)
+        }
+    }
 
     public func hasAnyData() -> Bool {
         totalKeyPresses > 0 || !gyro.isEmpty || !accel.isEmpty || !touches.isEmpty

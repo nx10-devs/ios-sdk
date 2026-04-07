@@ -84,11 +84,14 @@ public final class TelemetryCollector: TelemetryCollecting {
 
     public func attemptUploadAndflushNow() {
         print("LOG: Attempting to upload and flushing data")
-        guard session.hasAnyData() else { return }
+        guard session.hasAnyData() else {
+            return
+        }
+        
         let envelope = makeEnvelope()
         let payload = TelemetryV2Converter().makeV2Payload(from: envelope)
 
-        Task {
+        Task(name: "telemetry-task", priority: .utility) {
             do {
                 guard
                     let url = try uploader.url(for: .telemetry(version: .v2))
@@ -96,7 +99,7 @@ public final class TelemetryCollector: TelemetryCollecting {
                     throw APIError.malformedURL
                 }
                 
-                /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
+                /// DEPRECATED: This is a temporary
                 // TODO: This is a temporary solution for SaaQ Triggers
                 Task(name: "telemetry-task", priority: .utility) {
                     let saaqTrigger: SaaQTrigger? = try await uploader.post(payload, for: url)
