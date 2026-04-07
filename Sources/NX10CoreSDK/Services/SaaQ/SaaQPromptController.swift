@@ -53,27 +53,25 @@ struct SaaQPromptOverlay: View {
     }
     
     private func openSaaQType1(with payload: SaaQTrigger.Payload) -> some View {
-        return SaaQPromptOne(payload: payload,
+        return SaaQPromptOneView(payload: payload,
                              onConfirm: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)
         },
                              onClose: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)
-        }
-        )
+        })
         .transition(.scale.combined(with: .opacity))
         .zIndex(1)
     }
     
     private func openSaaQType2(with payload: SaaQTrigger.Payload) -> some View {
-        return SaaQPromptOne(payload: payload,
+        return SaaQPromptTwoView(payload: payload,
                              onConfirm: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)
         },
                              onClose: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)
-        }
-        )
+        })
         .transition(.scale.combined(with: .opacity))
         .zIndex(1)
     }

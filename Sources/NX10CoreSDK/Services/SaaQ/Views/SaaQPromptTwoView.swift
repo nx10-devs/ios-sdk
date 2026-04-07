@@ -1,17 +1,13 @@
 //
-//  SaaQPromptOne.swift
+//  SwiftUIView.swift
 //  NX10CoreSDK
 //
-//  Created by NX10 on 06/04/2026.
+//  Created by NX10 on 07/04/2026.
 //
 
 import SwiftUI
 
-typealias SaaQTriggerAnswerAction = (SaaQTriggerAnswer) -> Void
-
-public struct SaaQPromptOne: View {
-
-    
+public struct SaaQPromptTwoView: View {
     private let payload: SaaQTrigger.Payload
     private let onConfirm: SaaQTriggerAnswerAction
     private let onClose: SaaQTriggerAnswerAction
@@ -23,6 +19,6 @@ public struct SaaQPromptOne: View {
     }
     
     public var body: some View {
-        return SaaQPromptSliderView(payload: payload, onConfirm: onConfirm, onClose: onClose)
+        return SaaQPromptMultiView(payload: payload,dismissable: payload.dismissable, onConfirm: onConfirm, onClose: onClose)
     }
 }

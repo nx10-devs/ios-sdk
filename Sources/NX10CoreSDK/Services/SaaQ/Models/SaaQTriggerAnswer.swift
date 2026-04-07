@@ -70,8 +70,8 @@ public struct SaaQTriggerAnswer: Encodable {
             }
             
             public struct SelectedValues: Encodable {
-                public let feelingType: String
-                public let followonAnswer: FollowonAnswer
+                public let feelingType: String?
+                public let followonAnswer: FollowonAnswer?
                 
                 public struct FollowonAnswer: Encodable {
                     public let selectedValue: Int

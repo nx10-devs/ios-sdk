@@ -11,15 +11,19 @@ public struct SaaQPromptSliderView: View {
     private let onConfirm: (_ payload: SaaQTriggerAnswer) -> Void
     private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
     private let saaqPayload: SaaQTrigger.Payload
-    private var confirmButtonEnabled: Bool { saaqPayload.prompt.confirmButtonEnabled }
-    private var range: ClosedRange<Double> { saaqPayload.prompt.getRangeSize() }
     private var title: String { saaqPayload.prompt.questionText }
-    private var leftLabel: String { saaqPayload.prompt.leftAnchorValue }
-    private var rightLabel: String { saaqPayload.prompt.rightAnchorValue }
     private var dismissable: Bool { saaqPayload.dismissable }
-    private var hasChanged: Bool { value != saaqPayload.prompt.startingValue.asDouble }
+    private var hasChanged: Bool {
+        guard
+            let startingValue = saaqPayload.prompt.startingValue?.asDouble
+        else { return false }
+        return value != startingValue
+    }
     private var isConfirmDisabled: Bool {
         // If API enables confirm, it's always enabled. Otherwise, require a slider change.
+        guard
+            let confirmButtonEnabled = saaqPayload.prompt.confirmButtonEnabled
+        else { return false }
         return confirmButtonEnabled ? false : !hasChanged
     }
     @State private var promptDisplayTimestamp: String = ""
@@ -31,14 +35,14 @@ public struct SaaQPromptSliderView: View {
     // MARK: - Initializers
 
     public init(payload: SaaQTrigger.Payload,
-                onConfirm: @escaping (_ payload: SaaQTriggerAnswer) -> Void,
-                onClose: @escaping (_ answer: SaaQTriggerAnswer) -> Void
+                onConfirm: @escaping SaaQTriggerAnswerAction,
+                onClose: @escaping SaaQTriggerAnswerAction
     ) {
         
         self.saaqPayload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
-        self._value = State(initialValue: Double(payload.prompt.startingValue))
+        self._value = State(initialValue: Double(payload.prompt.startingValue ?? 0))
     }
 
     public var body: some View {
@@ -58,16 +62,22 @@ public struct SaaQPromptSliderView: View {
                 
                 // Slider + labels
                 VStack(spacing: 12) {
-                    Slider(value: $value, in: range, step: 1)
-                        .tint(.white)
-                    HStack {
-                        Text(leftLabel)
-                            .font(.subheadline)
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        Text(rightLabel)
-                            .font(.subheadline)
-                            .foregroundStyle(.primary)
+                    if
+                        let range: ClosedRange<Double> =  saaqPayload.prompt.getRangeSize(),
+                        let leftLabel = saaqPayload.prompt.leftAnchorValue,
+                        let rightLabel = saaqPayload.prompt.rightAnchorValue
+                    {
+                        Slider(value: $value, in: range, step: 1)
+                            .tint(.white)
+                        HStack {
+                            Text(leftLabel)
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text(rightLabel)
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                        }
                     }
                 }
                 .padding(.horizontal)
@@ -99,15 +109,15 @@ public struct SaaQPromptSliderView: View {
             .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
 
             // Close button (only if dismissable)
-            if dismissable {
-                Button(action: { onClose(buildSaaqAnswer(with: saaqPayload.prompt.startingValue, and: .dismissed)) }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(.black)
-                        .padding(10)
+            if dismissable,  let startingValue = saaqPayload.prompt.startingValue  {
+                    Button(action: { onClose(buildSaaqAnswer(with: startingValue, and: .dismissed)) }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 24, weight: .regular))
+                            .foregroundStyle(.black)
+                            .padding(10)
+                    }
+                    .padding(12)
                 }
-                .padding(12)
-            }
         }
         .padding()
         .onAppear {

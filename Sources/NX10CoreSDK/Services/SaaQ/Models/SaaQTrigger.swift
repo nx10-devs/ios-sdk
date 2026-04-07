@@ -33,24 +33,27 @@ public extension SaaQTrigger {
     public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
-        public let leftAnchorValue: String
-        public let rightAnchorValue: String
-        public let rangeSize: Int
-        public let startingValue: Int
-        public let confirmButtonEnabled: Bool
-        public let id: String
+        public let leftAnchorValue: String?
+        public let rightAnchorValue: String?
+        public let rangeSize: Int?
+        public let startingValue: Int?
+        public let confirmButtonEnabled: Bool?
+        public let id: String?
         public let multipleSelect: Bool?
         public let options: [Feeling]?
         
-        func getRangeSize() -> ClosedRange<Double> { 0...Double(rangeSize-1) }
+        func getRangeSize() -> ClosedRange<Double>? {
+            guard let rangeSize = rangeSize else { return nil }
+            return 0...Double(rangeSize-1)
+        }
 
         public init(blockType: BlockType,
                     questionText: String,
-                    leftAnchorValue: String,
-                    rightAnchorValue: String,
-                    rangeSize: Int,
-                    startingValue: Int,
-                    confirmButtonEnabled: Bool,
+                    leftAnchorValue: String?,
+                    rightAnchorValue: String?,
+                    rangeSize: Int?,
+                    startingValue: Int?,
+                    confirmButtonEnabled: Bool?,
                     id: String,
                     multipleSelect: Bool? = nil,
                     options: [Feeling]? = nil
@@ -71,18 +74,31 @@ public extension SaaQTrigger {
 
 public extension SaaQTrigger.Prompt {
     enum BlockType: String, Codable {
-        case saaqType1 = "saaqType1"
-        case saaqType2 = "saaqType2"
+        case saaqType1
+        case saaqType2
     }
 }
 
 public extension SaaQTrigger.Prompt {
-    public struct Feeling: Decodable {
-        public let suggestedEmoji: String
-        public let feelingsType: String
-        public let displanName: String
-        public let id: String
+    public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
+        public let feeling: FeelingPayload
         public let followonQuestion: [SaaQTrigger.Prompt]
+        public let id: String
+        
+        public var hashValue: Int {
+            return id.hashValue
+        }
+        
+        public static func ==(lhs: Feeling, rhs: Feeling) -> Bool {
+            return lhs.id == rhs.id && lhs.id == rhs.id
+        }
+    }
+    
+    public struct FeelingPayload: Decodable {
+        public let suggestedEmoji: String?
+        public let feelingsType: String?
+        public let displayName: String
+        public let id: String
     }
 }
 
