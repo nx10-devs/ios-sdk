@@ -14,7 +14,7 @@ import Combine
 public protocol TelemetryCollectorActions {
     /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
     // TODO: This is a temporary solution for SaaQ Triggers
-    var didRecieveSaaQTrigger: ((SaaQTrigger) -> Void)? { get set }
+    var didRecieveSaaQTrigger: ((SaaQTriggerWrapper) -> Void)? { get set }
     //
     
     func keyPressed(_ key: String)
@@ -42,7 +42,7 @@ public final class TelemetryCollector: TelemetryCollecting {
     
     /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
     // TODO: This is a temporary solution for SaaQ Triggers
-    public var didRecieveSaaQTrigger: ((SaaQTrigger) -> Void)?
+    public var didRecieveSaaQTrigger: ((SaaQTriggerWrapper) -> Void)?
     //
     
     public init(session: TelemetrySession, uploader: Networking, timer: Timer? = nil) {
@@ -102,9 +102,10 @@ public final class TelemetryCollector: TelemetryCollecting {
                 /// DEPRECATED: This is a temporary
                 // TODO: This is a temporary solution for SaaQ Triggers
                 Task(name: "telemetry-task", priority: .utility) {
-                    let saaqTrigger: SaaQTrigger? = try await uploader.post(payload, for: url)
+                    let saaqTrigger: SaaQOneTrigger? = try await uploader.post(payload, for: url)
                     if let saaqTrigger = saaqTrigger {
-                        didRecieveSaaQTrigger?(saaqTrigger)
+                        let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: saaqTrigger)
+                        didRecieveSaaQTrigger?(saaqTriggerWrapper)
                     }
                     // End of Solution
                     print("LOG: Upload succesful")

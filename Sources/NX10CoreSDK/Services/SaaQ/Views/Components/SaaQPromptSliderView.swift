@@ -8,9 +8,9 @@
 import SwiftUI
 
 public struct SaaQPromptSliderView: View {
-    private let onConfirm: (_ payload: SaaQOneAnswer) -> Void
-    private let onClose: (_ payload: SaaQOneAnswer) -> Void
-    private let saaqPayload: SaaQTrigger.Payload
+    private let onConfirm: (_ payload: SaaQAnswerWrapper) -> Void
+    private let onClose: (_ payload: SaaQAnswerWrapper) -> Void
+    private let saaqPayload: SaaQOneTrigger.Payload
     private var title: String { saaqPayload.prompt.questionText }
     private var dismissable: Bool { saaqPayload.dismissable }
     private var isConfirmDisabled: Bool {
@@ -28,9 +28,9 @@ public struct SaaQPromptSliderView: View {
 
     // MARK: - Initializers
 
-    public init(payload: SaaQTrigger.Payload,
-                onConfirm: @escaping SaaQOneAnswerBlock,
-                onClose: @escaping SaaQOneAnswerBlock
+    public init(payload: SaaQOneTrigger.Payload,
+                onConfirm: @escaping SaaQAnswerBlock,
+                onClose: @escaping SaaQAnswerBlock
     ) {
         
         self.saaqPayload = payload
@@ -76,7 +76,7 @@ public struct SaaQPromptSliderView: View {
 
                 // Confirm button (shown only if enabled by API)
                 SaaQConfirmButton(
-                    onConfirm: { buildSaaqAnswer(with: Int(value), and: .answered) },
+                    onConfirm: { onConfirm(buildSaaqAnswer(with: Int(value), and: .answered)) },
                     isConfirmDisabled: isConfirmDisabled
                 )
             }
@@ -110,15 +110,17 @@ public struct SaaQPromptSliderView: View {
         }
     }
     
-    private func buildSaaqAnswer(with value: Int, and type: SaaQOneAnswer.SaaQAnswer.SaaQType) -> SaaQOneAnswer {
-        let data =  type == .dismissed ? nil : SaaQOneAnswer.factorySaaQData(selectedValue: value)
-        return SaaQOneAnswer(
+    private func buildSaaqAnswer(with value: Int, and type: SaaQOneAnswer.SaaQAnswer.SaaQType) -> SaaQAnswerWrapper {
+        let data = type == .dismissed ? nil : SaaQOneAnswer.factorySaaQData(selectedValue: value)
+        let answer = SaaQOneAnswer(
             triggerID: saaqPayload.triggerID,
             answer: .init(type: type, data: data),
             deviceSendTimestamp: Date().iso8601, // Sent now
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601
         )
+        let answerWrapper = SaaQAnswerWrapper(saaqOne: answer)
+        return answerWrapper
     }
 }
 
@@ -128,11 +130,11 @@ public struct SaaQPromptSliderView: View {
 #Preview("SaaQTrigger.Prompt") {
     VStack {
         
-        SaaQPromptSliderView(payload: SaaQTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
+        SaaQPromptSliderView(payload: SaaQOneTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
             .padding()
             .background(Color.black)
 
-        SaaQPromptSliderView(payload:  SaaQTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
+        SaaQPromptSliderView(payload:  SaaQOneTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
             .padding()
             .background(Color.black)
     }

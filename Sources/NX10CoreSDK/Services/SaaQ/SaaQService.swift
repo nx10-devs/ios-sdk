@@ -7,11 +7,31 @@
 
 import Foundation
 
+public struct SaaQAnswerWrapper {
+    let saaqOne: SaaQOneAnswer?
+    let saaqTwo: SaaQTwoAnswer?
+    
+    public init(saaqOne: SaaQOneAnswer? = nil, saaqTwo: SaaQTwoAnswer? = nil) {
+        self.saaqOne = saaqOne
+        self.saaqTwo = saaqTwo
+    }
+}
+
+public struct SaaQTriggerWrapper {
+    let saaqOneTrigger: SaaQOneTrigger?
+    let saaqTwoTrigger: SaaQTwoTrigger?
+    
+    public init(saaqOneTrigger: SaaQOneTrigger? = nil, saaqTwoTrigger: SaaQTwoTrigger? = nil) {
+        self.saaqOneTrigger = saaqOneTrigger
+        self.saaqTwoTrigger = saaqTwoTrigger
+    }
+}
+
 @MainActor
 public protocol SaaQServiceProtocol {
     func start()
-    func present(prompt: SaaQTrigger.Payload)
-    func present(trigger: SaaQTrigger)
+    func present(prompt: SaaQTriggerWrapper)
+    func present(trigger: SaaQTriggerWrapper)
     func dismiss()
     
     init(
@@ -53,7 +73,13 @@ public final class SaaQService: SaaQServiceProtocol {
                 }
                 
                 Task(name: "saaq-task", priority: .utility) {
-                    let _: GenericResponse? = try await networkService.post(answer, for: url)
+                    if let answerOne = answer.saaqOne {
+                        let _: GenericResponse? = try await networkService.post(answerOne, for: url)
+                    }
+                    
+                    if let answerTwo = answer.saaqTwo {
+                        let _: GenericResponse? = try await networkService.post(answerTwo, for: url)
+                    }
                 }
             } catch {
                 print(error.localizedDescription)
@@ -62,11 +88,11 @@ public final class SaaQService: SaaQServiceProtocol {
     }
     
     // MARK: SwiftUI
-    public func present(prompt: SaaQTrigger.Payload) {
+    public func present(prompt: SaaQTriggerWrapper) {
         promptController.present(prompt: prompt)
     }
     
-    public func present(trigger: SaaQTrigger) {
+    public func present(trigger: SaaQTriggerWrapper) {
         promptController.present(trigger: trigger)
     }
     

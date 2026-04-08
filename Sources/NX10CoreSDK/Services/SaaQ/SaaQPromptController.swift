@@ -3,20 +3,21 @@ import SwiftUI
 @MainActor
 public final class SaaQPromptController: ObservableObject {
     public static let shared = SaaQPromptController()
-    @Published public private(set) var payload: SaaQTrigger.Payload?
+    @Published public private(set) var payload: SaaQTriggerWrapper?
     
-    var didAnswerSaaQ: ((SaaQOneAnswer) -> Void)?
+    var didAnswerSaaQ: ((SaaQAnswerWrapper) -> Void)?
     
     private init() {}
     
     // Public API to present a prompt directly
-    public func present(prompt: SaaQTrigger.Payload) {
+    public func present(prompt: SaaQTriggerWrapper) {
         withAnimation { self.payload = prompt }
     }
     
     // Convenience to present from a full trigger payload
-    public func present(trigger: SaaQTrigger) {
-        withAnimation { self.payload = trigger.data }
+    public func present(trigger: SaaQTriggerWrapper) {
+        
+        withAnimation { self.payload = trigger}
     }
     
     public func dismiss() {
@@ -34,12 +35,12 @@ struct SaaQPromptOverlay: View {
                     Color.black.opacity(0.35)
                         .ignoresSafeArea()
                         .transition(.opacity)
+                    if let saaqOneTrigger = payload.saaqOneTrigger {
+                        openSaaQType1(with: saaqOneTrigger.data)
+                    }
                     
-                    switch payload.prompt.blockType {
-                    case .saaqType1:
-                        openSaaQType1(with: payload)
-                    case .saaqType2:
-                        openSaaQType2(with: payload)
+                    if let saaqTwoTrigger = payload.saaqTwoTrigger {
+                        openSaaQType2(with: saaqTwoTrigger.data)
                     }
                 }
             }
@@ -47,12 +48,12 @@ struct SaaQPromptOverlay: View {
         .animation(.easeInOut, value: controller.payload != nil)
     }
     
-    func didAnswerAndDismiss(with saaqAnswer: SaaQOneAnswer) {
+    func didAnswerAndDismiss(with saaqAnswer: SaaQAnswerWrapper) {
         controller.didAnswerSaaQ?(saaqAnswer)
         controller.dismiss()
     }
     
-    private func openSaaQType1(with payload: SaaQTrigger.Payload) -> some View {
+    private func openSaaQType1(with payload: SaaQOneTrigger.Payload) -> some View {
         return SaaQPromptOneView(payload: payload,
                              onConfirm: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)
@@ -64,7 +65,7 @@ struct SaaQPromptOverlay: View {
         .zIndex(1)
     }
     
-    private func openSaaQType2(with payload: SaaQTrigger.Payload) -> some View {
+    private func openSaaQType2(with payload: SaaQTwoTrigger.Payload) -> some View {
         return SaaQPromptTwoView(payload: payload,
                              onConfirm: { saaqAnswer in
             didAnswerAndDismiss(with: saaqAnswer)

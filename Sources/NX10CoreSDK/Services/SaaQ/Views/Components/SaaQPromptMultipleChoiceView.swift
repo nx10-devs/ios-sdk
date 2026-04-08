@@ -9,20 +9,20 @@ public extension SaaQPromptMultipleChoiceView {
 }
 
 public struct SaaQPromptMultipleChoiceView: View {
-    private let payload: SaaQTrigger.Payload
+    private let payload: SaaQTwoTrigger.Payload
     private let dismissable: Bool
     private let onConfirm: (ChoiceType) -> Void
     private let onClose: (ChoiceType) -> Void
     private let isMultiSelect: Bool
     
-    private var options: [SaaQTrigger.Prompt.Feeling] {
+    private var options: [SaaQTwoTrigger.Prompt.Feeling] {
         return payload.prompt.options ?? []
     }
     
     @State private var selected: Set<String> = []
     
     public init(
-        payload: SaaQTrigger.Payload,
+        payload: SaaQTwoTrigger.Payload,
         dismissable: Bool = true,
         isMultiSelect: Bool,
         onConfirm: @escaping (ChoiceType) -> Void,
@@ -122,7 +122,7 @@ public struct SaaQPromptMultipleChoiceView: View {
 #Preview("SaaQ Prompt multi – View Only") {
     ZStack {
         Color.black.opacity(0.5).ignoresSafeArea()
-        let prompt: SaaQTrigger = .sampleSaaq2Data()
+        let prompt: SaaQTwoTrigger = .sampleData()
         SaaQPromptMultipleChoiceView(payload: prompt.data, dismissable: true, isMultiSelect: true, onConfirm: { _ in }, onClose: { _ in })
             .padding()
     }
@@ -130,7 +130,7 @@ public struct SaaQPromptMultipleChoiceView: View {
 
 extension SaaQPromptMultipleChoiceView {
     struct SingleSelectView: View {
-        let options: [SaaQTrigger.Prompt.Feeling]
+        let options: [SaaQTwoTrigger.Prompt.Feeling]
         var didSelectFeelingType: (String) -> Void
         let selected: Set<String>
         
@@ -166,7 +166,7 @@ extension SaaQPromptMultipleChoiceView {
 
 extension SaaQPromptMultipleChoiceView {
     struct MultipleSelectView: View {
-        let options: [SaaQTrigger.Prompt.Feeling]
+        let options: [SaaQTwoTrigger.Prompt.Feeling]
         @Binding var selected: Set<String>
         
         var body: some View {

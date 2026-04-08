@@ -8,15 +8,15 @@
 import SwiftUI
 
 public struct SaaQPromptTwoView: View {
-    private let payload: SaaQTrigger.Payload
-    private let onConfirm: SaaQOneAnswerBlock
-    private let onClose: SaaQOneAnswerBlock
+    private let payload: SaaQTwoTrigger.Payload
+    private let onConfirm: SaaQAnswerBlock
+    private let onClose: SaaQAnswerBlock
     private let displayTimestamp = Date().iso8601
     
     internal init(
-        payload: SaaQTrigger.Payload,
-        onConfirm: @escaping SaaQOneAnswerBlock,
-        onClose: @escaping SaaQOneAnswerBlock
+        payload: SaaQTwoTrigger.Payload,
+        onConfirm: @escaping SaaQAnswerBlock,
+        onClose: @escaping SaaQAnswerBlock
     ) {
         self.payload = payload
         self.onConfirm = onConfirm
@@ -46,7 +46,7 @@ public struct SaaQPromptTwoView: View {
             metaData: nil)
         
         // TODO
-        
-//        onConfirm(<#T##SaaQTriggerAnswer#>)
+        let answerWrapper = SaaQAnswerWrapper(saaqTwo: answerPayload)
+        onConfirm(answerWrapper)
     }
 }

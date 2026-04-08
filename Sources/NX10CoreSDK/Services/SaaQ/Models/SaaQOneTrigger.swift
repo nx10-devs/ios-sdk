@@ -1,10 +1,6 @@
 import Foundation
 
-extension Int {
-    var asDouble: Double { Double(self) }
-}
-
-public struct SaaQTrigger: Decodable, Identifiable {
+public struct SaaQOneTrigger: Decodable, Identifiable {
     public let status: String
     public let data: Payload
 
@@ -25,11 +21,12 @@ public struct SaaQTrigger: Decodable, Identifiable {
 
     public enum DisplayBlockType: String, Codable {
         case displayForcedImmediate = "displayForcedImmediate"
+        // TODO: More - 3 total at time of writing
     }
 }
 
 // MARK: Prompt
-public extension SaaQTrigger {
+public extension SaaQOneTrigger {
     public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
@@ -72,17 +69,17 @@ public extension SaaQTrigger {
     }
 }
 
-public extension SaaQTrigger.Prompt {
+public extension SaaQOneTrigger.Prompt {
     enum BlockType: String, Codable {
         case saaqType1
         case saaqType2
     }
 }
 
-public extension SaaQTrigger.Prompt {
+public extension SaaQOneTrigger.Prompt {
     public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
         public let feeling: FeelingPayload
-        public let followonQuestion: [SaaQTrigger.Prompt]
+        public let followonQuestion: [SaaQOneTrigger.Prompt]
         public let id: String
         
         public var hashValue: Int {
@@ -102,10 +99,10 @@ public extension SaaQTrigger.Prompt {
     }
 }
 
-public extension SaaQTrigger {
-    static func sampleData(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTrigger {
+public extension SaaQOneTrigger {
+    static func sampleData(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQOneTrigger {
         let prompt = Prompt(
-            blockType: SaaQTrigger.Prompt.BlockType.saaqType1,
+            blockType: SaaQOneTrigger.Prompt.BlockType.saaqType1,
             questionText: "How are you?",
             leftAnchorValue: "Low",
             rightAnchorValue: "High",
@@ -116,38 +113,6 @@ public extension SaaQTrigger {
         )
         let display = DisplayBehavior(blockType: .displayForcedImmediate, id: "display_demo")
         let payload = Payload(triggerID: "trigger_id", dismissable: dismissable, displayBehavior: [display], prompt: prompt)
-        return SaaQTrigger(status: "success", data: payload)
-    }
-    
-    static func sampleSaaq2Data(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTrigger {
-        let prompt = Prompt(
-            blockType: .saaqType2,
-            questionText: "Check in",
-            id: "123",
-            options: [
-                .init(
-                    feeling: .init(
-                        suggestedEmoji: nil,
-                        feelingsType: "okay",
-                        displayName: "Okay", id: "id_okay"
-                    ), followonQuestion: [], id: "id_follow_okay"),
-                .init(
-                    feeling: .init(
-                        suggestedEmoji: nil,
-                        feelingsType: "well",
-                        displayName: "Well", id: "id_well"
-                    ), followonQuestion: [], id: "id_follow_well")
-                ,
-                .init(
-                    feeling: .init(
-                        suggestedEmoji: nil,
-                        feelingsType: "great",
-                        displayName: "Great", id: "id_great"
-                    ), followonQuestion: [], id: "id_follow_great")
-            ]
-        )
-        let display = DisplayBehavior(blockType: .displayForcedImmediate, id: "display_demo")
-        let payload = Payload(triggerID: "trigger_id", dismissable: dismissable, displayBehavior: [display], prompt: prompt)
-        return SaaQTrigger(status: "success", data: payload)
+        return SaaQOneTrigger(status: "success", data: payload)
     }
 }
