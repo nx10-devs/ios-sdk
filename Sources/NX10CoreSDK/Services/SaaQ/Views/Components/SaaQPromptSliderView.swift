@@ -10,7 +10,7 @@ import SwiftUI
 public struct SaaQPromptSliderView: View {
     private let onConfirm: (_ payload: SaaQTriggerAnswer) -> Void
     private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
-    private let saaqPayload: SaaQTriggerPrompt.Payload
+    private let saaqPayload: SaaQTrigger.Payload
     private var title: String { saaqPayload.prompt.questionText }
     private var dismissable: Bool { saaqPayload.dismissable }
     private var hasChanged: Bool {
@@ -34,9 +34,9 @@ public struct SaaQPromptSliderView: View {
 
     // MARK: - Initializers
 
-    public init(payload: SaaQTriggerPrompt.Payload,
-                onConfirm: @escaping SaaQTriggerAnswerAction,
-                onClose: @escaping SaaQTriggerAnswerAction
+    public init(payload: SaaQTrigger.Payload,
+                onConfirm: @escaping SaaQTriggerAnswerBlock,
+                onClose: @escaping SaaQTriggerAnswerBlock
     ) {
         
         self.saaqPayload = payload
@@ -165,11 +165,11 @@ private struct ConfirmButtonStyle: ButtonStyle {
 #Preview("SaaQTrigger.Prompt") {
     VStack {
         
-        SaaQPromptSliderView(payload: SaaQTriggerPrompt.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
+        SaaQPromptSliderView(payload: SaaQTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
             .padding()
             .background(Color.black)
 
-        SaaQPromptSliderView(payload:  SaaQTriggerPrompt.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
+        SaaQPromptSliderView(payload:  SaaQTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
             .padding()
             .background(Color.black)
     }

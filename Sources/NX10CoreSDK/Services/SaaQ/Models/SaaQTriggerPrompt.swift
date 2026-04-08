@@ -4,7 +4,7 @@ extension Int {
     var asDouble: Double { Double(self) }
 }
 
-public struct SaaQTriggerPrompt: Decodable, Identifiable {
+public struct SaaQTrigger: Decodable, Identifiable {
     public let status: String
     public let data: Payload
 
@@ -29,7 +29,7 @@ public struct SaaQTriggerPrompt: Decodable, Identifiable {
 }
 
 // MARK: Prompt
-public extension SaaQTriggerPrompt {
+public extension SaaQTrigger {
     public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
@@ -72,17 +72,17 @@ public extension SaaQTriggerPrompt {
     }
 }
 
-public extension SaaQTriggerPrompt.Prompt {
+public extension SaaQTrigger.Prompt {
     enum BlockType: String, Codable {
         case saaqType1
         case saaqType2
     }
 }
 
-public extension SaaQTriggerPrompt.Prompt {
+public extension SaaQTrigger.Prompt {
     public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
         public let feeling: FeelingPayload
-        public let followonQuestion: [SaaQTriggerPrompt.Prompt]
+        public let followonQuestion: [SaaQTrigger.Prompt]
         public let id: String
         
         public var hashValue: Int {
@@ -102,10 +102,10 @@ public extension SaaQTriggerPrompt.Prompt {
     }
 }
 
-public extension SaaQTriggerPrompt {
-    static func sampleData(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTriggerPrompt {
+public extension SaaQTrigger {
+    static func sampleData(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTrigger {
         let prompt = Prompt(
-            blockType: SaaQTriggerPrompt.Prompt.BlockType.saaqType1,
+            blockType: SaaQTrigger.Prompt.BlockType.saaqType1,
             questionText: "How are you?",
             leftAnchorValue: "Low",
             rightAnchorValue: "High",
@@ -116,6 +116,6 @@ public extension SaaQTriggerPrompt {
         )
         let display = DisplayBehavior(blockType: .displayForcedImmediate, id: "display_demo")
         let payload = Payload(triggerID: "trigger_id", dismissable: dismissable, displayBehavior: [display], prompt: prompt)
-        return SaaQTriggerPrompt(status: "success", data: payload)
+        return SaaQTrigger(status: "success", data: payload)
     }
 }
