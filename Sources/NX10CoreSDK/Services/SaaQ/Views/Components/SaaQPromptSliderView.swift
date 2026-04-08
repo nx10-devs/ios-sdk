@@ -8,8 +8,8 @@
 import SwiftUI
 
 public struct SaaQPromptSliderView: View {
-    private let onConfirm: (_ payload: SaaQTriggerAnswer) -> Void
-    private let onClose: (_ payload: SaaQTriggerAnswer) -> Void
+    private let onConfirm: (_ payload: SaaQOneAnswer) -> Void
+    private let onClose: (_ payload: SaaQOneAnswer) -> Void
     private let saaqPayload: SaaQTrigger.Payload
     private var title: String { saaqPayload.prompt.questionText }
     private var dismissable: Bool { saaqPayload.dismissable }
@@ -29,8 +29,8 @@ public struct SaaQPromptSliderView: View {
     // MARK: - Initializers
 
     public init(payload: SaaQTrigger.Payload,
-                onConfirm: @escaping SaaQTriggerAnswerBlock,
-                onClose: @escaping SaaQTriggerAnswerBlock
+                onConfirm: @escaping SaaQOneAnswerBlock,
+                onClose: @escaping SaaQOneAnswerBlock
     ) {
         
         self.saaqPayload = payload
@@ -110,9 +110,9 @@ public struct SaaQPromptSliderView: View {
         }
     }
     
-    private func buildSaaqAnswer(with value: Int, and type: SaaQTriggerAnswer.SaaQAnswer.SaaQType) -> SaaQTriggerAnswer {
-        let data =  type == .dismissed ? nil : SaaQTriggerAnswer.factorySaaQData(selectedValue: value)
-        return SaaQTriggerAnswer(
+    private func buildSaaqAnswer(with value: Int, and type: SaaQOneAnswer.SaaQAnswer.SaaQType) -> SaaQOneAnswer {
+        let data =  type == .dismissed ? nil : SaaQOneAnswer.factorySaaQData(selectedValue: value)
+        return SaaQOneAnswer(
             triggerID: saaqPayload.triggerID,
             answer: .init(type: type, data: data),
             deviceSendTimestamp: Date().iso8601, // Sent now

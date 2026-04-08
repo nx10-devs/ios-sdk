@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SaaQTriggerAnswer: Encodable {
+public struct SaaQOneAnswer: Encodable {
     
     public let triggerID: String
     public let answer: SaaQAnswer
@@ -22,7 +22,7 @@ public struct SaaQTriggerAnswer: Encodable {
     
     public init(
         triggerID: String,
-        answer: SaaQTriggerAnswer.SaaQAnswer,
+        answer: SaaQOneAnswer.SaaQAnswer,
         deviceSendTimestamp: String,
         promptDisplayTimestamp: String,
         promptClosedTimestamp: String,
@@ -50,7 +50,7 @@ public struct SaaQTriggerAnswer: Encodable {
         public let type: SaaQType
         public let data: SaaQData?
         
-        public init(type: SaaQType, data: SaaQTriggerAnswer.SaaQAnswer.SaaQData? = nil) {
+        public init(type: SaaQType, data: SaaQOneAnswer.SaaQAnswer.SaaQData? = nil) {
             self.type = type
             self.data = data
         }

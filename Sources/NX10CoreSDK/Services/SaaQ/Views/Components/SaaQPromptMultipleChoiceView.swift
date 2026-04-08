@@ -95,8 +95,8 @@ public struct SaaQPromptMultipleChoiceView: View {
         .frame(maxHeight: 465)
     }
     
-    private func buildMultiAnswer() -> SaaQTriggerAnswer {
-        let selectedValues: [SaaQTriggerAnswer.SaaQAnswer.SaaQData.SelectedValues] = selected.compactMap { id in
+    private func buildMultiAnswer() -> SaaQOneAnswer {
+        let selectedValues: [SaaQOneAnswer.SaaQAnswer.SaaQData.SelectedValues] = selected.compactMap { id in
             guard let option = options.first(where: { $0.id == id }) else { return nil }
             let defaultFollowOnValue = option.followonQuestion.first?.startingValue ?? 0
             return .init(
@@ -104,8 +104,8 @@ public struct SaaQPromptMultipleChoiceView: View {
                 followonAnswer: .init(selectedValue: defaultFollowOnValue)
             )
         }
-        let data = SaaQTriggerAnswer.SaaQAnswer.SaaQData(selectedValue: nil, selectedValues: selectedValues)
-        return SaaQTriggerAnswer(
+        let data = SaaQOneAnswer.SaaQAnswer.SaaQData(selectedValue: nil, selectedValues: selectedValues)
+        return SaaQOneAnswer(
             triggerID: payload.triggerID,
             answer: .init(type: .answered, data: data),
             deviceSendTimestamp: Date().iso8601,

@@ -5,7 +5,7 @@ public final class SaaQPromptController: ObservableObject {
     public static let shared = SaaQPromptController()
     @Published public private(set) var payload: SaaQTrigger.Payload?
     
-    var didAnswerSaaQ: ((SaaQTriggerAnswer) -> Void)?
+    var didAnswerSaaQ: ((SaaQOneAnswer) -> Void)?
     
     private init() {}
     
@@ -47,7 +47,7 @@ struct SaaQPromptOverlay: View {
         .animation(.easeInOut, value: controller.payload != nil)
     }
     
-    func didAnswerAndDismiss(with saaqAnswer: SaaQTriggerAnswer) {
+    func didAnswerAndDismiss(with saaqAnswer: SaaQOneAnswer) {
         controller.didAnswerSaaQ?(saaqAnswer)
         controller.dismiss()
     }

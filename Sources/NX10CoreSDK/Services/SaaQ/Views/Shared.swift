@@ -7,5 +7,5 @@
 
 import Foundation
 
-public typealias SaaQTriggerAnswerBlock = (SaaQTriggerAnswer) -> Void
+public typealias SaaQOneAnswerBlock = (SaaQOneAnswer) -> Void
 public typealias SaaQTriggerBlock = ((SaaQTrigger) -> Void)
