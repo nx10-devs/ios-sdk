@@ -48,7 +48,6 @@ public struct SaaQPromptSliderView: View {
                     .font(.title3.weight(.semibold))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.primary)
-                    .padding(.top, 8)
                 
                 Divider()
                     .padding(.horizontal)
