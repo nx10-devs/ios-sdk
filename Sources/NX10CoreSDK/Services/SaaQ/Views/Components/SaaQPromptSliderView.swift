@@ -13,12 +13,6 @@ public struct SaaQPromptSliderView: View {
     private let saaqPayload: SaaQTrigger.Payload
     private var title: String { saaqPayload.prompt.questionText }
     private var dismissable: Bool { saaqPayload.dismissable }
-    private var hasChanged: Bool {
-        guard
-            let startingValue = saaqPayload.prompt.startingValue?.asDouble
-        else { return false }
-        return value != startingValue
-    }
     private var isConfirmDisabled: Bool {
         // If API enables confirm, it's always enabled. Otherwise, require a slider change.
         guard
@@ -28,7 +22,7 @@ public struct SaaQPromptSliderView: View {
     }
     @State private var promptDisplayTimestamp: String = ""
     @State private var promptClosedTimestamp: String = ""
-    
+    @State private var hasChanged: Bool = false
     // Slider state
     @State private var value: Double
 
@@ -48,7 +42,6 @@ public struct SaaQPromptSliderView: View {
     public var body: some View {
         ZStack(alignment: .topTrailing) {
             // Card background with glass effect
-         
             VStack(spacing: 20) {
                 // Title
                 Text(title)
@@ -122,6 +115,9 @@ public struct SaaQPromptSliderView: View {
         .padding()
         .onAppear {
             promptDisplayTimestamp = Date().iso8601
+        }
+        .onChange(of: value) { _, _ in
+            hasChanged = true
         }
     }
     
