@@ -19,6 +19,6 @@ public struct SaaQPromptTwoView: View {
     }
     
     public var body: some View {
-        return SaaQPromptMultiView(payload: payload,dismissable: payload.dismissable, onConfirm: onConfirm, onClose: onClose)
+        return SaaQPromptMultiView(payload: payload,dismissable: payload.dismissable, showConfirmButton: !(payload.prompt.multipleSelect ?? false) ?? true, onConfirm: onConfirm, onClose: onClose)
     }
 }

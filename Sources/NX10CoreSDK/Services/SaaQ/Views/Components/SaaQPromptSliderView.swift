@@ -76,17 +76,10 @@ public struct SaaQPromptSliderView: View {
                 .padding(.horizontal)
 
                 // Confirm button (shown only if enabled by API)
-                
-                Button(action: { onConfirm(buildSaaqAnswer(with: Int(value), and: .answered)) }) {
-                    Text("Confirm")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(ConfirmButtonStyle(disabled: isConfirmDisabled))
-                .disabled(isConfirmDisabled)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
+                SaaQConfirmButton(
+                    onConfirm: { buildSaaqAnswer(with: Int(value), and: .answered) },
+                    isConfirmDisabled: isConfirmDisabled
+                )
             }
             .padding(.top, 48)
             .padding(.bottom, 8 )
@@ -103,12 +96,9 @@ public struct SaaQPromptSliderView: View {
 
             // Close button (only if dismissable)
             if dismissable,  let startingValue = saaqPayload.prompt.startingValue  {
-                    Button(action: { onClose(buildSaaqAnswer(with: startingValue, and: .dismissed)) }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 24, weight: .regular))
-                            .foregroundStyle(.black)
-                            .padding(10)
-                    }
+                CloseButton(onClose: {
+                    buildSaaqAnswer(with: startingValue, and: .dismissed)
+                })
                     .padding(12)
                 }
         }
@@ -133,28 +123,6 @@ public struct SaaQPromptSliderView: View {
     }
 }
 
-// MARK: - Button Style
-
-private struct ConfirmButtonStyle: ButtonStyle {
-    let disabled: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .foregroundStyle(disabled ? .secondary : Color.white)
-            .background(
-                Group {
-                    if disabled {
-                        Capsule()
-                            .fill(.thinMaterial)
-                    } else {
-                        Capsule()
-                            .fill(LinearGradient(colors: [Color.blue.opacity(0.9), Color.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    }
-                }
-            )
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-    }
-}
 
 // MARK: - Previews
 

@@ -49,11 +49,11 @@ public extension SaaQTrigger {
 
         public init(blockType: BlockType,
                     questionText: String,
-                    leftAnchorValue: String?,
-                    rightAnchorValue: String?,
-                    rangeSize: Int?,
-                    startingValue: Int?,
-                    confirmButtonEnabled: Bool?,
+                    leftAnchorValue: String? = nil,
+                    rightAnchorValue: String? = nil,
+                    rangeSize: Int? = nil,
+                    startingValue: Int? = nil,
+                    confirmButtonEnabled: Bool? = nil,
                     id: String,
                     multipleSelect: Bool? = nil,
                     options: [Feeling]? = nil
@@ -113,6 +113,38 @@ public extension SaaQTrigger {
             startingValue: 75,
             confirmButtonEnabled: confirmButtonEnabled,
             id: "demo2"
+        )
+        let display = DisplayBehavior(blockType: .displayForcedImmediate, id: "display_demo")
+        let payload = Payload(triggerID: "trigger_id", dismissable: dismissable, displayBehavior: [display], prompt: prompt)
+        return SaaQTrigger(status: "success", data: payload)
+    }
+    
+    static func sampleSaaq2Data(with dismissable: Bool = false, and confirmButtonEnabled: Bool = false) -> SaaQTrigger {
+        let prompt = Prompt(
+            blockType: .saaqType2,
+            questionText: "Check in",
+            id: "123",
+            options: [
+                .init(
+                    feeling: .init(
+                        suggestedEmoji: nil,
+                        feelingsType: "okay",
+                        displayName: "Okay", id: "id_okay"
+                    ), followonQuestion: [], id: "id_follow_okay"),
+                .init(
+                    feeling: .init(
+                        suggestedEmoji: nil,
+                        feelingsType: "well",
+                        displayName: "Well", id: "id_well"
+                    ), followonQuestion: [], id: "id_follow_well")
+                ,
+                .init(
+                    feeling: .init(
+                        suggestedEmoji: nil,
+                        feelingsType: "great",
+                        displayName: "Great", id: "id_great"
+                    ), followonQuestion: [], id: "id_follow_great")
+            ]
         )
         let display = DisplayBehavior(blockType: .displayForcedImmediate, id: "display_demo")
         let payload = Payload(triggerID: "trigger_id", dismissable: dismissable, displayBehavior: [display], prompt: prompt)
