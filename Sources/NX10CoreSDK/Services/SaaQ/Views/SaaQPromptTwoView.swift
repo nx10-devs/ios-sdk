@@ -13,7 +13,11 @@ public struct SaaQPromptTwoView: View {
     private let onClose: SaaQOneAnswerBlock
     private let displayTimestamp = Date().iso8601
     
-    internal init(payload: SaaQTrigger.Payload, onConfirm: @escaping SaaQOneAnswerBlock, onClose: @escaping SaaQOneAnswerBlock) {
+    internal init(
+        payload: SaaQTrigger.Payload,
+        onConfirm: @escaping SaaQOneAnswerBlock,
+        onClose: @escaping SaaQOneAnswerBlock
+    ) {
         self.payload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
@@ -40,6 +44,8 @@ public struct SaaQPromptTwoView: View {
             promptDisplayTimestamp: displayTimestamp,
             promptClosedTimestamp: Date().iso8601,
             metaData: nil)
+        
+        // TODO
         
 //        onConfirm(<#T##SaaQTriggerAnswer#>)
     }
