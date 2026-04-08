@@ -11,6 +11,7 @@ public struct SaaQPromptTwoView: View {
     private let payload: SaaQTrigger.Payload
     private let onConfirm: SaaQTriggerAnswerBlock
     private let onClose: SaaQTriggerAnswerBlock
+    private let displayTimestamp = Date().iso8601
     
     internal init(payload: SaaQTrigger.Payload, onConfirm: @escaping SaaQTriggerAnswerBlock, onClose: @escaping SaaQTriggerAnswerBlock) {
         self.payload = payload
@@ -19,6 +20,27 @@ public struct SaaQPromptTwoView: View {
     }
     
     public var body: some View {
-        return SaaQPromptMultipleChoiceView(payload: payload,dismissable: payload.dismissable, isMultiSelect: (payload.prompt.multipleSelect ?? false) ?? true, onConfirm: onConfirm, onClose: onClose)
+        return SaaQPromptMultipleChoiceView(payload: payload,dismissable: payload.dismissable, isMultiSelect: (payload.prompt.multipleSelect ?? false) ?? true, onConfirm: { choice in
+            switch choice {
+            case .multiple:
+                break // TODO
+            case .single(let feelingType):
+                buildAnswerForSingleChoice(with: feelingType)
+            }
+        }, onClose: { choice in
+            
+        })
+    }
+    
+    private func buildAnswerForSingleChoice(with feelingType: String) {
+        let answerPayload = SaaQTwoAnswer(
+            triggerID: payload.triggerID,
+            answer: .init(type: .answered, data: .init(feelingType: feelingType, selectedValues: nil)),
+            deviceSendTimestamp: Date().iso8601,
+            promptDisplayTimestamp: displayTimestamp,
+            promptClosedTimestamp: Date().iso8601,
+            metaData: nil)
+        
+//        onConfirm(<#T##SaaQTriggerAnswer#>)
     }
 }

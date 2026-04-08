@@ -1,13 +1,13 @@
 //
-//  File.swift
+//  SaaQTwoAnswer.swift
 //  NX10CoreSDK
 //
-//  Created by NX10 on 31/03/2026.
+//  Created by NX10 on 08/04/2026.
 //
 
 import Foundation
 
-public struct SaaQTriggerAnswer: Encodable {
+public struct SaaQTwoAnswer: Encodable {
     
     public let triggerID: String
     public let answer: SaaQAnswer
@@ -16,13 +16,13 @@ public struct SaaQTriggerAnswer: Encodable {
     public let promptClosedTimestamp: String
     public let metaData: MetaData?
     
-    static func factorySaaQData(selectedValue: Int) -> SaaQAnswer.SaaQData {
-        return SaaQAnswer.SaaQData(selectedValue: selectedValue, selectedValues: nil)
+    static func factorySaaQData(feelingType: String, selectedValues: [SaaQAnswer.SaaQData.SelectedValues]?) -> SaaQAnswer.SaaQData {
+        return SaaQTwoAnswer.SaaQAnswer.SaaQData(feelingType: feelingType, selectedValues: selectedValues)
     }
     
     public init(
         triggerID: String,
-        answer: SaaQTriggerAnswer.SaaQAnswer,
+        answer: SaaQTwoAnswer.SaaQAnswer,
         deviceSendTimestamp: String,
         promptDisplayTimestamp: String,
         promptClosedTimestamp: String,
@@ -46,11 +46,10 @@ public struct SaaQTriggerAnswer: Encodable {
     }
     
     public struct SaaQAnswer: Encodable {
-        
         public let type: SaaQType
         public let data: SaaQData?
         
-        public init(type: SaaQType, data: SaaQTriggerAnswer.SaaQAnswer.SaaQData? = nil) {
+        public init(type: SaaQType, data: SaaQTwoAnswer.SaaQAnswer.SaaQData? = nil) {
             self.type = type
             self.data = data
         }
@@ -61,16 +60,15 @@ public struct SaaQTriggerAnswer: Encodable {
         }
         
         public struct SaaQData: Encodable {
-            public let selectedValue: Int?
             public let selectedValues: [SelectedValues]?
-            
-            public init(selectedValue: Int?, selectedValues: [SelectedValues]?) {
-                self.selectedValue = selectedValue
+            public let feelingType: String
+
+            public init(feelingType: String, selectedValues: [SelectedValues]?) {
+                self.feelingType = feelingType
                 self.selectedValues = selectedValues
             }
             
             public struct SelectedValues: Encodable {
-                public let feelingType: String?
                 public let followonAnswer: FollowonAnswer?
                 
                 public struct FollowonAnswer: Encodable {
@@ -80,5 +78,3 @@ public struct SaaQTriggerAnswer: Encodable {
         }
     }
 }
-
-
