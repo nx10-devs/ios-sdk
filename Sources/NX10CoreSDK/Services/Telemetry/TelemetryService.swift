@@ -51,7 +51,7 @@ public class TelemetryService {
     }
     
     /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
-    func setSaaQPromptCallBack(_ completion: ((SaaQTrigger) -> Void)?) {
+    func setSaaQPromptCallBack(_ completion: ((SaaQTriggerPrompt) -> Void)?) {
         telemetryCollector.didRecieveSaaQTrigger = completion
     }
     

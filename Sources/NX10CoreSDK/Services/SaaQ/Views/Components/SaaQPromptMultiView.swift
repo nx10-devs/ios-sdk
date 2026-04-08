@@ -2,19 +2,19 @@
 import SwiftUI
 
 public struct SaaQPromptMultiView: View {
-    private let payload: SaaQTrigger.Payload
+    private let payload: SaaQTriggerPrompt.Payload
     private let dismissable: Bool
     private let onConfirm: SaaQTriggerAnswerAction
     private let onClose: SaaQTriggerAnswerAction
     
-    private var options: [SaaQTrigger.Prompt.Feeling]? {
+    private var options: [SaaQTriggerPrompt.Prompt.Feeling]? {
         return payload.prompt.options
     }
 
     @State private var selected: Set<String> = []
     
     public init(
-        payload: SaaQTrigger.Payload,
+        payload: SaaQTriggerPrompt.Payload,
         dismissable: Bool = true,
         onConfirm: @escaping SaaQTriggerAnswerAction,
         onClose: @escaping SaaQTriggerAnswerAction) {

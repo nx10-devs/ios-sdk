@@ -8,11 +8,11 @@
 import SwiftUI
 
 public struct SaaQPromptTwoView: View {
-    private let payload: SaaQTrigger.Payload
+    private let payload: SaaQTriggerPrompt.Payload
     private let onConfirm: SaaQTriggerAnswerAction
     private let onClose: SaaQTriggerAnswerAction
     
-    internal init(payload: SaaQTrigger.Payload, onConfirm: @escaping SaaQTriggerAnswerAction, onClose: @escaping SaaQTriggerAnswerAction) {
+    internal init(payload: SaaQTriggerPrompt.Payload, onConfirm: @escaping SaaQTriggerAnswerAction, onClose: @escaping SaaQTriggerAnswerAction) {
         self.payload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose

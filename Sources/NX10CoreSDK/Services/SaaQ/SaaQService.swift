@@ -10,8 +10,8 @@ import Foundation
 @MainActor
 public protocol SaaQServiceProtocol {
     func start()
-    func present(prompt: SaaQTrigger.Payload)
-    func present(trigger: SaaQTrigger)
+    func present(prompt: SaaQTriggerPrompt.Payload)
+    func present(trigger: SaaQTriggerPrompt)
     func dismiss()
     
     init(
@@ -62,11 +62,11 @@ public final class SaaQService: SaaQServiceProtocol {
     }
     
     // MARK: SwiftUI
-    public func present(prompt: SaaQTrigger.Payload) {
+    public func present(prompt: SaaQTriggerPrompt.Payload) {
         promptController.present(prompt: prompt)
     }
     
-    public func present(trigger: SaaQTrigger) {
+    public func present(trigger: SaaQTriggerPrompt) {
         promptController.present(trigger: trigger)
     }
     
