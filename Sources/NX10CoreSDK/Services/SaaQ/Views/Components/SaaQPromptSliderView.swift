@@ -104,7 +104,8 @@ public struct SaaQPromptSliderView: View {
             // Close button (only if dismissable)
             if dismissable {
                 CloseButton(onClose: {
-                    buildSaaqAnswer(with: startingValue, and: .dismissed)
+                    let answer = buildSaaqAnswer(with: startingValue, and: .dismissed)
+                    onClose(answer)
                 })
                 .padding(12)
             }

@@ -49,7 +49,7 @@ public struct SaaQPromptTwoView: View {
                 else { return }
                 buildAnswerForSingleChoice(for: saaqTwoAnswer, and: saaqOneAnswer)
             } onClose: { saaqOneAnswer in
-                saaqOneAnswer
+                onClose(SaaQAnswerWrapper(saaqTwoAnswer: .init(triggerID: saaqOneAnswer.saaqOneAnswer?.triggerID ?? "", answer: .init(type: .dismissed), deviceSendTimestamp: saaqOneAnswer.saaqOneAnswer?.deviceSendTimestamp ?? "", promptDisplayTimestamp: saaqOneAnswer.saaqOneAnswer?.promptDisplayTimestamp ?? "", promptClosedTimestamp: saaqOneAnswer.saaqOneAnswer?.promptClosedTimestamp ?? "")))
             }
             
         } else {
