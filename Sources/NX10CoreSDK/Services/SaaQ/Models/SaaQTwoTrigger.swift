@@ -69,7 +69,7 @@ public extension SaaQTwoTrigger.Prompt {
 public extension SaaQTwoTrigger.Prompt {
     public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
         public let feeling: FeelingPayload
-        public let followonQuestion: [Followon]
+        public let followonQuestion: [Followon]?
         public let id: String
         
         public var hashValue: Int {

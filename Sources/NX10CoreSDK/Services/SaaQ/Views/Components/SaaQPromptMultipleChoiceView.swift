@@ -4,7 +4,7 @@ import SwiftUI
 public extension SaaQPromptMultipleChoiceView {
     enum ChoiceType {
         case multiple(answer: SaaQTwoAnswer)
-        case single(answer: SaaQTwoAnswer)
+        case single(answer: SaaQTwoAnswer, feeling: SaaQTwoTrigger.Prompt.Feeling)
         case close(answer: SaaQTwoAnswer)
     }
 }
@@ -54,12 +54,9 @@ public struct SaaQPromptMultipleChoiceView: View {
                         MultipleSelectView(options: options, selected: $selected)
                     } else {
                         SingleSelectView(
-                            options: options, didSelectFeelingType: { feelingType in
-                                if feelingType.isEmpty && isDebug {
-                                    fatalError("feeling type missing")
-                                }
-                                let answer = buildSingleAnswer(for: feelingType)
-                                onConfirm(.single(answer: answer))
+                            options: options, didSelectFeelingType: { option in
+                                let answer = buildSingleAnswer(for: option.feeling.feelingsType)
+                                onConfirm(.single(answer: answer, feeling: option))
                             },
                             selected: selected
                         )
@@ -120,8 +117,6 @@ public struct SaaQPromptMultipleChoiceView: View {
     }
     
     private func buildSingleAnswer(for feeling: String) -> SaaQTwoAnswer {
-        
-        // TODO: Gather followon <------
         let data = SaaQTwoAnswer.SaaQAnswer.SaaQData.init(selectedValues: [.init(feelingType: feeling, followonAnswer: nil)])
 
         let answer = SaaQTwoAnswer(
@@ -167,7 +162,7 @@ public struct SaaQPromptMultipleChoiceView: View {
 extension SaaQPromptMultipleChoiceView {
     struct SingleSelectView: View {
         let options: [SaaQTwoTrigger.Prompt.Feeling]
-        var didSelectFeelingType: (String) -> Void
+        var didSelectFeelingType: (SaaQTwoTrigger.Prompt.Feeling) -> Void
         let selected: Set<String>
         
         var body: some View {
@@ -175,7 +170,7 @@ extension SaaQPromptMultipleChoiceView {
                 VStack(spacing: 12) {
                     ForEach(options) { option in
                         Button {
-                            didSelectFeelingType(option.feeling.feelingsType ?? "")
+                            didSelectFeelingType(option)
                         } label: {
                             HStack(alignment: .center) {
                                 Text(option.feeling.displayName)
