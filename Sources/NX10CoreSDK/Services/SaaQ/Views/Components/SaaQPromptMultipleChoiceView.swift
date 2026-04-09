@@ -5,6 +5,7 @@ public extension SaaQPromptMultipleChoiceView {
     enum ChoiceType {
         case multiple(answer: SaaQTwoAnswer)
         case single(answer: SaaQTwoAnswer)
+        case close(answer: SaaQTwoAnswer)
     }
 }
 
@@ -70,7 +71,7 @@ public struct SaaQPromptMultipleChoiceView: View {
                     SaaQConfirmButton(
                         onConfirm: {
                             let answer = buildMultiAnswer()
-//                            onConfirm(.multiple(feelings: answer))
+                            onConfirm(.multiple(answer: answer))
                         },
                         isConfirmDisabled: isConfirmDisabled
                     )
@@ -130,7 +131,15 @@ public struct SaaQPromptMultipleChoiceView: View {
     }
     
     private func didTapClose() {
-        
+        let answer = SaaQTwoAnswer(
+            triggerID: payload.triggerID,
+            answer: .init(type: .dismissed),
+            deviceSendTimestamp: Date().iso8601,
+            promptDisplayTimestamp: promptDisplayTimestamp,
+            promptClosedTimestamp: Date().iso8601,
+            metaData: .init(skipReason: .tappedClose)
+        )
+        onClose(.close(answer: answer))
     }
 }
 

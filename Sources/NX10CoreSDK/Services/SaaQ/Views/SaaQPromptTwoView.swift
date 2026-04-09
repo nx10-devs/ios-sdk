@@ -30,13 +30,17 @@ public struct SaaQPromptTwoView: View {
                 break // TODO
             case .single(let answer):
                 buildAnswerForSingleChoice(for: answer)
+            case .close: break
             }
         }, onClose: { choice in
             switch choice {
-            case .multiple:
-                break // TODO
-            case .single(let answer):
+            case .close(let answer):
                 onClose(SaaQAnswerWrapper(saaqTwoAnswer: answer))
+            default:
+                if isDebug {
+                    fatalError("Should never be called")
+                }
+                break
             }
         })
     }
