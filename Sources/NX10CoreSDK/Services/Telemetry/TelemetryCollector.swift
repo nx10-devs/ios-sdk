@@ -102,11 +102,20 @@ public final class TelemetryCollector: TelemetryCollecting {
                 /// DEPRECATED: This is a temporary
                 // TODO: This is a temporary solution for SaaQ Triggers
                 Task(name: "telemetry-task", priority: .utility) {
-                    let saaqTrigger: SaaQOneTrigger? = try await uploader.post(payload, for: url)
+                    let saaqTrigger: SaaQResponse? = try await uploader.post(payload, for: url)
+                    
                     if let saaqTrigger = saaqTrigger {
-                        let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: saaqTrigger)
-                        didRecieveSaaQTrigger?(saaqTriggerWrapper)
+                        switch saaqTrigger {
+                        case .one(let trigger):
+                            let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: trigger)
+                            didRecieveSaaQTrigger?(saaqTriggerWrapper)
+
+                        case .two(let trigger):
+                            let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: nil, saaqTwoTrigger: trigger)
+                            didRecieveSaaQTrigger?(saaqTriggerWrapper)
+                        }
                     }
+                    
                     // End of Solution
                     print("LOG: Upload succesful")
                     session.reset()
