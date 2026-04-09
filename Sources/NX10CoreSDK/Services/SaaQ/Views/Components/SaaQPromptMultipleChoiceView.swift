@@ -14,7 +14,6 @@ public struct SaaQPromptMultipleChoiceView: View {
     private let onConfirm: (ChoiceType) -> Void
     private let onClose: (ChoiceType) -> Void
     private let isMultiSelect: Bool
-    private let deviceSendTimestamp = Date().iso8601
     private let promptDisplayTimestamp = Date().iso8601
     
     private var options: [SaaQTwoTrigger.Prompt.Feeling] {
@@ -106,7 +105,7 @@ public struct SaaQPromptMultipleChoiceView: View {
         let answer = SaaQTwoAnswer(
             triggerID: payload.triggerID,
             answer: .init(type: .answered, data: .init(selectedValues: selectedValue)),
-            deviceSendTimestamp: deviceSendTimestamp,
+            deviceSendTimestamp: Date().iso8601,
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601,
             metaData: nil)
@@ -122,7 +121,7 @@ public struct SaaQPromptMultipleChoiceView: View {
         let answer = SaaQTwoAnswer(
             triggerID: payload.triggerID,
             answer: .init(type: .answered, data: data),
-            deviceSendTimestamp: deviceSendTimestamp,
+            deviceSendTimestamp: Date().iso8601,
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601,
             metaData: nil)
