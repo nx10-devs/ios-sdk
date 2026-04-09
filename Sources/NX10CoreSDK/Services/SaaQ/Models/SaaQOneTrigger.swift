@@ -3,22 +3,22 @@ import Foundation
 public struct SaaQOneTrigger: Decodable, Identifiable {
     public let status: String
     public let data: Payload
-
+    
     // Use triggerID as the identifier for Identifiable conformance
     public var id: String { data.triggerID }
-
+    
     public struct Payload: Decodable {
         public let triggerID: String
         public let dismissable: Bool
         public let displayBehavior: [DisplayBehavior]
         public let prompt: Prompt
     }
-
+    
     public struct DisplayBehavior: Decodable, Identifiable {
         public let blockType: DisplayBlockType
         public let id: String
     }
-
+    
     public enum DisplayBlockType: String, Codable {
         case displayForcedImmediate = "displayForcedImmediate"
         // TODO: More - 3 total at time of writing
@@ -40,7 +40,7 @@ public extension SaaQOneTrigger {
         func getRangeSize() -> ClosedRange<Double> {
             return 0...Double(rangeSize-1)
         }
-
+        
         public init(blockType: BlockType,
                     questionText: String,
                     leftAnchorValue: String,
@@ -66,29 +66,6 @@ public extension SaaQOneTrigger.Prompt {
     enum BlockType: String, Codable {
         case saaqType1
         case saaqType2
-    }
-}
-
-public extension SaaQOneTrigger.Prompt {
-    public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
-        public let feeling: FeelingPayload
-        public let followonQuestion: [SaaQOneTrigger.Prompt]
-        public let id: String
-        
-        public var hashValue: Int {
-            return id.hashValue
-        }
-        
-        public static func ==(lhs: Feeling, rhs: Feeling) -> Bool {
-            return lhs.id == rhs.id && lhs.id == rhs.id
-        }
-    }
-    
-    public struct FeelingPayload: Decodable {
-        public let suggestedEmoji: String?
-        public let feelingsType: String?
-        public let displayName: String
-        public let id: String
     }
 }
 

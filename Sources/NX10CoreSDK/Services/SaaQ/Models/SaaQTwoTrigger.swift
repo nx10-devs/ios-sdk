@@ -37,26 +37,13 @@ public extension SaaQTwoTrigger {
     public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
-        public let leftAnchorValue: String?
-        public let rightAnchorValue: String?
-        public let rangeSize: Int?
-        public let startingValue: Int?
         public let confirmButtonEnabled: Bool?
         public let id: String?
         public let multipleSelect: Bool?
         public let options: [Feeling]?
         
-        func getRangeSize() -> ClosedRange<Double>? {
-            guard let rangeSize = rangeSize else { return nil }
-            return 0...Double(rangeSize-1)
-        }
-
         public init(blockType: BlockType,
                     questionText: String,
-                    leftAnchorValue: String? = nil,
-                    rightAnchorValue: String? = nil,
-                    rangeSize: Int? = nil,
-                    startingValue: Int? = nil,
                     confirmButtonEnabled: Bool? = nil,
                     id: String,
                     multipleSelect: Bool? = nil,
@@ -64,10 +51,6 @@ public extension SaaQTwoTrigger {
         ) {
             self.blockType = blockType
             self.questionText = questionText
-            self.leftAnchorValue = leftAnchorValue
-            self.rightAnchorValue = rightAnchorValue
-            self.rangeSize = rangeSize
-            self.startingValue = startingValue
             self.confirmButtonEnabled = confirmButtonEnabled
             self.id = id
             self.multipleSelect = multipleSelect
@@ -86,7 +69,7 @@ public extension SaaQTwoTrigger.Prompt {
 public extension SaaQTwoTrigger.Prompt {
     public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
         public let feeling: FeelingPayload
-        public let followonQuestion: [SaaQTwoTrigger.Prompt]
+        public let followonQuestion: [Followon]
         public let id: String
         
         public var hashValue: Int {
@@ -103,6 +86,40 @@ public extension SaaQTwoTrigger.Prompt {
         public let feelingsType: String?
         public let displayName: String
         public let id: String
+    }
+    
+    public struct Followon: Decodable {
+        public let blockType: BlockType
+        public let questionText: String
+        public let leftAnchorValue: String
+        public let rightAnchorValue: String
+        public let rangeSize: Int
+        public let startingValue: Int
+        public let confirmButtonEnabled: Bool?
+        public let id: String
+        
+        func getRangeSize() -> ClosedRange<Double> {
+            return 0...Double(rangeSize-1)
+        }
+
+        public init(blockType: BlockType,
+                    questionText: String,
+                    leftAnchorValue: String,
+                    rightAnchorValue: String,
+                    rangeSize: Int,
+                    startingValue: Int,
+                    confirmButtonEnabled: Bool? = nil,
+                    id: String,
+        ) {
+            self.blockType = blockType
+            self.questionText = questionText
+            self.leftAnchorValue = leftAnchorValue
+            self.rightAnchorValue = rightAnchorValue
+            self.rangeSize = rangeSize
+            self.startingValue = startingValue
+            self.confirmButtonEnabled = confirmButtonEnabled
+            self.id = id
+        }
     }
 }
 

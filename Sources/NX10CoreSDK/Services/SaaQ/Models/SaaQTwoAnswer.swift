@@ -16,7 +16,9 @@ public struct SaaQTwoAnswer: Encodable {
     public let promptClosedTimestamp: String
     public let metaData: MetaData?
     
-    static func factorySaaQData(selectedValues: [SaaQAnswer.SaaQData.SelectedValues]?) -> SaaQAnswer.SaaQData {
+    static func factorySaaQData(
+        selectedValues: [SaaQAnswer.SaaQData.SelectedValues]?) -> SaaQAnswer.SaaQData
+    {
         return SaaQTwoAnswer.SaaQAnswer.SaaQData(selectedValues: selectedValues)
     }
     
