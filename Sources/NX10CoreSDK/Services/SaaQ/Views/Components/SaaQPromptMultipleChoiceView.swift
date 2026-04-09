@@ -99,13 +99,18 @@ public struct SaaQPromptMultipleChoiceView: View {
     }
     
     private func buildMultiAnswer() -> SaaQTwoAnswer {
-        let selectedValue = selected.map{
-            let result = SaaQTwoAnswer.SaaQAnswer.SaaQData.SelectedValues(feelingType: $0, followonAnswer: nil)
-            return result
+        let selectedValues = selected.compactMap{
+            let id = $0
+            let feelingIndex = options.firstIndex { feeling in
+                feeling.id == id
+            }
+            let feeling = options[feelingIndex ?? 0].feeling.feelingsType
+            return SaaQTwoAnswer.SaaQAnswer.SaaQData.SelectedValue(feelingType: feeling, followonAnswer: nil) // TODO: Followon
         }
+        
         let answer = SaaQTwoAnswer(
             triggerID: payload.triggerID,
-            answer: .init(type: .answered, data: .init(selectedValues: selectedValue)),
+            answer: .init(type: .answered, data: .init(selectedValues: selectedValues)),
             deviceSendTimestamp: Date().iso8601,
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601,

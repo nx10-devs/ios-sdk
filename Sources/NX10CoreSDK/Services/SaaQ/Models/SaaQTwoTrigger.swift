@@ -83,7 +83,7 @@ public extension SaaQTwoTrigger.Prompt {
     
     public struct FeelingPayload: Decodable {
         public let suggestedEmoji: String?
-        public let feelingsType: String?
+        public let feelingsType: String
         public let displayName: String
         public let id: String
     }

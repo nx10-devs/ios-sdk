@@ -26,8 +26,8 @@ public struct SaaQPromptTwoView: View {
     public var body: some View {
         return SaaQPromptMultipleChoiceView(payload: payload,dismissable: payload.dismissable, isMultiSelect: (payload.prompt.multipleSelect ?? false) ?? true, onConfirm: { choice in
             switch choice {
-            case .multiple:
-                break // TODO
+            case .multiple(let answer):
+                buildForMultipleChoice(for: answer)
             case .single(let answer):
                 buildAnswerForSingleChoice(for: answer)
             case .close: break
@@ -43,6 +43,11 @@ public struct SaaQPromptTwoView: View {
                 break
             }
         })
+    }
+    
+    private func buildForMultipleChoice(for answer: SaaQTwoAnswer) {
+        let answerWrapper = SaaQAnswerWrapper(saaqTwoAnswer: answer)
+        onConfirm(answerWrapper)
     }
     
     private func buildAnswerForSingleChoice(for answer: SaaQTwoAnswer) {
