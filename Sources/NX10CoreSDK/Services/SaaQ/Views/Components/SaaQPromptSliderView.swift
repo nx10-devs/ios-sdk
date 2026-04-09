@@ -127,7 +127,7 @@ public struct SaaQPromptSliderView: View {
             promptDisplayTimestamp: promptDisplayTimestamp,
             promptClosedTimestamp: Date().iso8601
         )
-        let answerWrapper = SaaQAnswerWrapper(saaqOne: answer)
+        let answerWrapper = SaaQAnswerWrapper(saaqOneAnswer: answer)
         return answerWrapper
     }
 }

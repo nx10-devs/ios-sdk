@@ -32,12 +32,17 @@ public struct SaaQPromptTwoView: View {
                 buildAnswerForSingleChoice(for: answer)
             }
         }, onClose: { choice in
-            
+            switch choice {
+            case .multiple:
+                break // TODO
+            case .single(let answer):
+                onClose(SaaQAnswerWrapper(saaqTwoAnswer: answer))
+            }
         })
     }
     
     private func buildAnswerForSingleChoice(for answer: SaaQTwoAnswer) {
-        let answerWrapper = SaaQAnswerWrapper(saaqTwo: answer)
+        let answerWrapper = SaaQAnswerWrapper(saaqTwoAnswer: answer)
         onConfirm(answerWrapper)
     }
 }

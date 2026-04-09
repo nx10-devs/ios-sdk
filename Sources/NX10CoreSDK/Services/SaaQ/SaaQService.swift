@@ -8,12 +8,12 @@
 import Foundation
 
 public struct SaaQAnswerWrapper {
-    let saaqOne: SaaQOneAnswer?
-    let saaqTwo: SaaQTwoAnswer?
+    let saaqOneAnswer: SaaQOneAnswer?
+    let saaqTwoAnswer: SaaQTwoAnswer?
     
-    public init(saaqOne: SaaQOneAnswer? = nil, saaqTwo: SaaQTwoAnswer? = nil) {
-        self.saaqOne = saaqOne
-        self.saaqTwo = saaqTwo
+    public init(saaqOneAnswer: SaaQOneAnswer? = nil, saaqTwoAnswer: SaaQTwoAnswer? = nil) {
+        self.saaqOneAnswer = saaqOneAnswer
+        self.saaqTwoAnswer = saaqTwoAnswer
     }
 }
 
@@ -73,11 +73,11 @@ public final class SaaQService: SaaQServiceProtocol {
                 }
                 
                 Task(name: "saaq-task", priority: .utility) {
-                    if let answerOne = answer.saaqOne {
+                    if let answerOne = answer.saaqOneAnswer {
                         let _: GenericResponse? = try await networkService.post(answerOne, for: url)
                     }
                     
-                    if let answerTwo = answer.saaqTwo {
+                    if let answerTwo = answer.saaqTwoAnswer {
                         let _: GenericResponse? = try await networkService.post(answerTwo, for: url)
                     }
                 }
