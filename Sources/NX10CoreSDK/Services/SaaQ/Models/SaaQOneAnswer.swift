@@ -17,7 +17,7 @@ public struct SaaQOneAnswer: Encodable {
     public let metaData: MetaData?
     
     static func factorySaaQData(selectedValue: Int) -> SaaQAnswer.SaaQData {
-        return SaaQAnswer.SaaQData(selectedValue: selectedValue, selectedValues: nil)
+        return SaaQAnswer.SaaQData(selectedValue: selectedValue)
     }
     
     public init(
@@ -62,20 +62,9 @@ public struct SaaQOneAnswer: Encodable {
         
         public struct SaaQData: Encodable {
             public let selectedValue: Int?
-            public let selectedValues: [SelectedValues]?
             
-            public init(selectedValue: Int?, selectedValues: [SelectedValues]?) {
+            public init(selectedValue: Int?) {
                 self.selectedValue = selectedValue
-                self.selectedValues = selectedValues
-            }
-            
-            public struct SelectedValues: Encodable {
-                public let feelingType: String?
-                public let followonAnswer: FollowonAnswer?
-                
-                public struct FollowonAnswer: Encodable {
-                    public let selectedValue: Int
-                }
             }
         }
     }

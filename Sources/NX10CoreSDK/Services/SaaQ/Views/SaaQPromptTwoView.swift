@@ -28,25 +28,16 @@ public struct SaaQPromptTwoView: View {
             switch choice {
             case .multiple:
                 break // TODO
-            case .single(let feelingType):
-                buildAnswerForSingleChoice(with: feelingType)
+            case .single(let answer):
+                buildAnswerForSingleChoice(for: answer)
             }
         }, onClose: { choice in
             
         })
     }
     
-    private func buildAnswerForSingleChoice(with feelingType: String) {
-        let answerPayload = SaaQTwoAnswer(
-            triggerID: payload.triggerID,
-            answer: .init(type: .answered, data: .init(feelingType: feelingType, selectedValues: nil)),
-            deviceSendTimestamp: Date().iso8601,
-            promptDisplayTimestamp: displayTimestamp,
-            promptClosedTimestamp: Date().iso8601,
-            metaData: nil)
-        
-        // TODO
-        let answerWrapper = SaaQAnswerWrapper(saaqTwo: answerPayload)
+    private func buildAnswerForSingleChoice(for answer: SaaQTwoAnswer) {
+        let answerWrapper = SaaQAnswerWrapper(saaqTwo: answer)
         onConfirm(answerWrapper)
     }
 }

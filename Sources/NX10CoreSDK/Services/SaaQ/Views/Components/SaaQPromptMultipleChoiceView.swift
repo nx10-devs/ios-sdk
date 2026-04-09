@@ -3,8 +3,8 @@ import SwiftUI
 
 public extension SaaQPromptMultipleChoiceView {
     enum ChoiceType {
-        case multiple
-        case single(feelingType: String)
+        case multiple(answer: SaaQTwoAnswer)
+        case single(answer: SaaQTwoAnswer)
     }
 }
 
@@ -14,6 +14,8 @@ public struct SaaQPromptMultipleChoiceView: View {
     private let onConfirm: (ChoiceType) -> Void
     private let onClose: (ChoiceType) -> Void
     private let isMultiSelect: Bool
+    private let deviceSendTimestamp = Date().iso8601
+    private let promptDisplayTimestamp = Date().iso8601
     
     private var options: [SaaQTwoTrigger.Prompt.Feeling] {
         return payload.prompt.options ?? []
@@ -44,7 +46,6 @@ public struct SaaQPromptMultipleChoiceView: View {
                         .font(.title3.weight(.semibold))
                         .multilineTextAlignment(.leading)
                         .foregroundStyle(.primary)
-                        .padding(.horizontal)
                     Spacer()
                 }
                 
@@ -57,18 +58,20 @@ public struct SaaQPromptMultipleChoiceView: View {
                                 if feelingType.isEmpty && isDebug {
                                     fatalError("feeling type missing")
                                 }
-                                onConfirm(.single(feelingType: feelingType))
+                                let answer = buildSingleAnswer(for: feelingType)
+                                onConfirm(.single(answer: answer))
                             },
                             selected: selected
                         )
+                        .padding(.top)
                     }
                 }
                 
                 if isMultiSelect {
                     SaaQConfirmButton(
                         onConfirm: {
-//                            let answer = buildMultiAnswer()
-//                            onConfirm(answer)
+                            let answer = buildMultiAnswer()
+//                            onConfirm(.multiple(feelings: answer))
                         },
                         isConfirmDisabled: isConfirmDisabled
                     )
@@ -95,23 +98,36 @@ public struct SaaQPromptMultipleChoiceView: View {
         .frame(maxHeight: 465)
     }
     
-    private func buildMultiAnswer() -> SaaQOneAnswer {
-        let selectedValues: [SaaQOneAnswer.SaaQAnswer.SaaQData.SelectedValues] = selected.compactMap { id in
-            guard let option = options.first(where: { $0.id == id }) else { return nil }
-            let defaultFollowOnValue = option.followonQuestion.first?.startingValue ?? 0
-            return .init(
-                feelingType: option.feeling.feelingsType,
-                followonAnswer: .init(selectedValue: defaultFollowOnValue)
-            )
+    private func buildMultiAnswer() -> SaaQTwoAnswer {
+        let selectedValue = selected.map{
+            let result = SaaQTwoAnswer.SaaQAnswer.SaaQData.SelectedValues(feelingType: $0, followonAnswer: nil)
+            return result
         }
-        let data = SaaQOneAnswer.SaaQAnswer.SaaQData(selectedValue: nil, selectedValues: selectedValues)
-        return SaaQOneAnswer(
+        let answer = SaaQTwoAnswer(
+            triggerID: payload.triggerID,
+            answer: .init(type: .answered, data: .init(selectedValues: selectedValue)),
+            deviceSendTimestamp: deviceSendTimestamp,
+            promptDisplayTimestamp: promptDisplayTimestamp,
+            promptClosedTimestamp: Date().iso8601,
+            metaData: nil)
+        
+        return answer
+    }
+    
+    private func buildSingleAnswer(for feeling: String) -> SaaQTwoAnswer {
+        
+        // TODO: Gather followon <------
+        let data = SaaQTwoAnswer.SaaQAnswer.SaaQData.init(selectedValues: [.init(feelingType: feeling, followonAnswer: nil)])
+
+        let answer = SaaQTwoAnswer(
             triggerID: payload.triggerID,
             answer: .init(type: .answered, data: data),
-            deviceSendTimestamp: Date().iso8601,
-            promptDisplayTimestamp: Date().iso8601,
-            promptClosedTimestamp: Date().iso8601
-        )
+            deviceSendTimestamp: deviceSendTimestamp,
+            promptDisplayTimestamp: promptDisplayTimestamp,
+            promptClosedTimestamp: Date().iso8601,
+            metaData: nil)
+        
+        return answer
     }
     
     private func didTapClose() {
@@ -122,9 +138,16 @@ public struct SaaQPromptMultipleChoiceView: View {
 #Preview("SaaQ Prompt multi – View Only") {
     ZStack {
         Color.black.opacity(0.5).ignoresSafeArea()
-        let prompt: SaaQTwoTrigger = .sampleData()
-        SaaQPromptMultipleChoiceView(payload: prompt.data, dismissable: true, isMultiSelect: true, onConfirm: { _ in }, onClose: { _ in })
-            .padding()
+        ScrollView {
+            VStack {
+                let prompt: SaaQTwoTrigger = .sampleData()
+                SaaQPromptMultipleChoiceView(payload: prompt.data, dismissable: true, isMultiSelect: false, onConfirm: { _ in }, onClose: { _ in })
+                    .padding()
+                
+                SaaQPromptMultipleChoiceView(payload: prompt.data, dismissable: true, isMultiSelect: true, onConfirm: { _ in }, onClose: { _ in })
+                    .padding()
+            }
+        }
     }
 }
 

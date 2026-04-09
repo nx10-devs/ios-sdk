@@ -16,8 +16,8 @@ public struct SaaQTwoAnswer: Encodable {
     public let promptClosedTimestamp: String
     public let metaData: MetaData?
     
-    static func factorySaaQData(feelingType: String, selectedValues: [SaaQAnswer.SaaQData.SelectedValues]?) -> SaaQAnswer.SaaQData {
-        return SaaQTwoAnswer.SaaQAnswer.SaaQData(feelingType: feelingType, selectedValues: selectedValues)
+    static func factorySaaQData(selectedValues: [SaaQAnswer.SaaQData.SelectedValues]?) -> SaaQAnswer.SaaQData {
+        return SaaQTwoAnswer.SaaQAnswer.SaaQData(selectedValues: selectedValues)
     }
     
     public init(
@@ -61,14 +61,13 @@ public struct SaaQTwoAnswer: Encodable {
         
         public struct SaaQData: Encodable {
             public let selectedValues: [SelectedValues]?
-            public let feelingType: String
 
-            public init(feelingType: String, selectedValues: [SelectedValues]?) {
-                self.feelingType = feelingType
+            public init(selectedValues: [SelectedValues]?) {
                 self.selectedValues = selectedValues
             }
             
             public struct SelectedValues: Encodable {
+                public let feelingType: String
                 public let followonAnswer: FollowonAnswer?
                 
                 public struct FollowonAnswer: Encodable {
