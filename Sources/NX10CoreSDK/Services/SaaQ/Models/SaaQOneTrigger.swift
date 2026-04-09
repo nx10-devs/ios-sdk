@@ -30,30 +30,25 @@ public extension SaaQOneTrigger {
     public struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
-        public let leftAnchorValue: String?
-        public let rightAnchorValue: String?
-        public let rangeSize: Int?
-        public let startingValue: Int?
+        public let leftAnchorValue: String
+        public let rightAnchorValue: String
+        public let rangeSize: Int
+        public let startingValue: Int
         public let confirmButtonEnabled: Bool?
-        public let id: String?
-        public let multipleSelect: Bool?
-        public let options: [Feeling]?
+        public let id: String
         
-        func getRangeSize() -> ClosedRange<Double>? {
-            guard let rangeSize = rangeSize else { return nil }
+        func getRangeSize() -> ClosedRange<Double> {
             return 0...Double(rangeSize-1)
         }
 
         public init(blockType: BlockType,
                     questionText: String,
-                    leftAnchorValue: String? = nil,
-                    rightAnchorValue: String? = nil,
-                    rangeSize: Int? = nil,
-                    startingValue: Int? = nil,
+                    leftAnchorValue: String,
+                    rightAnchorValue: String,
+                    rangeSize: Int,
+                    startingValue: Int,
                     confirmButtonEnabled: Bool? = nil,
                     id: String,
-                    multipleSelect: Bool? = nil,
-                    options: [Feeling]? = nil
         ) {
             self.blockType = blockType
             self.questionText = questionText
@@ -63,8 +58,6 @@ public extension SaaQOneTrigger {
             self.startingValue = startingValue
             self.confirmButtonEnabled = confirmButtonEnabled
             self.id = id
-            self.multipleSelect = multipleSelect
-            self.options = options
         }
     }
 }

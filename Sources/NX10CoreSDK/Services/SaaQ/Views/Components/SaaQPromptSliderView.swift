@@ -25,9 +25,14 @@ public struct SaaQPromptSliderView: View {
     @State private var hasChanged: Bool = false
     // Slider state
     @State private var value: Double
-
+    
+    private let range: ClosedRange<Double>
+    private let leftLabel: String
+    private let rightLabel: String
+    private let startingValue: Int
+    
     // MARK: - Initializers
-
+    
     public init(payload: SaaQOneTrigger.Payload,
                 onConfirm: @escaping SaaQAnswerBlock,
                 onClose: @escaping SaaQAnswerBlock
@@ -37,8 +42,13 @@ public struct SaaQPromptSliderView: View {
         self.onConfirm = onConfirm
         self.onClose = onClose
         self._value = State(initialValue: Double(payload.prompt.startingValue ?? 0))
+        
+        self.range = saaqPayload.prompt.getRangeSize()
+        self.leftLabel = saaqPayload.prompt.leftAnchorValue
+        self.rightLabel = saaqPayload.prompt.rightAnchorValue
+        self.startingValue = saaqPayload.prompt.startingValue
     }
-
+    
     public var body: some View {
         ZStack(alignment: .topTrailing) {
             // Card background with glass effect
@@ -54,26 +64,24 @@ public struct SaaQPromptSliderView: View {
                 
                 // Slider + labels
                 VStack(spacing: 12) {
-                    if
-                        let range: ClosedRange<Double> =  saaqPayload.prompt.getRangeSize(),
-                        let leftLabel = saaqPayload.prompt.leftAnchorValue,
-                        let rightLabel = saaqPayload.prompt.rightAnchorValue
-                    {
-                        Slider(value: $value, in: range, step: 1)
-                            .tint(.white)
-                        HStack {
-                            Text(leftLabel)
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            Text(rightLabel)
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
-                        }
+                    let range: ClosedRange<Double> =  saaqPayload.prompt.getRangeSize()
+                    let leftLabel = saaqPayload.prompt.leftAnchorValue
+                    let rightLabel = saaqPayload.prompt.rightAnchorValue
+                    
+                    Slider(value: $value, in: range, step: 1)
+                        .tint(.white)
+                    HStack {
+                        Text(leftLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Text(rightLabel)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
                     }
                 }
                 .padding(.horizontal)
-
+                
                 // Confirm button (shown only if enabled by API)
                 SaaQConfirmButton(
                     onConfirm: { onConfirm(buildSaaqAnswer(with: Int(value), and: .answered)) },
@@ -92,14 +100,14 @@ public struct SaaQPromptSliderView: View {
                     .strokeBorder(.white.opacity(0.15))
             )
             .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
-
+            
             // Close button (only if dismissable)
-            if dismissable,  let startingValue = saaqPayload.prompt.startingValue  {
+            if dismissable {
                 CloseButton(onClose: {
                     buildSaaqAnswer(with: startingValue, and: .dismissed)
                 })
-                    .padding(12)
-                }
+                .padding(12)
+            }
         }
         .padding()
         .onAppear {
@@ -133,7 +141,7 @@ public struct SaaQPromptSliderView: View {
         SaaQPromptSliderView(payload: SaaQOneTrigger.sampleData(with: true, and: true).data, onConfirm: { _  in }, onClose: { _ in  })
             .padding()
             .background(Color.black)
-
+        
         SaaQPromptSliderView(payload:  SaaQOneTrigger.sampleData(with: false, and: false).data, onConfirm: { _  in }, onClose: { _ in })
             .padding()
             .background(Color.black)
