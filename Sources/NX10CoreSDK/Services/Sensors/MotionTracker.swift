@@ -11,9 +11,9 @@ import CoreMotion
 public final class MotionTracker {
 
     private let motionManager = CMMotionManager()
-    private let errorService: ErrorService
+    private let errorService: ErrorServicing
     
-    init(errorService: ErrorService) {
+    init(errorService: ErrorServicing) {
         self.errorService = errorService
     }
 
