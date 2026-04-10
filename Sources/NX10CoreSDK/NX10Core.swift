@@ -48,51 +48,71 @@ public final class NX10Core: NX10CoreProtocol {
     private var isStartingSession = false
     
     @MainActor private init () {
-        // MARK: Independant objects
+        // MARK: - Core Services
         let configLoader = ConfigService()
         let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
-        
-        // Motion and touch trackers
-        let motionTracker = MotionTracker(errorService: errorService)
-        let touchTracker = TouchTracker()
-        
         let networkConfig = NetworkConfig(configLoader: configLoader)
-        
         let networkService = NetworkService(config: networkConfig)
-        let accessManagementService = AccessManagementService(
-            errorService: errorService
-        )
-
+        let accessManagementService = AccessManagementService(errorService: errorService)
         let analyticsService = AnalyticsService(networkService: networkService, networkConfig: networkConfig)
-        let telemetryService = TelemetryService(
-            networkConfig: networkConfig,
-            networkservice: networkService,
-            accessManagementService: accessManagementService,
-            appService: appService,
-            motionTracker: motionTracker,
-            touchTracker: touchTracker,
-            errorService: errorService,
-            anaalytics: analyticsService
-        )
         let appLifecycleService = AppLifecyleService()
         
+        // MARK: - Sensor Providers (Protocol-based)
+        let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorService: errorService)
+        let touchSensor: TouchSensorProvider = CoreTouchSensorProvider()
+        
+        // MARK: - Scheduler & Event Publisher
+        let scheduler: TelemetryScheduler = DefaultTelemetryScheduler()
+        let eventPublisher: TelemetryEventPublisher = DefaultTelemetryEventPublisher()
+        
+        // MARK: - Telemetry Session & Collector
+        let telemetrySession = TelemetrySession()
+        let telemetryCollector: TelemetryCollectorComprehensive = TelemetryCollector(
+            session: telemetrySession,
+            uploader: networkService,
+            eventPublisher: eventPublisher
+        )
+        
+        // MARK: - Telemetry Handler
+        let telemetryHandler: TelemetryHandling = TelemetryHandler(
+            networkingService: networkService,
+            config: networkConfig,
+            appService: appService
+        )
+        
+        // MARK: - Telemetry Service (Protocol-based initialization)
+        let telemetryService = TelemetryService(
+            telemetryCollector: telemetryCollector,
+            telemetryHandler: telemetryHandler,
+            motionSensor: motionSensor,
+            touchSensor: touchSensor,
+            scheduler: scheduler,
+            eventPublisher: eventPublisher,
+            analyticsService: analyticsService
+        )
+        
+        // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
         let attributesService = AttributesService(networkService: networkService, errorService: errorService, appService: appService, appLifecycleService: appLifecycleService)
         
-        // MARK: Retention assignments
+        // MARK: - Retention assignments
+        self.errorService = errorService
+        self.telemetryService = telemetryService
+        self.accessManagementService = accessManagementService
+        self.saaqService = saaqService
+        
+        // Internal properties for lifecycle management
         self.appService = appService
-        self.motionTracker = motionTracker
-        self.touchTracker = touchTracker
         self.networkConfig = networkConfig
         self.networkservice = networkService
-        self.errorService = errorService
-        self.accessManagementService = accessManagementService
-        self.telemetryService = telemetryService
         self.analyticsService = analyticsService
         self.appLifecycleService = appLifecycleService
-        self.saaqService = saaqService
         self.attributesService = attributesService
+        
+        // Keep original references for backward compatibility
+        self.motionTracker = MotionTracker(errorService: errorService)
+        self.touchTracker = TouchTracker()
     }
     
     @MainActor public func configure(

@@ -1,123 +1,100 @@
 //
-//  Telemetry.swift
+//  TelemetryService.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 20/03/2026.
 //
 import Foundation
+import CoreGraphics
 internal import UIKit
 
+/// Refactored TelemetryService - now focused on lifecycle and coordination
 @MainActor
-public class TelemetryService {
-    private let telemetryCollector: TelemetryCollector
+public final class TelemetryService: TelemetryServicing {
+    
+    // MARK: - Dependencies (Protocol-based, not concrete)
+    private let telemetryCollector: TelemetryCollectorComprehensive
     private let telemetryHandler: TelemetryHandling
-    private let telemetrySession: TelemetrySession
-
-    private let networkservice: Networking
-    private let errorService: ErrorServicing
-    private let networkConfig: NetworkConfig
-    private let touchTracker: TouchTracker
-    private let accessManagementService: AccessManagementServicing
-    private let appService: AppInformationServicing
-    private let motionTracker: MotionTracker
-    private let analytics: AnalyticsService
+    private let motionSensor: MotionSensorProvider
+    private let touchSensor: TouchSensorProvider
+    private let scheduler: TelemetryScheduler
+    private let eventPublisher: TelemetryEventPublisher
+    private let analyticsService: AnalyticsServicing
     
     private var sessionStarted = false
     
-    init(
-        networkConfig: NetworkConfig,
-         networkservice: Networking,
-        accessManagementService: AccessManagementServicing!,
-        appService: AppInformationServicing!,
-        motionTracker: MotionTracker,
-        touchTracker: TouchTracker,
-        errorService: ErrorServicing,
-        anaalytics: AnalyticsService,
-        sessionStarted: Bool = false
+    // MARK: - Initialization
+    public init(
+        telemetryCollector: TelemetryCollectorComprehensive,
+        telemetryHandler: TelemetryHandling,
+        motionSensor: MotionSensorProvider,
+        touchSensor: TouchSensorProvider,
+        scheduler: TelemetryScheduler,
+        eventPublisher: TelemetryEventPublisher,
+        analyticsService: AnalyticsServicing
     ) {
-        self.networkConfig = networkConfig
-        self.networkservice = networkservice
-        self.accessManagementService = accessManagementService
-        self.appService = appService
-        self.motionTracker = motionTracker
-        self.touchTracker = touchTracker
-        self.errorService = errorService
-        self.sessionStarted = sessionStarted
-        self.analytics = anaalytics
+        self.telemetryCollector = telemetryCollector
+        self.telemetryHandler = telemetryHandler
+        self.motionSensor = motionSensor
+        self.touchSensor = touchSensor
+        self.scheduler = scheduler
+        self.eventPublisher = eventPublisher
+        self.analyticsService = analyticsService
         
-        self.telemetrySession = TelemetrySession()
-        self.telemetryHandler = TelemetryHandler(networkingService: networkservice, config: networkConfig, appService: appService)
-        self.telemetryCollector = TelemetryCollector(session: telemetrySession, uploader: networkservice)
+        // Wire event publisher into collector
+        self.telemetryCollector.setEventPublisher(eventPublisher)
     }
     
-    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
-    func setSaaQPromptCallBack(_ completion: ((SaaQTriggerWrapper) -> Void)?) {
-        telemetryCollector.didRecieveSaaQTrigger = completion
-    }
+    // MARK: - Public API
     
-    @MainActor public func stopTelemetry() {
-        telemetryCollector.attemptUploadAndflushNow()
-        telemetryCollector.stopTimer()
-        motionTracker.stop()
-        DispatchQueue.global(qos: .utility).async {
-            self.analytics.sendAnalytics(.init(eventName: .telemetryEnded))
+    public func shouldStartSession() async throws -> Bool {
+        guard !sessionStarted else {
+            throw NSError(
+                domain: "failed-to-start-session",
+                code: -2,
+                userInfo: [NSLocalizedDescriptionKey: "Session already started"]
+            )
         }
         
-    }
-    
-    @MainActor public func startTelemetryEventLoop() {
-        print("LOG: Attempting to start gyro and accelerometer reading")
-        telemetryCollector.startTimer()
-        DispatchQueue.global(qos: .utility).async {
-            self.analytics.sendAnalytics(.init(eventName: .telemetryStarted))
+        let result = try await telemetryHandler.startSession()
+        guard result else {
+            throw NSError(
+                domain: "failed-to-start-session",
+                code: -2,
+                userInfo: [NSLocalizedDescriptionKey: "Handler failed to start session"]
+            )
         }
+        
+        sessionStarted = true
+        startTelemetryEventLoop()
+        startTrackingMotion()
+        
+        return true
     }
     
-    @MainActor public func startTrackingMotion() {
-        motionTracker.start(
-            gyro: { [weak self] in self?.telemetryCollector.appendGyro($0) },
-            accel: { [weak self] in self?.telemetryCollector.appendAccel($0) }
+    public func startTelemetryEventLoop() {
+        scheduler.start(interval: 30) { [weak self] in
+            self?.telemetryCollector.flushIfNeeded()
+        }
+        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
+    }
+    
+    public func stopTelemetry() {
+        telemetryCollector.flushIfNeeded()
+        scheduler.stop()
+        motionSensor.stop()
+        analyticsService.sendAnalytics(.init(eventName: .telemetryEnded))
+    }
+    
+    public func startTrackingMotion() {
+        motionSensor.start(
+            gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
+            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) }
         )
     }
     
-    @MainActor public func shouldStartSession() async throws -> Bool {
-        if sessionStarted == false {
-            debugPrint("LOG: Attempting to start async session with API")
-            
-                let result = try await telemetryHandler.startSession()
-                
-                if result {
-                    print("LOG: Session start successful")
-                } else {
-                    print("LOG: Session failed")
-                    throw NSError(domain: "failed-to-start-session", code: -0002, userInfo: nil)
-                }
-                startTelemetryEventLoop()
-                startTrackingMotion()
-                sessionStarted = result // True
-                return true
-        } else {
-            print("LOG: Session failed")
-            throw NSError(domain: "failed-to-start-session", code: -0002, userInfo: nil)
-        }
-    }
-}
-
-
-@MainActor
-public protocol TelemetryActions {
-    func appendTouch(at: (began: CGPoint?, movedTo: CGPoint?, endedAt: CGPoint?))
-    func keyPressed(_ key: String)
-    func keyReleased(_ key: String)
+    // MARK: - Input Handling
     
-    func flushIfNeeded()
-    func attemptUploadAndflushNow()
-    func startTimer()
-    func stopTimer()
-}
-
-@MainActor
-extension TelemetryService : TelemetryActions {
     public func keyPressed(_ key: String) {
         telemetryCollector.keyPressed(key)
     }
@@ -125,34 +102,41 @@ extension TelemetryService : TelemetryActions {
     public func keyReleased(_ key: String) {
         telemetryCollector.keyReleased(key)
     }
-
+    
     public func appendTouch(at: (began: CGPoint?, movedTo: CGPoint?, endedAt: CGPoint?)) {
         if let began = at.began {
-            telemetryCollector.appendTouch(touchTracker.began(at: began))
+            let sample = touchSensor.began(at: began)
+            telemetryCollector.appendTouch(sample)
         }
         
         if let movedTo = at.movedTo {
-            telemetryCollector.appendTouch(touchTracker.moved(to: movedTo))
+            let sample = touchSensor.moved(to: movedTo)
+            telemetryCollector.appendTouch(sample)
         }
         
         if let endedAt = at.endedAt {
-            telemetryCollector.appendTouch(touchTracker.ended(at: endedAt))
+            let sample = touchSensor.ended(at: endedAt)
+            telemetryCollector.appendTouch(sample)
         }
     }
+    
+    // MARK: - Data Management
     
     public func flushIfNeeded() {
         telemetryCollector.flushIfNeeded()
     }
     
-    public func attemptUploadAndflushNow() {
-        telemetryCollector.attemptUploadAndflushNow()
+    public func attemptUploadAndFlushNow() {
+        telemetryCollector.attemptUploadAndFlushNow()
     }
     
-    public func stopTimer() {
-        telemetryCollector.stopTimer()
-    }
+    // MARK: - SaaQ Integration (Bridge to Event Publisher)
     
-    public func startTimer() {
-        telemetryCollector.startTimer()
+    /// Bridge method to support SaaQ service subscription to telemetry events
+    /// This maintains backward compatibility while using the new event publisher pattern
+    public func setSaaQPromptCallBack(_ completion: ((SaaQTriggerWrapper) -> Void)?) {
+        if let publisher = eventPublisher as? DefaultTelemetryEventPublisher {
+            publisher.triggerUpdated = completion
+        }
     }
 }
