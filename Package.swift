@@ -6,7 +6,6 @@ import PackageDescription
 let package = Package(
     name: "NX10CoreSDK",
     platforms: [
-        .macOS(.v11),
         .iOS(.v18)
     ],
     products: [

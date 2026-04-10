@@ -6,7 +6,9 @@
 //
 
 import Foundation
+#if os(iOS)
 public import UIKit
+#endif
 
 public extension UIDevice {
     static var isPhone: Bool {
