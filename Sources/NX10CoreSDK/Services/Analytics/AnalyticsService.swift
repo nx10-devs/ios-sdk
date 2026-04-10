@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-protocol AnalyticsServicing {
+public protocol AnalyticsServicing {
     func sendAnalytics(_ payload: AnalyticsService.Payload)
 }
 

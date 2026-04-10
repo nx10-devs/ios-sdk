@@ -11,87 +11,63 @@ import SwiftUI
 import Combine
 
 @MainActor
-public protocol TelemetryCollectorActions {
-    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
-    // TODO: This is a temporary solution for SaaQ Triggers
-    var didRecieveSaaQTrigger: ((SaaQTriggerWrapper) -> Void)? { get set }
-    //
+public final class TelemetryCollector: TelemetryCollectorComprehensive {
     
-    func keyPressed(_ key: String)
-    func keyReleased(_ key: String)
-
-    func appendGyro(_ s: MotionSample)
-    func appendAccel(_ s: MotionSample)
-    func appendTouch(_ s: TouchSample)
-
-    func flushIfNeeded()
-    func attemptUploadAndflushNow()
-    func stopTimer()
-    func startTimer()
-}
-
-@MainActor
-public protocol TelemetryCollecting: AnyObject, TelemetryCollectorActions {
-    init(session: TelemetrySession, uploader: Networking, timer: Timer?)
-}
-
-public final class TelemetryCollector: TelemetryCollecting {
-
+    // MARK: - Dependencies
     private let session: TelemetrySession
     private let uploader: Networking
     
-    /// DEPRECATED: SaaQ Trigger anti-pattern solution needs to be removed in the future
-    // TODO: This is a temporary solution for SaaQ Triggers
-    public var didRecieveSaaQTrigger: ((SaaQTriggerWrapper) -> Void)?
-    //
+    // MARK: - Properties
+    public var eventPublisher: TelemetryEventPublisher
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.nx10")
     
-    public init(session: TelemetrySession, uploader: Networking, timer: Timer? = nil) {
+    // MARK: - Initialization
+    public init(session: TelemetrySession, uploader: Networking, eventPublisher: TelemetryEventPublisher) {
         self.session = session
         self.uploader = uploader
-        self.timer = timer
+        self.eventPublisher = eventPublisher
     }
     
-    private let sharedDefaults = UserDefaults(suiteName: "group.com.nx10")
-    private var timer: Timer?
-
-    @MainActor public func startTimer() {
-        let uploadInterval = uploader.config.uploadInterval
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: uploadInterval, repeats: true) { [weak self] _ in
-            print("LOG: Timer fired, attempting to upload and flush")
-            self?.flushIfNeeded()
-        }
+    // MARK: - KeyboardEventHandler
+    public func keyPressed(_ key: String) {
+        session.recordKeyPress(key)
     }
-
-    public func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+    
+    public func keyReleased(_ key: String) {
+        session.recordKeyRelease(key)
     }
-
-    // MARK: - Keys
-    public func keyPressed(_ key: String) { session.recordKeyPress(key) }
-    public func keyReleased(_ key: String) { session.recordKeyRelease(key) }
-
-    // MARK: - Sensors
-    public func appendGyro(_ s: MotionSample) { session.appendGyro(s) }
-    public func appendAccel(_ s: MotionSample) { session.appendAccel(s) }
-    public func appendTouch(_ s: TouchSample) { session.appendTouch(s) }
-
-    // MARK: - Flush
-    @MainActor public func flushIfNeeded() {
-        attemptUploadAndflushNow()
+    
+    // MARK: - SensorDataCollector
+    public func appendGyro(_ sample: MotionSample) {
+        session.appendGyro(sample)
     }
-
-    public func attemptUploadAndflushNow() {
-        print("LOG: Attempting to upload and flushing data")
+    
+    public func appendAccel(_ sample: MotionSample) {
+        session.appendAccel(sample)
+    }
+    
+    public func appendTouch(_ sample: TouchSample) {
+        session.appendTouch(sample)
+    }
+    
+    public func setEventPublisher(_ publisher: any TelemetryEventPublisher) {
+        self.eventPublisher = publisher
+    }
+    
+    // MARK: - TelemetryLifecycleManager
+    public func flushIfNeeded() {
+        attemptUploadAndFlushNow()
+    }
+    
+    public func attemptUploadAndFlushNow() {
         guard session.hasAnyData() else {
             return
         }
         
         let envelope = makeEnvelope()
         let payload = TelemetryV2Converter().makeV2Payload(from: envelope)
-
-        Task(name: "telemetry-task", priority: .utility) {
+        
+        Task(name: "telemetry-upload", priority: .utility) {
             do {
                 guard
                     let url = try uploader.url(for: .telemetry(version: .v2))
@@ -99,36 +75,28 @@ public final class TelemetryCollector: TelemetryCollecting {
                     throw APIError.malformedURL
                 }
                 
-                /// DEPRECATED: This is a temporary
-                // TODO: This is a temporary solution for SaaQ Triggers
-                Task(name: "telemetry-task", priority: .utility) {
-                    let saaqTrigger: SaaQResponse? = try await uploader.post(payload, for: url)
-                    
-                    if let saaqTrigger = saaqTrigger {
-                        switch saaqTrigger {
-                        case .one(let trigger):
-                            let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: trigger)
-                            didRecieveSaaQTrigger?(saaqTriggerWrapper)
-
-                        case .two(let trigger):
-                            let saaqTriggerWrapper = SaaQTriggerWrapper(saaqOneTrigger: nil, saaqTwoTrigger: trigger)
-                            didRecieveSaaQTrigger?(saaqTriggerWrapper)
-                        }
+                // POST and handle SaaQ trigger response
+                let saaqTrigger: SaaQResponse? = try await uploader.post(payload, for: url)
+                
+                // Publish trigger event if received
+                if let trigger = saaqTrigger {
+                    let wrapper = makeSaaQTriggerWrapper(from: trigger)
+                    if let publisher = eventPublisher as? DefaultTelemetryEventPublisher {
+                        publisher.publishTrigger(wrapper)
                     }
-                    
-                    // End of Solution
-                    print("LOG: Upload succesful")
-                    session.reset()
                 }
+                
+                session.reset()
             } catch {
-                print(error.localizedDescription)
+                // TODO: Implement retry logic with backoff
+                // TODO: Queue failed payloads for offline handling
             }
         }
     }
 
+    
     // MARK: - Envelope
     private func makeEnvelope() -> TelemetryEnvelope {
-
         let deviceToken = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         let deviceName = userDefinedDeviceName() ?? UIDevice.current.name
 
@@ -153,9 +121,19 @@ public final class TelemetryCollector: TelemetryCollecting {
             touch: session.touches.isEmpty ? nil : session.touches
         )
     }
-
+    
+    // MARK: - Helper Methods
     private func userDefinedDeviceName() -> String? {
         let name = sharedDefaults?.string(forKey: "deviceName")
         return (name?.isEmpty == false) ? name : nil
+    }
+    
+    private func makeSaaQTriggerWrapper(from response: SaaQResponse) -> SaaQTriggerWrapper {
+        switch response {
+        case .one(let trigger):
+            return SaaQTriggerWrapper(saaqOneTrigger: trigger)
+        case .two(let trigger):
+            return SaaQTriggerWrapper(saaqOneTrigger: nil, saaqTwoTrigger: trigger)
+        }
     }
 }
