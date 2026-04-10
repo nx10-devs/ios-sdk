@@ -7,7 +7,7 @@ let package = Package(
     name: "NX10CoreSDK",
     platforms: [
         .macOS(.v11),
-        .iOS(.v14)
+        .iOS(.v18)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
