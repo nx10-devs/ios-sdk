@@ -59,6 +59,7 @@ public struct SaaQTwoAnswer: Encodable {
         public enum SaaQType: String, Encodable {
             case answered
             case dismissed
+            case partial
         }
         
         public struct SaaQData: Encodable {

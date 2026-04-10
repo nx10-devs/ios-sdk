@@ -27,7 +27,7 @@ public struct SaaQPromptTwoView: View {
     
     public var body: some View {
         
-        // TODO: This is a HACK
+        // TODO: This is HACKY - separate the slider view and multiselect view in to sub-components with their own properties
         if let followon {
             let saaqOneTrigger = SaaQOneTrigger.Payload(
                 triggerID: payload.triggerID,
@@ -49,7 +49,9 @@ public struct SaaQPromptTwoView: View {
                 else { return }
                 buildAnswerForSingleChoice(for: saaqTwoAnswer, and: saaqOneAnswer)
             } onClose: { saaqOneAnswer in
-                onClose(SaaQAnswerWrapper(saaqTwoAnswer: .init(triggerID: saaqOneAnswer.saaqOneAnswer?.triggerID ?? "", answer: .init(type: .dismissed), deviceSendTimestamp: saaqOneAnswer.saaqOneAnswer?.deviceSendTimestamp ?? "", promptDisplayTimestamp: saaqOneAnswer.saaqOneAnswer?.promptDisplayTimestamp ?? "", promptClosedTimestamp: saaqOneAnswer.saaqOneAnswer?.promptClosedTimestamp ?? "")))
+                onClose(SaaQAnswerWrapper(saaqTwoAnswer: .init(triggerID: saaqOneAnswer.saaqOneAnswer?.triggerID ?? "", answer: .init(type: .partial), deviceSendTimestamp: saaqOneAnswer.saaqOneAnswer?.deviceSendTimestamp ?? "", promptDisplayTimestamp: saaqOneAnswer.saaqOneAnswer?.promptDisplayTimestamp ?? "", promptClosedTimestamp: saaqOneAnswer.saaqOneAnswer?.promptClosedTimestamp ?? "")
+                                         )
+                )
             }
             
         } else {
