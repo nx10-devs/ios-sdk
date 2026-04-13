@@ -26,11 +26,11 @@ public final class SessionProvider: SessionProviding {
     
     private(set) public var apiKey: String?
     private var endpointsProvider: EndpointProviding
-    private let configLoader: ConfigService
+    private let configLoader: ConfigProvider
     private let networking: Networking
     private let applicationInfoProvider: AppInformationServicing
     
-    init(endpointsProvider: EndpointProviding, configLoader: ConfigService, networking: Networking, applicationInfoProvider: AppInformationServicing) {
+    init(endpointsProvider: EndpointProviding, configLoader: ConfigProvider, networking: Networking, applicationInfoProvider: AppInformationServicing) {
         self.endpointsProvider = endpointsProvider
         self.configLoader = configLoader
         self.networking = networking

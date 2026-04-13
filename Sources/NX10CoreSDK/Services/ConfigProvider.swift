@@ -1,7 +1,16 @@
 import Foundation
 
 @MainActor
-public final class ConfigService {
+
+public protocol ConfigProviding {
+   func string(for key: ConfigConstants) -> String?
+   func bool(for key: ConfigConstants) -> Bool?
+   func double(for key: String) -> Double?
+   func int(for key: String) -> Int?
+   func url(for key: ConfigConstants) -> URL?
+}
+
+public final class ConfigProvider: ConfigProviding {
     
     private let configFileName = "NX10CoreConfig"
     private let queue = DispatchQueue(label: "com.nx10.core.config-service")

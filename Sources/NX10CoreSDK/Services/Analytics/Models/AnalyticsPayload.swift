@@ -21,7 +21,7 @@ public enum AnalyticEvent: String, Encodable {
     case appOpened = "app_opened"
 }
 
-public extension AnalyticsService {
+public extension AnalyticsProvider {
     public struct Payload: Encodable, Hashable {
         
         public let eventName: AnalyticEvent

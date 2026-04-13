@@ -8,26 +8,26 @@
 import Foundation
 
 @MainActor
-public protocol AttributesServicing: AnyObject {
+public protocol AttributesProviding: AnyObject {
     
     func sendInitialMetadata() async
-    func sendDeviceLog(_ deviceLog: AttributesService.DeviceLog) async
-    func updateDeviceLog(_ deviceLog: AttributesService.DeviceLog) async
+    func sendDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
+    func updateDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
     func resetDeviceLog() async
     func didChangeKeyboardLanguage() async
-    func appDidChangeState(_ state: AttributesService.AppState) async
+    func appDidChangeState(_ state: AttributesProvider.AppState) async
     
-    init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: AppLifecycleServicing)
+    init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: LifecycleProviding)
 }
 
-public class AttributesService: AttributesServicing {
+public class AttributesProvider: AttributesProviding {
     
     private let networkService: Networking
     private let errorService: ErrorServicing
     private let appService:  AppInformationServicing
-    private let appLifecycleService: AppLifecycleServicing
+    private let appLifecycleService: LifecycleProviding
     
-    required public init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: AppLifecycleServicing) {
+    required public init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: LifecycleProviding) {
         self.networkService = networkService
         self.errorService = errorService
         self.appService = appService
@@ -74,7 +74,7 @@ public class AttributesService: AttributesServicing {
     public func didChangeKeyboardLanguage() async {
         Task(name: "attributes-task", priority: .utility) {
             let keyboardLanguage = appService.keyboardLanguage
-            let data = AttributesService.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
+            let data = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
                 let response: GenericResponse? = try await networkService.post(data, for: .attributes)
             } catch {

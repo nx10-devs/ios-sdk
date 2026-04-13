@@ -18,7 +18,7 @@ public final class TelemetryService: TelemetryServicing {
     private let touchSensor: TouchSensorProvider
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
-    private let analyticsService: AnalyticsServicing
+    private let analyticsService: AnalyticsProviding
     
     private var sessionStarted = false
     
@@ -29,7 +29,7 @@ public final class TelemetryService: TelemetryServicing {
         touchSensor: TouchSensorProvider,
         scheduler: TelemetryScheduler,
         eventPublisher: TelemetryEventPublisher,
-        analyticsService: AnalyticsServicing
+        analyticsService: AnalyticsProviding
     ) {
         self.telemetryCollector = telemetryCollector
         self.motionSensor = motionSensor

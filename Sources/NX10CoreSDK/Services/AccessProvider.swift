@@ -1,5 +1,5 @@
 //
-//  AccessManagementServicing.swift
+//  AccessProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 19/03/2026.
@@ -9,7 +9,7 @@
 import Foundation
 
 @MainActor
-public protocol AccessManagementServicing {
+public protocol AccessProviding {
     var isReady: Bool { get }
     
     func setAppGroupID(_ appGroupID: String)
@@ -25,7 +25,7 @@ public protocol AccessManagementServicing {
     init(errorService: ErrorServicing)
 }
 
-public final class AccessManagementService: AccessManagementServicing  {
+public final class AccessProvider: AccessProviding  {
     
     public var isReady: Bool {
         return appGroupID.isEmpty == false

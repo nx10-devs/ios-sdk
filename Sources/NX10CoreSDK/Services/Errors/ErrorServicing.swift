@@ -14,16 +14,16 @@ public protocol ErrorServicing: AnyObject {
     func sendSDKError(_ error: ErrorType)
     func sendMessage(_ message: String)
     func setTrackingEnabled(_ enabled: Bool)
-    init(configLoader: ConfigService)
+    init(configLoader: ConfigProvider)
 }
 
 public final class ErrorService: ErrorServicing {
     private var didStartSentry = false
-    private let configLoader: ConfigService
+    private let configLoader: ConfigProvider
     
     private var enableErrorTracking: Bool = false
     
-    public init(configLoader: ConfigService) {
+    public init(configLoader: ConfigProvider) {
         self.configLoader = configLoader
         initialiseIfNeeded()
     }

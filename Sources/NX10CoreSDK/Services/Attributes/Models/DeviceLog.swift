@@ -7,7 +7,7 @@
 
 import Foundation
 
-public extension AttributesService {
+public extension AttributesProvider {
     public struct DeviceLog: Codable {
         public let timestamp: String
         public let data: DeviceData?

@@ -10,7 +10,7 @@ internal import UIKit
 
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
-    var accessManagementService: AccessManagementServicing { get }
+    var accessProvider: AccessProviding { get }
     var errorService: ErrorServicing { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
@@ -32,7 +32,7 @@ public final class NX10Core: NX10CoreProtocol {
     // MARK: Public properties
     public let errorService: ErrorServicing
     public let telemetryService: TelemetryService
-    public let accessManagementService: AccessManagementServicing
+    public let accessProvider: AccessProviding
     public let saaqService: SaaQServiceProtocol
     
     // MARK: Internal properties
@@ -40,9 +40,9 @@ public final class NX10Core: NX10CoreProtocol {
     let appService: AppInformationServicing
     let motionTracker: MotionTracker
     let touchTracker: TouchTracker
-    let analyticsService: AnalyticsServicing
-    let attributesService: AttributesServicing
-    let appLifecycleService: AppLifecycleServicing
+    let analyticsService: AnalyticsProviding
+    let attributesService: AttributesProviding
+    let appLifecycleService: LifecycleProviding
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
     
@@ -51,14 +51,14 @@ public final class NX10Core: NX10CoreProtocol {
     
     @MainActor private init () {
         // MARK: - Core Services
-        let configLoader = ConfigService()
+        let configLoader = ConfigProvider()
         let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
         let endpointProvider = EndpointProvider(configLoader: configLoader)
         let networkService = NetworkService(endpointProvider: endpointProvider)
-        let accessManagementService = AccessManagementService(errorService: errorService)
-        let analyticsService = AnalyticsService(networkService: networkService)
-        let appLifecycleService = AppLifecyleService()
+        let accessProvider = AccessProvider(errorService: errorService)
+        let analyticsService = AnalyticsProvider(networkService: networkService)
+        let appLifecycleService = LifecyleProvider()
         
         // MARK: - Sensor Providers (Protocol-based)
         let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorService: errorService)
@@ -88,7 +88,7 @@ public final class NX10Core: NX10CoreProtocol {
         
         // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
-        let attributesService = AttributesService(
+        let attributesService = AttributesProvider(
             networkService: networkService,
             errorService: errorService,
             appService: appService,
@@ -104,7 +104,7 @@ public final class NX10Core: NX10CoreProtocol {
         // MARK: - Retention assignments
         self.errorService = errorService
         self.telemetryService = telemetryService
-        self.accessManagementService = accessManagementService
+        self.accessProvider = accessProvider
         self.saaqService = saaqService
         
         // Internal properties for lifecycle management
@@ -137,12 +137,12 @@ public final class NX10Core: NX10CoreProtocol {
         }
         
         errorService.setTrackingEnabled(errorTrackingEnabled)
-        accessManagementService.setAppGroupID(appGroupdID)
+        accessProvider.setAppGroupID(appGroupdID)
         
-        let accessManagementServiceReady = accessManagementService.isReady ?? false
+        let accessReady = accessProvider.isReady ?? false
         
         guard
-            accessManagementServiceReady
+            accessReady
         else {
             if isDebug {
                 fatalError("API's failed to load correctly")
@@ -152,7 +152,7 @@ public final class NX10Core: NX10CoreProtocol {
         
         if shouldStartSession {
             print("should start session")
-            await accessManagementService.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [unowned self] enabled in
+            await accessProvider.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [unowned self] enabled in
                 if enabled {
                     Task(name: "telemetry-task", priority: .utility) {
                         try await startSession()

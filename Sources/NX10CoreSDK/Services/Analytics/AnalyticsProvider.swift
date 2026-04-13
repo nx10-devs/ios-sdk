@@ -1,5 +1,5 @@
 //
-//  AnalyticsService.swift
+//  AnalyticsProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 27/03/2026.
@@ -8,11 +8,11 @@
 import Foundation
 
 @MainActor
-public protocol AnalyticsServicing {
-    func sendAnalytics(_ payload: AnalyticsService.Payload)
+public protocol AnalyticsProviding {
+    func sendAnalytics(_ payload: AnalyticsProvider.Payload)
 }
 
-public class AnalyticsService: AnalyticsServicing {
+public class AnalyticsProvider: AnalyticsProviding {
     private let networkService: Networking
     private struct EmptyResponse: Decodable {}
 
@@ -20,7 +20,7 @@ public class AnalyticsService: AnalyticsServicing {
         self.networkService = networkService
     }
     
-    public func sendAnalytics(_ payload: AnalyticsService.Payload) {
+    public func sendAnalytics(_ payload: AnalyticsProvider.Payload) {
         
         /*
          If payloadStorage contains content

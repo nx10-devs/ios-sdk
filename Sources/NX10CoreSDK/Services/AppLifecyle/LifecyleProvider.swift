@@ -9,18 +9,18 @@ import Foundation
 import UIKit
 
 @MainActor
-public protocol AppLifecycleServicing {
-    func observeStateChanges(_ completion: ((AppLifecyleService.LifeCycle) -> Void)?)
+public protocol LifecycleProviding {
+    func observeStateChanges(_ completion: ((LifecyleProvider.LifeCycle) -> Void)?)
 }
 
-public extension AppLifecyleService {
+public extension LifecyleProvider {
     public enum LifeCycle {
         case background
         case foreground
     }
 }
 
-public class AppLifecyleService: AppLifecycleServicing {
+public class LifecyleProvider: LifecycleProviding {
 
     public var didChangeState: ((LifeCycle) -> Void)?
     

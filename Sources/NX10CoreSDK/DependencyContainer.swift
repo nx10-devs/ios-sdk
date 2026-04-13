@@ -11,7 +11,7 @@ import Foundation
 @MainActor
 public final class DependencyContainer {
     // MARK: - Core Services
-    public let configService: ConfigService
+    public let configService: ConfigProvider
     public let errorService: ErrorServicing
     public let networkService: Networking
     public let appService: AppInformationServicing
@@ -25,22 +25,22 @@ public final class DependencyContainer {
     public let eventPublisher: TelemetryEventPublisher
     
     // MARK: - Higher-level Services
-    public let accessManagementService: AccessManagementServicing
-    public let analyticsService: AnalyticsServicing
-    public let attributesService: AttributesServicing
-    public let appLifecycleService: AppLifecycleServicing
+    public let accessProvider: AccessProviding
+    public let analyticsService: AnalyticsProviding
+    public let attributesService: AttributesProviding
+    public let appLifecycleService: LifecycleProviding
     public let endpointProvider: EndpointProviding
     
     // MARK: - Initialization
     public init(
-        configService: ConfigService? = nil,
+        configService: ConfigProvider? = nil,
         motionSensor: MotionSensorProvider? = nil,
         touchSensor: TouchSensorProvider? = nil,
         scheduler: TelemetryScheduler? = nil,
         eventPublisher: TelemetryEventPublisher? = nil
     ) {
         // Initialize core dependencies
-        let configLoader = configService ?? ConfigService()
+        let configLoader = configService ?? ConfigProvider()
         self.configService = configLoader
         
         let errorService = ErrorService(configLoader: configLoader)
@@ -65,21 +65,21 @@ public final class DependencyContainer {
         self.eventPublisher = eventPublisher ?? DefaultTelemetryEventPublisher()
         
         // Initialize higher-level services
-        let accessManagement = AccessManagementService(errorService: errorService)
-        self.accessManagementService = accessManagement
+        let accessProvider = AccessProvider(errorService: errorService)
+        self.accessProvider = accessProvider
         
-        let analytics = AnalyticsService(networkService: networkService)
+        let analytics = AnalyticsProvider(networkService: networkService)
         self.analyticsService = analytics
         
-        let attributes = AttributesService(
+        let attributes = AttributesProvider(
             networkService: networkService,
             errorService: errorService,
             appService: appService,
-            appLifecycleService: AppLifecyleService()
+            appLifecycleService: LifecyleProvider()
         )
         self.attributesService = attributes
         
-        let appLifecycle = AppLifecyleService()
+        let appLifecycle = LifecyleProvider()
         self.appLifecycleService = appLifecycle
     }
 }

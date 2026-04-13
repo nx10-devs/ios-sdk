@@ -14,15 +14,15 @@ public protocol EndpointProviding {
     var endpoints: [Endpoint]? { get set }
     func url(for endpointType: Endpoint.EndpointType) throws -> URL
     
-    init(configLoader: ConfigService)
+    init(configLoader: ConfigProvider)
 }
 
 public final class EndpointProvider: EndpointProviding {
     public var endpoints: [Endpoint]?
     public var startSessionURL: URL?
-    private var configLoader: ConfigService
+    private var configLoader: ConfigProvider
     
-    public init(configLoader: ConfigService) {
+    public init(configLoader: ConfigProvider) {
         self.configLoader = configLoader
     }
     
