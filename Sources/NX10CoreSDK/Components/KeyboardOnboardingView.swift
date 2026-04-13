@@ -18,7 +18,7 @@ public struct KeyboardOnboardingView: View {
     let title: String
     
     /// Body/description text
-    let description: String
+    let pages: [String]
     
     /// Current page index for dots indicator
     let currentPage: Int
@@ -32,14 +32,14 @@ public struct KeyboardOnboardingView: View {
     public init(
         iconImage: UIImage? = nil,
         title: String = "Welcome to NX10",
-        description: String,
+        pages: [String],
         currentPage: Int = 0,
         totalPages: Int = 1,
         onPageIndicatorTapped: ((Int) -> Void)? = nil
     ) {
         self.iconImage = iconImage
         self.title = title
-        self.description = description
+        self.pages = pages
         self.currentPage = currentPage
         self.totalPages = totalPages
         self.onPageIndicatorTapped = onPageIndicatorTapped
@@ -57,8 +57,12 @@ public struct KeyboardOnboardingView: View {
             } else {
                 // Default brain emoji
                 Text("🧠")
-                    .font(.system(size: 48))
+                    .font(.system(size: 32))
                     .padding(.top, 16)
+                
+                Text("Powered by NX10")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             }
             
             // Title
@@ -68,7 +72,7 @@ public struct KeyboardOnboardingView: View {
                 .lineLimit(2)
             
             // Description
-            Text(description)
+            Text(pages[currentPage])
                 .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(Color.gray)
                 .lineLimit(4)
@@ -78,17 +82,19 @@ public struct KeyboardOnboardingView: View {
                 .frame(height: 8)
             
             // Page indicator dots
-            HStack(spacing: 8) {
-                ForEach(0..<totalPages, id: \.self) { index in
-                    PageIndicatorDot(
-                        isActive: index == currentPage,
-                        onTap: {
-                            onPageIndicatorTapped?(index)
-                        }
-                    )
+            if pages.count > 1 {
+                HStack(spacing: 8) {
+                    ForEach(0..<totalPages, id: \.self) { index in
+                        PageIndicatorDot(
+                            isActive: index == currentPage,
+                            onTap: {
+                                onPageIndicatorTapped?(index)
+                            }
+                        )
+                    }
                 }
+                .padding(.bottom, 12)
             }
-            .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
         .background(Color.clear)  // ✅ Clear background for keyboard integration
@@ -115,7 +121,7 @@ private struct PageIndicatorDot: View {
 #Preview {
     KeyboardOnboardingView(
         title: "Welcome to NX10",
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        pages: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."],
         currentPage: 0,
         totalPages: 4,
         onPageIndicatorTapped: { page in
