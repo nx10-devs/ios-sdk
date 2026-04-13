@@ -1,5 +1,5 @@
 //
-//  ErrorServicing.swift
+//  ErrorProviding.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 18/03/2026.
@@ -9,7 +9,7 @@ import Foundation
 import Sentry
 
 @MainActor
-public protocol ErrorServicing: AnyObject {
+public protocol ErrorProviding: AnyObject {
     func sendError(_ error: Error)
     func sendSDKError(_ error: ErrorType)
     func sendMessage(_ message: String)
@@ -17,7 +17,7 @@ public protocol ErrorServicing: AnyObject {
     init(configLoader: ConfigProvider)
 }
 
-public final class ErrorService: ErrorServicing {
+public final class ErrorProvider: ErrorProviding {
     private var didStartSentry = false
     private let configLoader: ConfigProvider
     

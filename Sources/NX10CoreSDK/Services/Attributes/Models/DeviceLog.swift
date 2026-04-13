@@ -49,6 +49,7 @@ public extension AttributesProvider {
             self.timestamp = timestamp
         }
     }
+    
     public struct AppState: Encodable {
         public let timestamp: String
         public let state: AppStates

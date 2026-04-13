@@ -25,11 +25,11 @@ protocol TelemetryV2Capturing: AnyObject {
 /// - call `start()` when you begin buffering events
 /// - call `flush(...)` when you want to send (e.g. on timer, `viewWillDisappear`, `textWillChange`, etc.)
 public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
-    private let errorService: ErrorServicing
+    private let errorProvider: ErrorProviding
     private var baseEpochMs: Int64?
     
-    public init(errorService: ErrorServicing) {
-        self.errorService = errorService
+    public init(errorProvider: ErrorProviding) {
+        self.errorProvider = errorProvider
     }
 
     /// Start a new capture window.
@@ -85,7 +85,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
                 // Start a fresh window for the next batch.
                 start()
             } catch {
-                errorService.sendError(error)
+                errorProvider.sendError(error)
                 if isDebug { debugPrint(error.localizedDescription) }
                 if isDebug {
                     fatalError("Failed to upload telemetry: \(error.localizedDescription)")

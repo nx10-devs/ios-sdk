@@ -114,7 +114,7 @@ let telemetryService = TelemetryService(
     appService: appService,
     motionTracker: motionTracker,
     touchTracker: touchTracker,
-    errorService: errorService,
+    errorProvider: errorProvider,
     anaalytics: analyticsService  // Typo!
 )
 ```
@@ -142,7 +142,7 @@ public class TelemetryService {
     init(
         networkConfig, networkservice, accessManagementService,
         appService, motionTracker, touchTracker,
-        errorService, anaalytics
+        errorProvider, anaalytics
     ) { }
     
     func stopTelemetry() { /* Also handles analytics */ }

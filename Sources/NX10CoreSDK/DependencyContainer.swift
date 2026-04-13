@@ -12,7 +12,7 @@ import Foundation
 public final class DependencyContainer {
     // MARK: - Core Services
     public let configService: ConfigProvider
-    public let errorService: ErrorServicing
+    public let errorProvider: ErrorProviding
     public let networkService: Networking
     public let appService: AppInformationServicing
     
@@ -43,8 +43,8 @@ public final class DependencyContainer {
         let configLoader = configService ?? ConfigProvider()
         self.configService = configLoader
         
-        let errorService = ErrorService(configLoader: configLoader)
-        self.errorService = errorService
+        let errorProvider = ErrorProvider(configLoader: configLoader)
+        self.errorProvider = errorProvider
         
         let appService = AppInformationService()
         self.appService = appService
@@ -57,7 +57,7 @@ public final class DependencyContainer {
         self.networkService = networkService
         
         // Initialize sensor providers
-        self.motionSensor = motionSensor ?? CoreMotionSensorProvider(errorService: errorService)
+        self.motionSensor = motionSensor ?? CoreMotionSensorProvider(errorProvider: errorProvider)
         self.touchSensor = touchSensor ?? CoreTouchSensorProvider()
         
         // Initialize scheduler and event publisher
@@ -65,7 +65,7 @@ public final class DependencyContainer {
         self.eventPublisher = eventPublisher ?? DefaultTelemetryEventPublisher()
         
         // Initialize higher-level services
-        let accessProvider = AccessProvider(errorService: errorService)
+        let accessProvider = AccessProvider(errorProvider: errorProvider)
         self.accessProvider = accessProvider
         
         let analytics = AnalyticsProvider(networkService: networkService)
@@ -73,7 +73,7 @@ public final class DependencyContainer {
         
         let attributes = AttributesProvider(
             networkService: networkService,
-            errorService: errorService,
+            errorProvider: errorProvider,
             appService: appService,
             appLifecycleService: LifecyleProvider()
         )

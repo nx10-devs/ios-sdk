@@ -29,8 +29,8 @@ public protocol TouchSensorProvider: AnyObject {
 public final class CoreMotionSensorProvider: MotionSensorProvider {
     private let motionTracker: MotionTracker
     
-    public init(errorService: ErrorServicing) {
-        self.motionTracker = MotionTracker(errorService: errorService)
+    public init(errorProvider: ErrorProviding) {
+        self.motionTracker = MotionTracker(errorProvider: errorProvider)
     }
     
     @MainActor public func start(

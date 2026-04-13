@@ -17,19 +17,19 @@ public protocol AttributesProviding: AnyObject {
     func didChangeKeyboardLanguage() async
     func appDidChangeState(_ state: AttributesProvider.AppState) async
     
-    init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: LifecycleProviding)
+    init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInformationServicing, appLifecycleService: LifecycleProviding)
 }
 
 public class AttributesProvider: AttributesProviding {
     
     private let networkService: Networking
-    private let errorService: ErrorServicing
+    private let errorProvider: ErrorProviding
     private let appService:  AppInformationServicing
     private let appLifecycleService: LifecycleProviding
     
-    required public init(networkService: Networking, errorService: ErrorServicing, appService: AppInformationServicing, appLifecycleService: LifecycleProviding) {
+    required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInformationServicing, appLifecycleService: LifecycleProviding) {
         self.networkService = networkService
-        self.errorService = errorService
+        self.errorProvider = errorProvider
         self.appService = appService
         self.appLifecycleService = appLifecycleService
     }
@@ -39,7 +39,7 @@ public class AttributesProvider: AttributesProviding {
             do {
                 let response: GenericResponse? = try await networkService.post(deviceLog, for: .attributes)
             } catch {
-                errorService.sendError(error)
+                errorProvider.sendError(error)
             }
         }
     }
@@ -78,7 +78,7 @@ public class AttributesProvider: AttributesProviding {
             do {
                 let response: GenericResponse? = try await networkService.post(data, for: .attributes)
             } catch {
-                errorService.sendError(error)
+                errorProvider.sendError(error)
             }
         }
     }
@@ -88,7 +88,7 @@ public class AttributesProvider: AttributesProviding {
             do {
                 let response: GenericResponse? = try await networkService.post(state, for: .attributes)
             } catch {
-                errorService.sendError(error)
+                errorProvider.sendError(error)
             }
         }
     }
@@ -108,7 +108,7 @@ public class AttributesProvider: AttributesProviding {
                 do {
                     let response: GenericResponse? = try await self?.networkService.post(appState, for: .attributes)
                 } catch {
-                    self?.errorService.sendError(error)
+                    self?.errorProvider.sendError(error)
                 }
             }
         }

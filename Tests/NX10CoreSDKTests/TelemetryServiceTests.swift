@@ -168,7 +168,7 @@ final class ArchitectureSOLIDTests: XCTestCase {
     
     func testSensorProviderAbstraction() {
         // Test that sensor providers are protocol-based, not concrete
-        let motionProvider: MotionSensorProvider = CoreMotionSensorProvider(errorService: ErrorService(configLoader: ConfigService()))
+        let motionProvider: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: ErrorProvider(configLoader: ConfigService()))
         let touchProvider: TouchSensorProvider = CoreTouchSensorProvider()
         
         XCTAssertNotNil(motionProvider, "Should be able to create motion sensor from protocol")

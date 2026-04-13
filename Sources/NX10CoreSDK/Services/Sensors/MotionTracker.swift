@@ -11,10 +11,10 @@ import CoreMotion
 public final class MotionTracker {
 
     private let motionManager = CMMotionManager()
-    private let errorService: ErrorServicing
+    private let errorProvider: ErrorProviding
     
-    init(errorService: ErrorServicing) {
-        self.errorService = errorService
+    init(errorProvider: ErrorProviding) {
+        self.errorProvider = errorProvider
     }
 
     @MainActor func start(
@@ -35,7 +35,7 @@ public final class MotionTracker {
             }
         } else {
             print("LOG: Gyro failed to start")
-            errorService.sendError(NSError(domain: "Gyro not available", code: -1))
+            errorProvider.sendError(NSError(domain: "Gyro not available", code: -1))
         }
 
         if motionManager.isAccelerometerAvailable {
@@ -52,7 +52,7 @@ public final class MotionTracker {
             }
         } else {
             print("LOG: accelerometer failed to start")
-            errorService.sendError(NSError(domain: "Accelerometer not available", code: -1))
+            errorProvider.sendError(NSError(domain: "Accelerometer not available", code: -1))
         }
     }
 

@@ -11,7 +11,7 @@ internal import UIKit
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
     var accessProvider: AccessProviding { get }
-    var errorService: ErrorServicing { get }
+    var errorProvider: ErrorProviding { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
     static var shared: NX10CoreProtocol { get }
@@ -30,7 +30,7 @@ public final class NX10Core: NX10CoreProtocol {
     public static var shared: NX10CoreProtocol = NX10Core()
     
     // MARK: Public properties
-    public let errorService: ErrorServicing
+    public let errorProvider: ErrorProviding
     public let telemetryService: TelemetryService
     public let accessProvider: AccessProviding
     public let saaqService: SaaQServiceProtocol
@@ -52,16 +52,16 @@ public final class NX10Core: NX10CoreProtocol {
     @MainActor private init () {
         // MARK: - Core Services
         let configLoader = ConfigProvider()
-        let errorService = ErrorService(configLoader: configLoader)
+        let errorProvider = ErrorProvider(configLoader: configLoader)
         let appService = AppInformationService()
         let endpointProvider = EndpointProvider(configLoader: configLoader)
         let networkService = NetworkService(endpointProvider: endpointProvider)
-        let accessProvider = AccessProvider(errorService: errorService)
+        let accessProvider = AccessProvider(errorProvider: errorProvider)
         let analyticsService = AnalyticsProvider(networkService: networkService)
         let appLifecycleService = LifecyleProvider()
         
         // MARK: - Sensor Providers (Protocol-based)
-        let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorService: errorService)
+        let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
         let touchSensor: TouchSensorProvider = CoreTouchSensorProvider()
         
         // MARK: - Scheduler & Event Publisher
@@ -90,7 +90,7 @@ public final class NX10Core: NX10CoreProtocol {
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
         let attributesService = AttributesProvider(
             networkService: networkService,
-            errorService: errorService,
+            errorProvider: errorProvider,
             appService: appService,
             appLifecycleService: appLifecycleService
         )
@@ -102,7 +102,7 @@ public final class NX10Core: NX10CoreProtocol {
         )
         
         // MARK: - Retention assignments
-        self.errorService = errorService
+        self.errorProvider = errorProvider
         self.telemetryService = telemetryService
         self.accessProvider = accessProvider
         self.saaqService = saaqService
@@ -117,7 +117,7 @@ public final class NX10Core: NX10CoreProtocol {
         self.sessionProvider = sessionProvider
         
         // Keep original references for backward compatibility
-        self.motionTracker = MotionTracker(errorService: errorService)
+        self.motionTracker = MotionTracker(errorProvider: errorProvider)
         self.touchTracker = TouchTracker()
     }
     
@@ -136,7 +136,7 @@ public final class NX10Core: NX10CoreProtocol {
             return
         }
         
-        errorService.setTrackingEnabled(errorTrackingEnabled)
+        errorProvider.setTrackingEnabled(errorTrackingEnabled)
         accessProvider.setAppGroupID(appGroupdID)
         
         let accessReady = accessProvider.isReady ?? false
@@ -184,13 +184,13 @@ extension NX10Core {
                 if isDebug {
                     fatalError("failed to start session")
                 }
-                errorService.sendSDKError(.sessionFailed)
+                errorProvider.sendSDKError(.sessionFailed)
             }
         } catch {
             if isDebug {
                 print("start session failed")
             }
-            self.errorService.sendError(error)
+            self.errorProvider.sendError(error)
             throw error
         }
         isStartingSession = true

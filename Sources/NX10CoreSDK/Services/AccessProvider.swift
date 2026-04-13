@@ -22,7 +22,7 @@ public protocol AccessProviding {
     func stopFullAccessMonitoring()
     func isFullAccessEnabled() async -> Bool
 
-    init(errorService: ErrorServicing)
+    init(errorProvider: ErrorProviding)
 }
 
 public final class AccessProvider: AccessProviding  {
@@ -33,12 +33,12 @@ public final class AccessProvider: AccessProviding  {
     
     private var accessAttemptCounter = 0
     private let maxFailureCount: Int = 3
-    private let errorService: ErrorServicing
+    private let errorProvider: ErrorProviding
     private var appGroupID: String
     private var fullAccessTimer: Timer?
     
-    public init(errorService: ErrorServicing) {
-        self.errorService = errorService
+    public init(errorProvider: ErrorProviding) {
+        self.errorProvider = errorProvider
         appGroupID = ""
     }
     
@@ -206,7 +206,7 @@ public final class AccessProvider: AccessProviding  {
     
     fileprivate func logFullAccessFailure(_ error: any Error) {
         if accessAttemptCounter >= maxFailureCount {
-            errorService.sendError(error)
+            errorProvider.sendError(error)
             accessAttemptCounter = 0
         }
     }
