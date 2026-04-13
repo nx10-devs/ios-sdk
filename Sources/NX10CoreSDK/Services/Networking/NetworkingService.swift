@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import JWTDecode
 
 @MainActor
 public protocol Networking {
@@ -24,6 +25,11 @@ public final class NetworkService: Networking {
     }
     
     public func setToken(_ token: String) {
+        if isDebug, let jwt = try? decode(jwt: token) {
+                   print("LOG: Token: ", jwt)
+                   print("LOG: Session: ", jwt["sub"])
+        }
+        
         self.token = token
     }
     

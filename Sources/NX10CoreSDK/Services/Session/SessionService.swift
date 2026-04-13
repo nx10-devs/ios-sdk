@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import JWTDecode
 
 @MainActor
 public protocol SessionProviding {
