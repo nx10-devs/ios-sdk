@@ -97,7 +97,7 @@ public final class SaaQService: SaaQServiceProtocol {
     }
     
     public func dismiss() {
-        promptController
+        
     }
     
     // MARK: UIKit integration necessary step

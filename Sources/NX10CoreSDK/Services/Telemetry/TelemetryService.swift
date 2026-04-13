@@ -74,7 +74,7 @@ public final class TelemetryService: TelemetryServicing {
     
     public func startTelemetryEventLoop() {
         scheduler.start(interval: 30) { [weak self] in
-            self?.telemetryCollector.flushIfNeeded()
+            Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
         }
         analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
     }

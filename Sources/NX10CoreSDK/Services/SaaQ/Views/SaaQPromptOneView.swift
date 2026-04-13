@@ -25,7 +25,7 @@ public struct SaaQPromptOneView: View {
         self.payload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
-        self._sliderValue = State(initialValue: Double(payload.prompt.startingValue ?? 0))
+        self._sliderValue = State(initialValue: Double(payload.prompt.startingValue))
     }
     
     public var body: some View {
@@ -34,7 +34,7 @@ public struct SaaQPromptOneView: View {
             leftLabel: payload.prompt.leftAnchorValue,
             rightLabel: payload.prompt.rightAnchorValue,
             range: payload.prompt.getRangeSize(),
-            startingValue: Double(payload.prompt.startingValue ?? 0),
+            startingValue: Double(payload.prompt.startingValue),
             dismissable: payload.dismissable,
             confirmButtonEnabled: payload.prompt.confirmButtonEnabled,
             onSliderChanged: { _ in },
@@ -43,7 +43,7 @@ public struct SaaQPromptOneView: View {
                 onConfirm(SaaQAnswerWrapper(saaqOneAnswer: answer))
             },
             onClose: {
-                let answer = buildAnswer(with: payload.prompt.startingValue ?? 0, type: .dismissed)
+                let answer = buildAnswer(with: payload.prompt.startingValue, type: .dismissed)
                 onClose(SaaQAnswerWrapper(saaqOneAnswer: answer))
             }
         )

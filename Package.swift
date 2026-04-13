@@ -30,7 +30,9 @@ let package = Package(
                 .process("Assets/NX10CoreConfig.plist")
             ]
         ),
-
+        .testTarget(
+               name: "Tests",
+               dependencies: ["NX10CoreSDK"])
     ]
 )
 

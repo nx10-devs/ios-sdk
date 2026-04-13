@@ -6,10 +6,10 @@
 //
 
 import Foundation
-
+@MainActor
 /// Protocol for scheduling telemetry uploads at intervals
 public protocol TelemetryScheduler: AnyObject {
-    func start(interval: TimeInterval, onTick: @escaping () -> Void)
+    func start(interval: TimeInterval, onTick: @escaping @Sendable () -> Void)
     func stop()
     func invalidate()
 }
@@ -20,7 +20,7 @@ public final class DefaultTelemetryScheduler: TelemetryScheduler {
     
     public init() {}
     
-    public func start(interval: TimeInterval, onTick: @escaping () -> Void) {
+    public func start(interval: TimeInterval, onTick: @escaping @Sendable () -> Void) {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
             onTick()
@@ -37,11 +37,13 @@ public final class DefaultTelemetryScheduler: TelemetryScheduler {
         timer = nil
     }
     
+    @MainActor
     deinit {
         invalidate()
     }
 }
 
+@MainActor
 /// Mock scheduler for testing
 public final class MockTelemetryScheduler: TelemetryScheduler {
     public var isStarted = false
