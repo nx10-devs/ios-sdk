@@ -69,14 +69,8 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
         
         Task(name: "telemetry-upload", priority: .utility) {
             do {
-                guard
-                    let url = try uploader.url(for: .telemetry(version: .v2))
-                else {
-                    throw APIError.malformedURL
-                }
-                
                 // POST and handle SaaQ trigger response
-                let saaqTrigger: SaaQResponse? = try await uploader.post(payload, for: url)
+                let saaqTrigger: SaaQResponse? = try await uploader.post(payload, for: .telemetry)
                 
                 // Publish trigger event if received
                 if let trigger = saaqTrigger {

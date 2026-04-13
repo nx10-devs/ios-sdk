@@ -14,7 +14,6 @@ public final class TelemetryService: TelemetryServicing {
     
     // MARK: - Dependencies (Protocol-based, not concrete)
     private let telemetryCollector: TelemetryCollectorComprehensive
-    private let telemetryHandler: TelemetryHandling
     private let motionSensor: MotionSensorProvider
     private let touchSensor: TouchSensorProvider
     private let scheduler: TelemetryScheduler
@@ -26,7 +25,6 @@ public final class TelemetryService: TelemetryServicing {
     // MARK: - Initialization
     public init(
         telemetryCollector: TelemetryCollectorComprehensive,
-        telemetryHandler: TelemetryHandling,
         motionSensor: MotionSensorProvider,
         touchSensor: TouchSensorProvider,
         scheduler: TelemetryScheduler,
@@ -34,7 +32,6 @@ public final class TelemetryService: TelemetryServicing {
         analyticsService: AnalyticsServicing
     ) {
         self.telemetryCollector = telemetryCollector
-        self.telemetryHandler = telemetryHandler
         self.motionSensor = motionSensor
         self.touchSensor = touchSensor
         self.scheduler = scheduler
@@ -47,25 +44,8 @@ public final class TelemetryService: TelemetryServicing {
     
     // MARK: - Public API
     
-    public func shouldStartSession() async throws -> Bool {
-        guard !sessionStarted else {
-            throw NSError(
-                domain: "failed-to-start-session",
-                code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "Session already started"]
-            )
-        }
-        
-        let result = try await telemetryHandler.startSession()
-        guard result else {
-            throw NSError(
-                domain: "failed-to-start-session",
-                code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "Handler failed to start session"]
-            )
-        }
-        
-        sessionStarted = true
+    public func shouldStartTelemetry() async throws -> Bool {
+
         startTelemetryEventLoop()
         startTrackingMotion()
         

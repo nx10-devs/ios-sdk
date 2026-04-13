@@ -9,27 +9,29 @@ import Foundation
 
 @MainActor
 public protocol Networking {
-    var config: NetworkConfig { get }
-    var isReady: Bool { get }
-    
+    func setToken(_ token: String)
     func post<T:Encodable, R:Decodable>(_ payload: T, for url: URL) async throws -> R?
-    func url(for endpointType: NetworkConfig.EndpointType) throws -> URL?
-
-    init(config: NetworkConfig)
+    
+    func post<T:Encodable, R:Decodable>(_ payload: T, for endpoint: Endpoint.EndpointType) async throws -> R?
 }
 
 public final class NetworkService: Networking {
-    public let config: NetworkConfig
-    public var isReady: Bool {
-        return config.isReady
+    private var token: String?
+    private let endpointProvider: EndpointProviding
+    
+    init(endpointProvider: EndpointProviding) {
+        self.endpointProvider = endpointProvider
     }
     
-    public init(config: NetworkConfig) {
-        self.config = config
+    public func setToken(_ token: String) {
+        self.token = token
     }
     
-    public func url(for endpointType: NetworkConfig.EndpointType) throws -> URL? {
-        return try config.url(for: endpointType)
+    public func post<T:Encodable, R:Decodable>(_ payload: T, for endpoint: Endpoint.EndpointType) async throws -> R? {
+        print("LOG ------------------------------ \(endpoint.rawValue)")
+        let url = try endpointProvider.url(for: endpoint)
+        
+        return await try self.post(payload, for: url)
     }
     
     public func post<T:Encodable, R:Decodable>(_ payload: T, for url: URL) async throws -> R? {
@@ -44,8 +46,8 @@ public final class NetworkService: Networking {
             
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            if let sessionToken = config.getToken() {
-                request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
+            if let token {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
             request.httpBody = json
             

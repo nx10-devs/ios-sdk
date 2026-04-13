@@ -12,7 +12,7 @@ import CoreGraphics
 @MainActor
 public protocol TelemetryServicing: AnyObject {
     // Lifecycle
-    func shouldStartSession() async throws -> Bool
+    func shouldStartTelemetry() async throws -> Bool
     func startTelemetryEventLoop()
     func stopTelemetry()
     func startTrackingMotion()

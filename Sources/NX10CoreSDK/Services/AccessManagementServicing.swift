@@ -164,9 +164,8 @@ public final class AccessManagementService: AccessManagementServicing  {
         fullAccessTimer = nil
         // Schedule a repeating timer on the main run loop (we are @MainActor)
         fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            
+            Task(name: "access-check", priority: .utility) {
 
-            Task { [weak self] in
                 guard let self else { return }
                 // If Full Access is now enabled, stop monitoring
                 if await self.isFullAccessEnabled() {

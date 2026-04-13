@@ -78,13 +78,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
 
         Task {
             do {
-                guard
-                    let url = try uploader.url(for: .telemetry(version: .v2))
-                else {
-                    throw APIError.malformedURL
-                }
-                
-                let _ :TelemetryV2Response? = try await uploader.post(payload, for: url)
+                let _ :TelemetryV2Response? = try await uploader.post(payload, for: .telemetry)
                 
                 // TODO: Flush telemetry
                 

@@ -13,7 +13,6 @@ public final class DependencyContainer {
     // MARK: - Core Services
     public let configService: ConfigService
     public let errorService: ErrorServicing
-    public let networkConfig: NetworkConfiguring
     public let networkService: Networking
     public let appService: AppInformationServicing
     
@@ -30,6 +29,7 @@ public final class DependencyContainer {
     public let analyticsService: AnalyticsServicing
     public let attributesService: AttributesServicing
     public let appLifecycleService: AppLifecycleServicing
+    public let endpointProvider: EndpointProviding
     
     // MARK: - Initialization
     public init(
@@ -49,10 +49,11 @@ public final class DependencyContainer {
         let appService = AppInformationService()
         self.appService = appService
         
-        let networkConfig = NetworkConfig(configLoader: configLoader)
-        self.networkConfig = networkConfig
+        let endpointProvider = EndpointProvider(configLoader: configLoader)
         
-        let networkService = NetworkService(config: networkConfig)
+        self.endpointProvider = endpointProvider
+        
+        let networkService = NetworkService(endpointProvider: endpointProvider)
         self.networkService = networkService
         
         // Initialize sensor providers
@@ -67,7 +68,7 @@ public final class DependencyContainer {
         let accessManagement = AccessManagementService(errorService: errorService)
         self.accessManagementService = accessManagement
         
-        let analytics = AnalyticsService(networkService: networkService, networkConfig: networkConfig)
+        let analytics = AnalyticsService(networkService: networkService)
         self.analyticsService = analytics
         
         let attributes = AttributesService(

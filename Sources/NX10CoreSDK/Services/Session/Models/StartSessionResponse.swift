@@ -28,4 +28,12 @@ public struct Endpoint: Decodable, Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(location + type + version)
     }
+    
+    public enum EndpointType: String {
+        case telemetry
+        case saaq
+        case saaqTriggered = "saaq-triggered"
+        case analytics
+        case attributes
+    }
 }

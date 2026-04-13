@@ -14,13 +14,10 @@ public protocol AnalyticsServicing {
 
 public class AnalyticsService: AnalyticsServicing {
     private let networkService: Networking
-    private let networkConfig: NetworkConfig
-    private var payloadStorage = Set<AnalyticsService.Payload>()
     private struct EmptyResponse: Decodable {}
 
-    public init(networkService: Networking, networkConfig: NetworkConfig) {
+    public init(networkService: Networking) {
         self.networkService = networkService
-        self.networkConfig = networkConfig
     }
     
     public func sendAnalytics(_ payload: AnalyticsService.Payload) {
@@ -35,15 +32,7 @@ public class AnalyticsService: AnalyticsServicing {
         
         Task {
             do {
-                guard
-                    let url = try await networkConfig.url(for: .analytics(version: .v1))
-                else {
-                    if isDebug {
-                        fatalError("Can't find URL")
-                    }
-                    return
-                }
-                let _: EmptyResponse? = try await networkService.post(payload, for: url)
+                let _: EmptyResponse? = try await networkService.post(payload, for: .analytics)
             } catch {
                 
                 print(error.localizedDescription)

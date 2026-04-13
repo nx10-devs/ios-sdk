@@ -37,12 +37,7 @@ public class AttributesService: AttributesServicing {
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
         Task(name: "analytics-task", priority: .utility) {
             do {
-                
-                guard
-                    let url = try networkService.url(for: .attributes(version: .v1))
-                else { return }
-                
-                let response: GenericResponse? = try await networkService.post(deviceLog, for: url)
+                let response: GenericResponse? = try await networkService.post(deviceLog, for: .attributes)
             } catch {
                 errorService.sendError(error)
             }
@@ -81,12 +76,7 @@ public class AttributesService: AttributesServicing {
             let keyboardLanguage = appService.keyboardLanguage
             let data = AttributesService.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
-                
-                guard
-                    let url = try networkService.url(for: .attributes(version: .v1))
-                else { return }
-                
-                let response: GenericResponse? = try await networkService.post(data, for: url)
+                let response: GenericResponse? = try await networkService.post(data, for: .attributes)
             } catch {
                 errorService.sendError(error)
             }
@@ -96,11 +86,7 @@ public class AttributesService: AttributesServicing {
     public func appDidChangeState(_ state: AppState) async {
         Task(name: "attributes-task", priority: .utility) {
             do {
-                guard
-                    let url = try networkService.url(for: .attributes(version: .v1))
-                else { return }
-                
-                let response: GenericResponse? = try await networkService.post(state, for: url)
+                let response: GenericResponse? = try await networkService.post(state, for: .attributes)
             } catch {
                 errorService.sendError(error)
             }
@@ -120,12 +106,7 @@ public class AttributesService: AttributesServicing {
             let appState = AppState(timestamp: Date().iso8601, state: data)
             Task {
                 do {
-                    
-                    guard
-                        let url = try self?.networkService.url(for: .attributes(version: .v1))
-                    else { return }
-                    
-                    let response: GenericResponse? = try await self?.networkService.post(appState, for: url)
+                    let response: GenericResponse? = try await self?.networkService.post(appState, for: .attributes)
                 } catch {
                     self?.errorService.sendError(error)
                 }

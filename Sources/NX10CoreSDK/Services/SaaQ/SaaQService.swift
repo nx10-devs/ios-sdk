@@ -66,19 +66,13 @@ public final class SaaQService: SaaQServiceProtocol {
         
         promptController.didAnswerSaaQ = { answer in
             do {
-                guard
-                    let url = try networkService.url(for: .saaqTriggered(version: .v1))
-                else {
-                    return
-                }
-                
                 Task(name: "saaq-task", priority: .utility) {
                     if let answerOne = answer.saaqOneAnswer {
-                        let _: GenericResponse? = try await networkService.post(answerOne, for: url)
+                        let _: GenericResponse? = try await networkService.post(answerOne, for: .saaqTriggered)
                     }
                     
                     if let answerTwo = answer.saaqTwoAnswer {
-                        let _: GenericResponse? = try await networkService.post(answerTwo, for: url)
+                        let _: GenericResponse? = try await networkService.post(answerTwo, for: .saaqTriggered)
                     }
                 }
             } catch {

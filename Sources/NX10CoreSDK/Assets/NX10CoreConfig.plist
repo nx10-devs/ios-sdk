@@ -10,5 +10,9 @@
 	<string>https://AMkY3SHpwaYHiGnEA7zpGmng@s2291255.eu-fsn-3.betterstackdata.com/2291260</string>
 	<key>DEV_SENTRY_ENVIRONMENT</key>
 	<string>keyboard-extension</string>
+	<key>NX10_DEV_URL</key>
+	<string>https://control-plane.affectstack-stage.com/routes/sessions/start</string>
+	<key>NX10_PROD_URL</key>
+	<string>https://control-plane.affectstack.com/routes/sessions/start</string>
 </dict>
 </plist>

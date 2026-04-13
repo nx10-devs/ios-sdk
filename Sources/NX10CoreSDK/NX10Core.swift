@@ -26,6 +26,7 @@ public protocol NX10CoreProtocol: AnyObject {
 }
 
 public final class NX10Core: NX10CoreProtocol {
+    
     public static var shared: NX10CoreProtocol = NX10Core()
     
     // MARK: Public properties
@@ -33,9 +34,8 @@ public final class NX10Core: NX10CoreProtocol {
     public let telemetryService: TelemetryService
     public let accessManagementService: AccessManagementServicing
     public let saaqService: SaaQServiceProtocol
-
+    
     // MARK: Internal properties
-    let networkConfig: NetworkConfig
     let networkservice: Networking
     let appService: AppInformationServicing
     let motionTracker: MotionTracker
@@ -43,6 +43,8 @@ public final class NX10Core: NX10CoreProtocol {
     let analyticsService: AnalyticsServicing
     let attributesService: AttributesServicing
     let appLifecycleService: AppLifecycleServicing
+    let endpointProvider: EndpointProviding
+    let sessionProvider: SessionProviding
     
     private var isConfigured = false
     private var isStartingSession = false
@@ -52,10 +54,10 @@ public final class NX10Core: NX10CoreProtocol {
         let configLoader = ConfigService()
         let errorService = ErrorService(configLoader: configLoader)
         let appService = AppInformationService()
-        let networkConfig = NetworkConfig(configLoader: configLoader)
-        let networkService = NetworkService(config: networkConfig)
+        let endpointProvider = EndpointProvider(configLoader: configLoader)
+        let networkService = NetworkService(endpointProvider: endpointProvider)
         let accessManagementService = AccessManagementService(errorService: errorService)
-        let analyticsService = AnalyticsService(networkService: networkService, networkConfig: networkConfig)
+        let analyticsService = AnalyticsService(networkService: networkService)
         let appLifecycleService = AppLifecyleService()
         
         // MARK: - Sensor Providers (Protocol-based)
@@ -74,17 +76,9 @@ public final class NX10Core: NX10CoreProtocol {
             eventPublisher: eventPublisher
         )
         
-        // MARK: - Telemetry Handler
-        let telemetryHandler: TelemetryHandling = TelemetryHandler(
-            networkingService: networkService,
-            config: networkConfig,
-            appService: appService
-        )
-        
         // MARK: - Telemetry Service (Protocol-based initialization)
         let telemetryService = TelemetryService(
             telemetryCollector: telemetryCollector,
-            telemetryHandler: telemetryHandler,
             motionSensor: motionSensor,
             touchSensor: touchSensor,
             scheduler: scheduler,
@@ -94,7 +88,18 @@ public final class NX10Core: NX10CoreProtocol {
         
         // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
-        let attributesService = AttributesService(networkService: networkService, errorService: errorService, appService: appService, appLifecycleService: appLifecycleService)
+        let attributesService = AttributesService(
+            networkService: networkService,
+            errorService: errorService,
+            appService: appService,
+            appLifecycleService: appLifecycleService
+        )
+        let sessionProvider = SessionProvider(
+            endpointsProvider: endpointProvider,
+            configLoader: configLoader,
+            networking: networkService,
+            applicationInfoProvider: appService
+        )
         
         // MARK: - Retention assignments
         self.errorService = errorService
@@ -103,12 +108,13 @@ public final class NX10Core: NX10CoreProtocol {
         self.saaqService = saaqService
         
         // Internal properties for lifecycle management
+        self.endpointProvider = endpointProvider
         self.appService = appService
-        self.networkConfig = networkConfig
         self.networkservice = networkService
         self.analyticsService = analyticsService
         self.appLifecycleService = appLifecycleService
         self.attributesService = attributesService
+        self.sessionProvider = sessionProvider
         
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorService: errorService)
@@ -132,16 +138,11 @@ public final class NX10Core: NX10CoreProtocol {
         
         errorService.setTrackingEnabled(errorTrackingEnabled)
         accessManagementService.setAppGroupID(appGroupdID)
-        networkConfig.setAPIKey(apiKey)
         
-        let networkConfigReady = networkConfig.isReady ?? false
         let accessManagementServiceReady = accessManagementService.isReady ?? false
-        let networkingServiceReady = networkservice.isReady ?? false
         
         guard
-            networkConfigReady,
-            accessManagementServiceReady,
-            networkingServiceReady
+            accessManagementServiceReady
         else {
             if isDebug {
                 fatalError("API's failed to load correctly")
@@ -151,36 +152,49 @@ public final class NX10Core: NX10CoreProtocol {
         
         if shouldStartSession {
             print("should start session")
-            await accessManagementService.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [weak self] enabled in
+            await accessManagementService.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [unowned self] enabled in
                 if enabled {
-                    Task {
-                        try await self?.startSession()
-                        try await self?.attributesService.sendInitialMetadata()
+                    Task(name: "telemetry-task", priority: .utility) {
+                        try await startSession()
                     }
                 }
             }
         }
-        
+        print("LOG: isConfigured is true")
         isConfigured = true
     }
 }
 
 extension NX10Core {
-    public func startSession() async throws {
+    public func startSession() async throws  {
         if isStartingSession { return }
         isStartingSession = true
         
-        defer { isStartingSession = false }
         do {
-            try await self.telemetryService.shouldStartSession()
+            print("LOG: startSession")
+            let start = try await self.sessionProvider.startSession()
+            
+            if start {
+                print("LOG: sendInitialMetadata")
+                try await attributesService.sendInitialMetadata()
+                print("LOG: shouldStartTelemetry")
+                try await self.telemetryService.shouldStartTelemetry()
+                isStartingSession = false
+            } else {
+                if isDebug {
+                    fatalError("failed to start session")
+                }
+                errorService.sendSDKError(.sessionFailed)
+            }
         } catch {
             if isDebug {
                 print("start session failed")
             }
             self.errorService.sendError(error)
-            
             throw error
         }
+        isStartingSession = true
+        return
     }
 }
 
