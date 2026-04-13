@@ -17,17 +17,17 @@ public protocol AttributesProviding: AnyObject {
     func didChangeKeyboardLanguage() async
     func appDidChangeState(_ state: AttributesProvider.AppState) async
     
-    init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInformationServicing, appLifecycleService: LifecycleProviding)
+    init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding, appLifecycleService: LifecycleProviding)
 }
 
 public class AttributesProvider: AttributesProviding {
     
     private let networkService: Networking
     private let errorProvider: ErrorProviding
-    private let appService:  AppInformationServicing
+    private let appService:  AppInfoProviding
     private let appLifecycleService: LifecycleProviding
     
-    required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInformationServicing, appLifecycleService: LifecycleProviding) {
+    required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding, appLifecycleService: LifecycleProviding) {
         self.networkService = networkService
         self.errorProvider = errorProvider
         self.appService = appService

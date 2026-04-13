@@ -14,7 +14,7 @@ public final class DependencyContainer {
     public let configService: ConfigProvider
     public let errorProvider: ErrorProviding
     public let networkService: Networking
-    public let appService: AppInformationServicing
+    public let appService: AppInfoProviding
     
     // MARK: - Sensor Providers
     public let motionSensor: MotionSensorProvider
@@ -46,7 +46,7 @@ public final class DependencyContainer {
         let errorProvider = ErrorProvider(configLoader: configLoader)
         self.errorProvider = errorProvider
         
-        let appService = AppInformationService()
+        let appService = AppInfoProvider()
         self.appService = appService
         
         let endpointProvider = EndpointProvider(configLoader: configLoader)

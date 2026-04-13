@@ -28,7 +28,7 @@ final class TelemetryServiceTests: XCTestCase {
         networkingService = MockNetworking(config: .init(configLoader: .init()))
         sut = TelemetryService(
             telemetryCollector: mockCollector,
-            telemetryHandler: MockTelemetryHandler(networkingService: networkingService, config: .init(configLoader: .init()), appService: AppInformationService()),
+            telemetryHandler: MockTelemetryHandler(networkingService: networkingService, config: .init(configLoader: .init()), appService: AppInfoProvider()),
             motionSensor: mockMotionSensor,
             touchSensor: CoreTouchSensorProvider(),
             scheduler: mockScheduler,
@@ -119,9 +119,9 @@ final class MockTelemetryCollector: TelemetryCollectorComprehensive {
 final class MockTelemetryHandler: TelemetryHandling {
     private let networkingService: any Networking
     private let config: NetworkConfig
-    private let appService: any AppInformationServicing
+    private let appService: any AppInfoProviding
     
-    init(networkingService: any NX10CoreSDK.Networking, config: NX10CoreSDK.NetworkConfig, appService: any NX10CoreSDK.AppInformationServicing) {
+    init(networkingService: any NX10CoreSDK.Networking, config: NX10CoreSDK.NetworkConfig, appService: any NX10CoreSDK.AppInfoProviding) {
         self.networkingService = networkingService
         self.config = config
         self.appService = appService
@@ -187,7 +187,7 @@ final class ArchitectureSOLIDTests: XCTestCase {
     func testTelemetryServiceConformsToProtocol() {
         let collector = MockTelemetryCollector()
         let networking = MockNetworking(config: .init(configLoader: .init()))
-        let handler = MockTelemetryHandler(networkingService: networking, config: .init(configLoader: .init()), appService: AppInformationService())
+        let handler = MockTelemetryHandler(networkingService: networking, config: .init(configLoader: .init()), appService: AppInfoProvider())
         let sensor = MockMotionSensorProvider()
         let touch = CoreTouchSensorProvider()
         let scheduler = MockTelemetryScheduler()

@@ -28,9 +28,9 @@ public final class SessionProvider: SessionProviding {
     private var endpointsProvider: EndpointProviding
     private let configLoader: ConfigProvider
     private let networking: Networking
-    private let applicationInfoProvider: AppInformationServicing
+    private let applicationInfoProvider: AppInfoProviding
     
-    init(endpointsProvider: EndpointProviding, configLoader: ConfigProvider, networking: Networking, applicationInfoProvider: AppInformationServicing) {
+    init(endpointsProvider: EndpointProviding, configLoader: ConfigProvider, networking: Networking, applicationInfoProvider: AppInfoProviding) {
         self.endpointsProvider = endpointsProvider
         self.configLoader = configLoader
         self.networking = networking

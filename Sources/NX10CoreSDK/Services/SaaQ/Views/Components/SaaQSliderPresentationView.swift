@@ -111,3 +111,13 @@ public struct SaaQSliderPresentationView: View {
         .padding()
     }
 }
+
+#Preview {
+    SaaQSliderPresentationView(title: "Title", leftLabel: "Left", rightLabel: "Right", range: 0...10, startingValue: 0.0, dismissable: true, confirmButtonEnabled: true) { _ in
+        
+    } onConfirm: {
+        
+    } onClose: {
+        
+    }
+}

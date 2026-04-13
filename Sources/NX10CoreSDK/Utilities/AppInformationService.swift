@@ -1,5 +1,5 @@
 //
-//  AppInformationService.swift
+//  AppInfoProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 18/03/2026.
@@ -9,7 +9,7 @@ internal import UIKit
 import Darwin
 
 @MainActor
-public protocol AppInformationServicing: AnyObject {
+public protocol AppInfoProviding: AnyObject {
     var iOSVersion: String { get }
     var deviceID: String { get }
     var sdkType: String { get }
@@ -20,7 +20,7 @@ public protocol AppInformationServicing: AnyObject {
     @MainActor func deviceInfo() -> DeviceInfo
 }
 
-public final class AppInformationService: AppInformationServicing {
+public final class AppInfoProvider: AppInfoProviding {
     public init() {}
     public let keyboardLanguage: String = UITextInputMode.activeInputModes.first?.primaryLanguage ?? "en-GB"
     public let iOSVersion = "\(ProcessInfo.processInfo.operatingSystemVersion.majorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.minorVersion).\(ProcessInfo.processInfo.operatingSystemVersion.patchVersion)"

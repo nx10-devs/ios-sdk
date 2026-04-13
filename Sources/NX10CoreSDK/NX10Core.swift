@@ -37,7 +37,7 @@ public final class NX10Core: NX10CoreProtocol {
     
     // MARK: Internal properties
     let networkservice: Networking
-    let appService: AppInformationServicing
+    let appService: AppInfoProviding
     let motionTracker: MotionTracker
     let touchTracker: TouchTracker
     let analyticsService: AnalyticsProviding
@@ -53,7 +53,7 @@ public final class NX10Core: NX10CoreProtocol {
         // MARK: - Core Services
         let configLoader = ConfigProvider()
         let errorProvider = ErrorProvider(configLoader: configLoader)
-        let appService = AppInformationService()
+        let appService = AppInfoProvider()
         let endpointProvider = EndpointProvider(configLoader: configLoader)
         let networkService = NetworkService(endpointProvider: endpointProvider)
         let accessProvider = AccessProvider(errorProvider: errorProvider)
