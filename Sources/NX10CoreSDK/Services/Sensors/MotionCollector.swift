@@ -15,6 +15,14 @@ public final class MotionCollector {
 
     private var gyroSamples: [MotionSample] = []
     private var accSamples: [MotionSample] = []
+    
+    private let updateInterval: TimeInterval = CycleHz.medium.rawValue // previously medium
+    
+    enum CycleHz: TimeInterval {
+        case slow = 0.1
+        case medium = 0.03333333333
+        case high = 0.02166666666
+    }
 
     struct MotionSample: Codable {
         let x: Double
@@ -34,7 +42,7 @@ public final class MotionCollector {
         let formatter = ISO8601DateFormatter()
 
         if manager.isGyroAvailable {
-            manager.gyroUpdateInterval = 1.0 / 30.0
+            manager.gyroUpdateInterval = updateInterval
             manager.startGyroUpdates(to: queue) { [weak self] data, _ in
                 guard let rate = data?.rotationRate else { return }
                 let sample = MotionSample(
@@ -48,7 +56,7 @@ public final class MotionCollector {
         }
 
         if manager.isAccelerometerAvailable {
-            manager.accelerometerUpdateInterval = 1.0 / 30.0
+            manager.accelerometerUpdateInterval = updateInterval
             manager.startAccelerometerUpdates(to: queue) { [weak self] data, _ in
                 guard let acc = data?.acceleration else { return }
                 let sample = MotionSample(

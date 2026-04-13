@@ -19,8 +19,7 @@ public protocol SessionProviding {
 
 public final class SessionProvider: SessionProviding {
     public var uploadInterval: TimeInterval {
-        if let seconds = configLoader.double(for: "UPLOAD_INTERVAL") { return seconds }
-        return 30
+        return 10
     }
     public private(set) var isReady: Bool = false
     public var token: String?

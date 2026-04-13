@@ -5,7 +5,7 @@
 	<key>NX10_DEV_API_KEY</key>
 	<string>sk_test_i3nH_M-u4Er9j1uF6GV1wEh-KjWjXYS4sevEpLQLU0RRVu9Wpxo4fZ7rudLpjynJgC9VH-F-rNetlt1In73otA</string>
 	<key>NX10_API_KEY</key>
-	<string>to_do</string>
+	<string></string>
 	<key>DEV_SENTRY_DSN</key>
 	<string>https://AMkY3SHpwaYHiGnEA7zpGmng@s2291255.eu-fsn-3.betterstackdata.com/2291260</string>
 	<key>DEV_SENTRY_ENVIRONMENT</key>
