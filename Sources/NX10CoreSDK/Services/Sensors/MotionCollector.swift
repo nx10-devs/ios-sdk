@@ -20,8 +20,8 @@ public final class MotionCollector {
     
     enum CycleHz: TimeInterval {
         case slow = 0.1
-        case medium = 0.03333333333
-        case high = 0.02166666666
+        case medium = 0.03333333
+        case high = 0.01666666
     }
 
     struct MotionSample: Codable {
