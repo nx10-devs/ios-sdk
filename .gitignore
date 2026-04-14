@@ -5,3 +5,4 @@ NX10Core/.DS_Store
 /.build
 .swiftpm/xcode/package.xcworkspace/xcuserdata/NX10.ME.xcuserdatad/UserInterfaceState.xcuserstate
 /.swiftpm/xcode/package.xcworkspace/xcuserdata
+/.swiftpm
