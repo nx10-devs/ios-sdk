@@ -23,9 +23,6 @@ public struct KeyboardOnboardingView: View {
     /// Current page index for dots indicator
     let currentPage: Int
     
-    /// Total number of pages
-    let totalPages: Int
-    
     /// Optional callback for page indicator tap
     let onPageIndicatorTapped: ((Int) -> Void)?
     
@@ -34,32 +31,27 @@ public struct KeyboardOnboardingView: View {
         title: String = "Welcome to NX10",
         pages: [String],
         currentPage: Int = 0,
-        totalPages: Int = 1,
         onPageIndicatorTapped: ((Int) -> Void)? = nil
     ) {
         self.iconImage = iconImage
         self.title = title
         self.pages = pages
         self.currentPage = currentPage
-        self.totalPages = totalPages
         self.onPageIndicatorTapped = onPageIndicatorTapped
     }
     
     public var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 8) {
             // Brain icon / Logo
             if let image = iconImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 48, height: 48)
-                    .padding(.top, 16)
+                    .frame(width: 32, height: 32)
             } else {
                 // Default brain emoji
                 Text("🧠")
                     .font(.system(size: 32))
-                    .padding(.top, 16)
-                
                 Text("Powered by NX10")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
@@ -73,9 +65,9 @@ public struct KeyboardOnboardingView: View {
             
             // Description
             Text(pages[currentPage])
-                .font(.system(size: 14, weight: .regular))
+                .font(.system(size: 17, weight: .regular))
                 .foregroundStyle(Color.gray)
-                .lineLimit(4)
+                .lineLimit(10)
                 .multilineTextAlignment(.center)
             
             Spacer()
@@ -83,8 +75,9 @@ public struct KeyboardOnboardingView: View {
             
             // Page indicator dots
             if pages.count > 1 {
+                Divider().frame(height: 1)
                 HStack(spacing: 8) {
-                    ForEach(0..<totalPages, id: \.self) { index in
+                    ForEach(0..<pages.count, id: \.self) { index in
                         PageIndicatorDot(
                             isActive: index == currentPage,
                             onTap: {
@@ -121,13 +114,12 @@ private struct PageIndicatorDot: View {
 #Preview {
     KeyboardOnboardingView(
         title: "Welcome to NX10",
-        pages: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."],
+        pages: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", "Stuff"],
         currentPage: 0,
-        totalPages: 4,
         onPageIndicatorTapped: { page in
             print("Tapped page: \(page)")
         }
     )
     .background(Color.black)  // Preview with dark background to simulate keyboard
-    .frame(height: 200)
+    .padding()
 }
