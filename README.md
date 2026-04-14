@@ -24,14 +24,6 @@ The SDK uses App Groups to securely share data between your main app and extensi
 2. Enter `https://github.com/nx10-devs/ios-sdk.git`
 3. Select version 1.0.3 or later
 
-### Using Package.swift
-
-Add this dependency to your `Package.swift`:
-
-```swift
-.package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.1.1")
-```
-
 ---
 
 ## Getting Started
