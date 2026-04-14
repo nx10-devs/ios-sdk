@@ -141,7 +141,6 @@ public final class AccessProvider: AccessProviding  {
         }
     }
     
-    // MARK: - Full Access Monitoring
     public func startFullAccessMonitoring(
         interval: TimeInterval = 0.3,
         url: URL? = nil,
@@ -156,23 +155,33 @@ public final class AccessProvider: AccessProviding  {
         } else {
             print("Full access missing - enabling probing")
         }
+        
         // Avoid multiple timers
         fullAccessTimer?.invalidate()
         fullAccessTimer = nil
-        // Schedule a repeating timer on the main run loop (we are @MainActor)
         
+        return await beginAccessLoop(interval, url, timeout)
+    }
+    
+    // MARK: - Full Access Monitoring
+    fileprivate func beginAccessLoop(_ interval: TimeInterval, _ url: URL?, _ timeout: TimeInterval) async -> Bool {
+        // Use a Continuation block to convert Timer sync block in to async
         return await withUnsafeContinuation { continuation in
+            
+            // Begin timer
             fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-                Task(name: "full-access-task", priority: .utility) {
-                    guard let self else { return }
+                Task(name: "full-access-task", priority: .utility) { // Reduce CPU priority
+                    guard let self else { return } // Protect against retain cycles and crashes
                     // If Full Access is now enabled, stop monitoring
+                    
+                    // Early exit if access is granted
                     if await self.isFullAccessEnabled() {
                         print("full access enabled, exiting probing")
                         await self.stopFullAccessMonitoring()
                         return
                     }
-                    // Perform a lightweight probe asynchronously
                     
+                    // Perform a lightweight probe asynchronously
                     let success = await self.probeFullAccessUsingNetworking(url: url, timeout: timeout)
                     if success {
                         await self.stopFullAccessMonitoring()
