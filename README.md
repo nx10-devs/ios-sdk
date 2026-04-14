@@ -53,26 +53,30 @@ Before you can track any data, you must configure the SDK with your API key and 
 import SwiftUI
 import NX10CoreSDK
 
-@main
-struct YourApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                        .onAppear {
-                            Task {
-                                do {
-                                    try await NX10Core.shared.configure(
-                                        apiKey: "YOUR_API_KEY",
-                                        appGroupdID: "group.your.app.identifier",
-                                        errorTrackingEnabled: true,
-                                        shouldStartSession: true
-                                    )
-                                } catch {
-                                    print("NX10CoreSDK configuration failed: \(error)")
-                                }
-                            }
-                        }
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Image(systemName: "globe")
+                .imageScale(.large)
+                .foregroundStyle(.tint)
+            Text("Hello, world!")
         }
+        .padding()
+        .onAppear {
+            Task {
+                do {
+                    _ = try await NX10Core.shared.configure(
+                        apiKey: "YOUR_API_KEY",
+                        appGroupdID: "group.test.com",
+                        errorTrackingEnabled: false,
+                        shouldStartSession: false
+                    )
+                } catch {
+                    print("NX10CoreSDK configuration failed: \(error)")
+                }
+            }
+        }
+        .nx10SaaQPromptPresenter()
     }
 }
 ```
