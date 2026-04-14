@@ -16,9 +16,8 @@ public protocol AccessProviding {
     func startFullAccessMonitoring(
         interval: TimeInterval,
         url: URL?,
-        timeout: TimeInterval,
-        completion: ((_ enabled: Bool) -> Void)?
-    ) async
+        timeout: TimeInterval
+    ) async -> Bool
     func stopFullAccessMonitoring()
     func isFullAccessEnabled() async -> Bool
 
@@ -146,16 +145,14 @@ public final class AccessProvider: AccessProviding  {
     public func startFullAccessMonitoring(
         interval: TimeInterval = 0.3,
         url: URL? = nil,
-        timeout: TimeInterval = 2.0,
-        completion: ((_ enabled: Bool) -> Void)?
-    ) async {
+        timeout: TimeInterval = 2.0
+    ) async -> Bool {
         // If already granted, ensure no timer is running
         print("checking for full access...")
         if await isFullAccessEnabled() {
             print("full access enabled, exiting probing early")
-            completion?(true)
             stopFullAccessMonitoring()
-            return
+            return true
         } else {
             print("Full access missing - enabling probing")
         }
@@ -163,24 +160,26 @@ public final class AccessProvider: AccessProviding  {
         fullAccessTimer?.invalidate()
         fullAccessTimer = nil
         // Schedule a repeating timer on the main run loop (we are @MainActor)
-        fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            Task(name: "access-check", priority: .utility) {
-
-                guard let self else { return }
-                // If Full Access is now enabled, stop monitoring
-                if await self.isFullAccessEnabled() {
-                    print("full access enabled, exiting probing")
-                    await self.stopFullAccessMonitoring()
-                    return
-                }
-                // Perform a lightweight probe asynchronously
-                
-                let success = await self.probeFullAccessUsingNetworking(url: url, timeout: timeout)
-                if success {
-                    completion?(true)
-                    await self.stopFullAccessMonitoring()
-                } else {
-                    print("full access not enabled ... continuing")
+        
+        return await withUnsafeContinuation { continuation in
+            fullAccessTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+                Task(name: "full-access-task", priority: .utility) {
+                    guard let self else { return }
+                    // If Full Access is now enabled, stop monitoring
+                    if await self.isFullAccessEnabled() {
+                        print("full access enabled, exiting probing")
+                        await self.stopFullAccessMonitoring()
+                        return
+                    }
+                    // Perform a lightweight probe asynchronously
+                    
+                    let success = await self.probeFullAccessUsingNetworking(url: url, timeout: timeout)
+                    if success {
+                        await self.stopFullAccessMonitoring()
+                        continuation.resume(with: .success(true))
+                    } else {
+                        print("full access not enabled ... continuing")
+                    }
                 }
             }
         }

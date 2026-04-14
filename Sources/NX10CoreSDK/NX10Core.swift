@@ -152,11 +152,11 @@ public final class NX10Core: NX10CoreProtocol {
         
         if shouldStartSession {
             print("should start session")
-            await accessProvider.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0) { [unowned self] enabled in
-                if enabled {
-                    Task(name: "telemetry-task", priority: .utility) {
-                        try await startSession()
-                    }
+            let enabled = await accessProvider.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0)
+            if enabled {
+                print("LOG: Full access available")
+                Task(name: "telemetry-task", priority: .utility) {
+                    try await startSession()
                 }
             }
         }
