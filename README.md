@@ -55,24 +55,23 @@ import NX10CoreSDK
 
 @main
 struct YourApp: App {
-    init() {
-        Task {
-            do {
-                try await NX10Core.shared.configure(
-                    apiKey: "YOUR_API_KEY",
-                    appGroupdID: "group.your.app.identifier",
-                    errorTrackingEnabled: true,
-                    shouldStartSession: true
-                )
-            } catch {
-                print("NX10CoreSDK configuration failed: \(error)")
-            }
-        }
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
+                        .onAppear {
+                            Task {
+                                do {
+                                    try await NX10Core.shared.configure(
+                                        apiKey: "YOUR_API_KEY",
+                                        appGroupdID: "group.your.app.identifier",
+                                        errorTrackingEnabled: true,
+                                        shouldStartSession: true
+                                    )
+                                } catch {
+                                    print("NX10CoreSDK configuration failed: \(error)")
+                                }
+                            }
+                        }
         }
     }
 }
