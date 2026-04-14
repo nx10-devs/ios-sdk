@@ -1,56 +1,54 @@
 # NX10CoreSDK for iOS
 
-**NX10CoreSDK** is a lightweight, robust telemetry and interaction-tracking SDK for iOS. It is designed to capture user interactions—such as fine-grained touch data and key presses—across both your main iOS application and its App Extensions (like Custom Keyboard Extensions). 
+**NX10CoreSDK** is a lightweight telemetry SDK for iOS that captures user interactions within your app and App Extensions. It tracks touch gestures, motion data, and keypresses, then automatically batches and uploads this information to NX10 servers.
 
-With built-in App Group support, the SDK securely batches and shares telemetry data between your extensions and your host app, optimizing network requests and preserving battery life.
+The SDK uses App Groups to securely share data between your main app and extensions (such as custom keyboards), ensuring all telemetry is collected in one place.
 
-## Features
-*   **Motion & Touch Telemetry:** Track precise touch paths (began, moved, ended).
-*   **Keystroke Logging:** Ideal for custom keyboard extensions tracking character input.
-*   **Cross-Extension Support:** Seamlessly share data between your host app and App Extensions using App Groups.
-*   **Smart Batching & Uploads:** Automatically or manually flush data and batch network uploads.
-*   **Error Tracking:** Built-in configurable error reporting.
+## Key Features
+
+- **Touch & Motion Tracking**: Captures precise touch coordinates and device motion data (accelerometer and gyroscope)
+- **Keystroke Capture**: Perfect for custom keyboard extensions that need to track text input
+- **App Extension Support**: Seamlessly shares telemetry data between your main app and extensions via App Groups
+- **Intelligent Data Batching**: Automatically batches and uploads telemetry data to conserve battery and network usage
+- **Error Tracking**: Built-in error reporting and diagnostics
+- **Interactive Prompts**: Display engaging survey-style prompts (SaaQ) to gather user feedback
+- **Analytics Integration**: Track custom analytics events alongside your telemetry data
 
 ---
 
 ## Installation
-To install NX10CoreSDK using Swift Package Manager you can follow the tutorial published by Apple using the URL for this repo with the current version:
 
-In Xcode, select “File” → “Add Packages...”
-Enter https://github.com/nx10-devs/ios-sdk.git
-or you can add the following dependency to your Package.swift:
-```
-.package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.0.3")
+### Using Xcode
 
+1. Select **File** → **Add Packages**
+2. Enter `https://github.com/nx10-devs/ios-sdk.git`
+3. Select version 1.0.3 or later
+
+### Using Package.swift
+
+Add this dependency to your `Package.swift`:
+
+```swift
+.package(url: "https://github.com/nx10-devs/ios-sdk.git", from: "1.1.1")
 ```
 
-And for the targets in section 
-```
-targets: [
-        .target(
-            name: "YourAppTargetName",
-            dependencies: [
-                .product(name: "NX10CoreSDK", package: "ios-sdk")
-            ]
-        ),
-```
 ---
 
-## Configuration
+## Getting Started
 
-Before tracking any data, you must initialize the SDK. Because `NX10CoreSDK` supports extensions, it relies on an **App Group ID** to securely share telemetry data between your main app and its extensions.
+### Configuring the SDK
 
-The configuration method is asynchronous and should be called as early as possible in your app or extension's lifecycle.
+Before you can track any data, you must configure the SDK with your API key and App Group ID. Configuration is asynchronous and should be called as early as possible—ideally in your app's initialisation code.
 
-### Parameters
-*   `apiKey`: Your NX10 project API key.
-*   `appGroupdID`: The App Group identifier configured in your Xcode project's Signing & Capabilities (e.g., `group.com.yourcompany.app`). **Note: This must be the same in both your host app and your extension.**
-*   `errorTrackingEnabled`: Boolean to enable/disable automated error reporting.
-*   `shouldStartSession`: Boolean to dictate whether a new telemetry session should begin immediately.
+**Required parameters:**
 
-### Initialisation Examples
+- **`apiKey`**: Your NX10 project API key
+- **`appGroupdID`**: The App Group identifier from your Xcode project's **Signing & Capabilities** tab (e.g., `group.com.yourcompany.app`). This must be identical in both your main app and any extensions.
+- **`errorTrackingEnabled`**: Set to `true` to enable automatic error reporting
+- **`shouldStartSession`**: Set to `true` to begin collecting telemetry immediately, or `false` to start manually later
 
-**1. In a standard App (SwiftUI Example):**
+### SwiftUI Setup
+
 ```swift
 import SwiftUI
 import NX10CoreSDK
@@ -67,7 +65,7 @@ struct YourApp: App {
                     shouldStartSession: true
                 )
             } catch {
-                print("NX10CoreSDK Configuration failed: \(error)")
+                print("NX10CoreSDK configuration failed: \(error)")
             }
         }
     }
@@ -80,7 +78,36 @@ struct YourApp: App {
 }
 ```
 
-**2. In a Custom Keyboard Extension (`UIInputViewController`):**
+### UIKit Setup
+
+```swift
+import UIKit
+import NX10CoreSDK
+
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        Task {
+            do {
+                try await NX10Core.shared.configure(
+                    apiKey: "YOUR_API_KEY",
+                    appGroupdID: "group.your.app.identifier",
+                    errorTrackingEnabled: true,
+                    shouldStartSession: true
+                )
+            } catch {
+                print("NX10CoreSDK configuration failed: \(error)")
+            }
+        }
+        return true
+    }
+}
+```
+
+### Custom Keyboard Extension Setup
+
 ```swift
 import UIKit
 import NX10CoreSDK
@@ -93,12 +120,12 @@ class KeyboardViewController: UIInputViewController {
             do {
                 try await NX10Core.shared.configure(
                     apiKey: "YOUR_API_KEY",
-                    appGroupdID: "group.your.app.identifier", // Must match the host app's App Group
+                    appGroupdID: "group.your.app.identifier", // Must match your main app
                     errorTrackingEnabled: true,
                     shouldStartSession: true
                 )
             } catch {
-                print("NX10CoreSDK Keyboard Configuration failed: \(error)")
+                print("NX10CoreSDK keyboard configuration failed: \(error)")
             }
         }
     }
@@ -107,39 +134,30 @@ class KeyboardViewController: UIInputViewController {
 
 ---
 
-## Tracking Usage
+## Tracking User Interactions
 
-All interaction tracking and data upload methods are routed through the `NX10Core.shared.telemetryService`.
+All tracking methods are accessed through `NX10Core.shared.telemetryService`.
 
-### Starting Telemetry tracking
+### Starting and Stopping Telemetry
 
-This step must be done after `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company")` is called but you've opted out of automatically starting telemetry collecting and uploading by selecting `NX10Core.shared.configure(apiKey: "API_KEY", appGroupID: "group.your.company", shouldStartSession: false)` where `shouldStartSession: false` is set to `false`
+If you configured the SDK with `shouldStartSession: false`, manually start telemetry when ready:
 
-```
-import SwiftUI
-import NX10CoreSDK
-   var body: some View {
-        VStack {
-        // Your View code here
-        }
-        .onAppear {
-            Task {
-                do {
-                   try await NX10Core.shared.startSession()
-                } catch {}
-            }
-        }
-    }
-}
+```swift
+try await NX10Core.shared.startSession()
 ```
 
-### Stopping Telemetry
-Stops the telemetry tracking. This is highly recommended when your app goes into the background or when a specific view is dismissed to preserve battery life and prevent unnecessary processing.
+Stop telemetry to conserve battery and prevent unnecessary data collection:
 
-Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` will also upload telemetry data that has been collected and reclaim memory by flushing the collected data.
+```swift
+NX10Core.shared.telemetryService?.stopTelemetry()
+```
 
-**In SwiftUI (App Backgrounding - Recommended):**
-Using `@Environment(\.scenePhase)` allows you to detect exactly when the entire application goes into the background.
+When you call `stopTelemetry()`, the SDK automatically uploads any pending data and clears its buffer.
+
+### Stopping Telemetry When Your App Goes to the Background (SwiftUI)
+
+Using `@Environment(\.scenePhase)` allows you to detect when your app enters the background:
+
 ```swift
 import SwiftUI
 import NX10CoreSDK
@@ -149,11 +167,10 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            Text("Your App Content")
+            Text("Your app content")
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
-                // Stop telemetry when the app goes to the background
                 NX10Core.shared.telemetryService?.stopTelemetry()
             }
         }
@@ -161,111 +178,123 @@ struct ContentView: View {
 }
 ```
 
-**In SwiftUI (View Disappearing):**
-If you only want to stop telemetry when a specific view is dismissed.
-```swift
-import SwiftUI
-import NX10CoreSDK
+### Stopping Telemetry When a View Dismisses (SwiftUI)
 
+If you only want to stop telemetry for a specific view:
+
+```swift
 struct ContentView: View {
     var body: some View {
         VStack {
-            Text("Your App Content")
+            Text("Your app content")
         }
         .onDisappear {
-            // Stop telemetry when this specific view is dismissed
             NX10Core.shared.telemetryService?.stopTelemetry()
         }
     }
 }
 ```
 
-**In UIKit:**
-If you are using View Controllers, you can stop telemetry inside of `viewDidDisappear`.
+### Stopping Telemetry in UIKit
+
+Stop telemetry in your view controller's `viewDidDisappear`:
+
 ```swift
 override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
-    
     NX10Core.shared.telemetryService?.stopTelemetry()
 }
 ```
 
-### Tracking Key Presses
-If you are building a custom keyboard extension or tracking text input, you can log individual keystrokes.
+### Tracking Keypresses
+
+Log individual keystrokes (useful for keyboard extensions or text input tracking):
+
 ```swift
-// Log individual characters or interactions
 NX10Core.shared.telemetryService?.keyPressed("a")
 NX10Core.shared.telemetryService?.keyPressed(" ")
 NX10Core.shared.telemetryService?.keyPressed("b")
 ```
 
-### Tracking Touch Data
-You can log detailed touch paths by providing the coordinates for where a touch began, where it moved, and where it ended. 
+### Tracking Touch Events
+
+Log detailed touch paths with coordinates for where a touch began, moved, and ended:
+
 ```swift
-// Example: Tracking a simple tap
+// Track a simple tap
 NX10Core.shared.telemetryService?.appendTouch(at: (
-    began: CGPoint(x: 150, y: 200), 
-    movedTo: nil, 
+    began: CGPoint(x: 150, y: 200),
+    movedTo: nil,
     endedAt: nil
 ))
 
-// Example: Tracking a swipe/drag
+// Track a swipe or drag
 NX10Core.shared.telemetryService?.appendTouch(at: (
-    began: CGPoint(x: 100, y: 200), 
-    movedTo: CGPoint(x: 150, y: 250), 
+    began: CGPoint(x: 100, y: 200),
+    movedTo: CGPoint(x: 150, y: 250),
     endedAt: CGPoint(x: 200, y: 300)
 ))
 ```
 
 ---
 
-## Data Management & Uploads
+## Managing and Uploading Data
 
-The SDK buffers data to optimise performance, but you have manual control over when data is flushed and when it is uploaded to the NX10 servers. 
+The SDK buffers telemetry data to optimise performance. You can manually control when data is flushed to storage and when it's uploaded to NX10 servers.
 
-### 1. Flushing to keep memory overhead low
+### Flushing Data to Memory
+
+To keep memory usage low by flushing buffered data to persistent storage:
+
 ```swift
 NX10Core.shared.telemetryService?.flushIfNeeded()
 ```
 
-### 2. Forcing an Upload
-Forces the SDK to immediately package the flushed telemetry data and upload it to the NX10 servers. 
+### Forcing an Immediate Upload
+
+To immediately package all buffered telemetry and upload it to NX10:
+
 ```swift
 NX10Core.shared.telemetryService?.attemptUploadAndflushNow()
 ```
 
-Note: calling `NX10Core.shared.telemetryService?.stopTelemetry()` does the same as `attemptUploadAndFlushNow()`
+**Note:** Calling `stopTelemetry()` automatically flushes and uploads any pending data.
 
 ---
 
-## Best Practices for App Extensions (e.g., Custom Keyboards)
+## Best Practices for App Extensions
 
-App Extensions have strict memory limits and unpredictable lifecycles dictated by the iOS system. To ensure reliable telemetry collection:
+App Extensions have strict memory limits and unpredictable lifecycles controlled by iOS. Follow these practices to ensure reliable telemetry:
 
-1. **Always use App Groups:** The `appGroupdID` is critical. It allows your Keyboard Extension to write data to a shared folder that the Main App can also read.
-2. **Flush Frequently:** Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`, or periodically during long typing sessions).
-3. **Delegate Uploads to the Host App:** While a keyboard extension *can* call `attemptUploadAndflushNow()`, doing so can cause memory spikes or get interrupted. The best practice is to have the Keyboard Extension simply track and `flushIfNeeded()`, and let the **Main App** call `attemptUploadAndflushNow()` when the user opens the host application.
+1. **Always Use App Groups**: The `appGroupdID` is critical. It allows your keyboard extension to write data to a shared folder that your main app can read.
 
-## NX10CoreSDK – SaaQ Prompt Presentation
+2. **Flush Frequently**: Call `flushIfNeeded()` during key lifecycle events (like `viewWillDisappear`) or periodically during long typing sessions to prevent data loss.
 
-This guide explains how to opt into the SaaQ prompt UI and let the NX10CoreSDK present it at the top of your app's view hierarchy. The SDK abstracts the presentation logic; clients only need to opt in once.
+3. **Let the Main App Handle Uploads**: Whilst a keyboard extension *can* call `attemptUploadAndflushNow()`, doing so may cause memory spikes or interruptions. Instead, have your keyboard extension simply collect data and flush it, while your main app handles the actual uploads when it's active.
 
-- SwiftUI apps: opt in with a single view modifier at the root.
-- UIKit apps: opt in by starting a presenter that manages its own overlay window.
+---
 
-### What gets presented
-The prompt UI is a glass-style alert that contains:
-- A title (the question)
-- A slider between two labels (left/right anchors)
-- A Confirm button (shown only when enabled by the API)
-- An optional Close (xmark) button in the top-right (shown when `dismissable` is true)
+## SaaQ Prompts – Interactive Feedback
 
-### Confirm button behavior:
-- If `confirmButtonEnabled` is false, the button is disabled.
-- If `required` is true (enforced by the view) and the user has not changed the slider from its starting value, the button is disabled.
+NX10CoreSDK includes built-in support for displaying interactive survey prompts (SaaQ) to gather user feedback. The SDK manages all presentation logic; you simply opt in once.
 
-### SwiftUI integration (opt-in)
-Apply the presenter once at the root of your SwiftUI app.
+### What's Displayed
+
+Each SaaQ prompt is a glass-style alert containing:
+
+- A question (title)
+- A slider with two labels (left and right endpoints)
+- An optional **Confirm** button
+- An optional **Close** button (top right)
+
+**Button behaviour:**
+
+- The **Confirm** button is disabled if `confirmButtonEnabled` is `false`
+- The **Confirm** button is also disabled if the slider hasn't moved from its starting position (when `required` is `true`)
+
+### SwiftUI Integration
+
+Add the prompt presenter to your root view with a single modifier:
 
 ```swift
 import SwiftUI
@@ -276,14 +305,16 @@ struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .nx10SaaQPromptPresenter() // Opt-in once
+                .nx10SaaQPromptPresenter() // Opt-in once at the root
         }
     }
 }
 ```
 
-UIKit integration (opt-in)
-Start the presenter once in your SceneDelegate or AppDelegate.
+### UIKit Integration
+
+Start the presenter once in your `SceneDelegate` or `AppDelegate`:
+
 ```swift
 import UIKit
 import NX10CoreSDK
@@ -291,73 +322,63 @@ import NX10CoreSDK
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        SaaQPromptWindowPresenter.shared.start() // Opt-in once for UIKit apps
-        // ... your usual setup
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        SaaQPromptWindowPresenter.shared.start() // Opt-in once
+        // ... rest of your setup
     }
 }
 ```
 
-To stop observing and tear down the overlay window, call:
-`SaaQPromptWindowPresenter.shared.stop()`
-
-### Presenting and dismissing the prompt
-From anywhere in your app (or from within the SDK), present or dismiss via the shared controller:
-
-Present using a full trigger payload
-`SaaQPromptController.shared.present(trigger: trigger)`
-
-Or present using a prompt directly
-`SaaQPromptController.shared.present(prompt: trigger.data.prompt)`
-
-Dismiss when needed
-`SaaQPromptController.shared.dismiss()`
-
-### Example prompt data
-The SDK expects the SaaQ trigger model to follow this shape:
+To stop the presenter and tear down its overlay:
 
 ```swift
-{
-  "status": "success",
-  "data": {
-    "triggerID": "69cb8dcceb3c8678406023cd",
-    "prompt": {
-      "blockType": "saaqType1",
-      "questionText": "How are you feeling?",
-      "dismissable": false,
-      "leftAnchorValue": "Bad",
-      "rightAnchorValue": "Good",
-      "rangeSize": 1,
-      "startingValue": 1,
-      "confirmButtonEnabled": true,
-      "id": "69cb8db5fb320e0d9a3bb718"
-    }
-  }
-}
+SaaQPromptWindowPresenter.shared.stop()
 ```
 
-For testing without networking, you can construct a prompt manually and present it:
+### Presenting and Dismissing Prompts
+
+Present a prompt from anywhere in your app:
+
+```swift
+// Present using a full trigger payload
+SaaQPromptController.shared.present(trigger: trigger)
+
+// Or present using just the prompt data
+SaaQPromptController.shared.present(prompt: trigger.data.prompt)
+
+// Dismiss when needed
+SaaQPromptController.shared.dismiss()
+```
+
+### Example Prompt Data
+
+The SDK expects prompts to follow this structure:
 
 ```swift
 let prompt = SaaQTrigger.Prompt(
     blockType: "saaqType1",
-    questionText: "How are you?",
+    questionText: "How are you feeling?",
     dismissable: true,
-    leftAnchorValue: "Low",
-    rightAnchorValue: "High",
+    leftAnchorValue: "Poor",
+    rightAnchorValue: "Excellent",
     rangeSize: 100,
     startingValue: 50,
     confirmButtonEnabled: true,
-    id: "local-demo",
+    id: "prompt-123",
     blockName: nil
 )
 
 SaaQPromptController.shared.present(prompt: prompt)
 ```
 
-### Notes:
-- The SDK manages the overlay and presentation; clients simply opt in.
-- The overlay uses a high window level on UIKit (`.alert + 1`) to sit above your UI.
-- In SwiftUI, apply `.nx10SaaQPromptPresenter()` only once at the root.
-- If you change the SaaQ models, ensure `SaaQPromptOneView` and the presenter are updated accordingly.
-- The SDK can extend the default `onConfirm`/`onClose` behaviors to integrate with telemetry or networking as needed.
+For testing without a server connection, you can create and present prompts manually as shown above.
+
+---
+
+## Support
+
+For questions, issues, or feature requests, please refer to the NX10 documentation or contact the NX10 development team.
