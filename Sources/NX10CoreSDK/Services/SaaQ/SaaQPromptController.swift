@@ -87,10 +87,41 @@ private struct SaaQPromptPresenterModifier: ViewModifier {
     }
 }
 
+private struct SaaQPromptKeyboardPresenterModifier: ViewModifier {
+    @ObservedObject var controller: SaaQPromptController = .shared
+    
+    func body(content: Content) -> some View {
+        ZStack {
+            if let payload = controller.payload {
+                ZStack {
+                    VStack {
+                        if let saaqOneTrigger = payload.saaqOneTrigger {
+                            Text("SaaQ 1")
+                            //                        openSaaQType1(with: saaqOneTrigger.data)
+                        }
+                        
+                        if let saaqTwoTrigger = payload.saaqTwoTrigger {
+                            //                        openSaaQType2(with: saaqTwoTrigger.data)
+                            Text("SaaQ 2")
+                        }
+                    }
+                    .frame(minHeight: 300)
+                }
+            } else {
+                content
+            }
+        }
+    }
+}
+
 public extension View {
     /// Opt-in to NX10 SaaQ prompt presentation. Apply this once at the app's root.
     /// Example: `WindowGroup { ContentView().nx10SaaQPromptPresenter() }`
     func nx10SaaQPromptPresenter() -> some View {
         self.modifier(SaaQPromptPresenterModifier())
+    }
+    
+    func nx10SaaQPromptKeyboardPresenter() -> some View {
+        self.modifier(SaaQPromptKeyboardPresenterModifier())
     }
 }
