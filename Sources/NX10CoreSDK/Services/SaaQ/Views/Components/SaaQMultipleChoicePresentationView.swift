@@ -255,13 +255,18 @@ public struct SaaQMultipleChoicePresentationView: View {
                                         .foregroundStyle(Color.blue)
                                 }
                             }
-                            .padding(.vertical, 8)
                             .padding(.horizontal, 10)
                             .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.plain)
+                        Divider().frame(height: 1)
                     }
+                    .padding()
                 }
+                .background(
+                    .thinMaterial,
+                    in: RoundedRectangle(cornerSize: .init(width: 30, height: 30))
+                )
             } else {
                 List(options) { option in
                     Button {
