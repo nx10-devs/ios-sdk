@@ -27,6 +27,7 @@ public struct SaaQMultipleChoicePresentationView: View {
     let onOptionSelected: (String) -> Void  // Single select callback
     let onMultipleSelected: ([String]) -> Void  // Multi select callback
     let onClose: () -> Void
+    let isKeyboard: Bool
     
     @State private var selected: Set<String> = []
     
@@ -35,9 +36,10 @@ public struct SaaQMultipleChoicePresentationView: View {
         options: [Option],
         isMultiSelect: Bool,
         dismissable: Bool,
+        isKeyboard: Bool = false,
         onOptionSelected: @escaping (String) -> Void,
         onMultipleSelected: @escaping ([String]) -> Void,
-        onClose: @escaping () -> Void
+        onClose: @escaping () -> Void,
     ) {
         self.title = title
         self.options = options
@@ -46,6 +48,7 @@ public struct SaaQMultipleChoicePresentationView: View {
         self.onOptionSelected = onOptionSelected
         self.onMultipleSelected = onMultipleSelected
         self.onClose = onClose
+        self.isKeyboard = isKeyboard
     }
     
     private var isConfirmDisabled: Bool {
@@ -53,6 +56,14 @@ public struct SaaQMultipleChoicePresentationView: View {
     }
     
     public var body: some View {
+        if isKeyboard {
+            keyboardView
+        } else {
+            styledView
+        }
+    }
+    
+    private var styledView: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 HStack {
@@ -68,7 +79,8 @@ public struct SaaQMultipleChoicePresentationView: View {
                         MultiSelectContent(
                             options: options,
                             selected: $selected,
-                            onSelect: { id in toggle(id) }
+                            onSelect: { id in toggle(id) },
+                            isKeyboard: false
                         )
                     } else {
                         SingleSelectContent(
@@ -76,7 +88,8 @@ public struct SaaQMultipleChoicePresentationView: View {
                             selected: selected,
                             onSelect: { id in
                                 onOptionSelected(id)
-                            }
+                            },
+                            isKeyboard: false
                         )
                         .padding(.top)
                     }
@@ -110,6 +123,64 @@ public struct SaaQMultipleChoicePresentationView: View {
         .frame(maxHeight: 465)
     }
     
+    private var keyboardView: some View {
+        VStack(spacing: 0) {
+            // Header with title and close button
+            ZStack {
+                HStack(spacing: 12) {
+                    if dismissable {
+                        Spacer()
+
+                        CloseButton(onClose: onClose)
+                            .frame(width: 36, height: 36)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            
+            Divider()
+                .padding(.horizontal, 16)
+            
+            // Content area
+            VStack(spacing: 12) {
+                if isMultiSelect {
+                    MultiSelectContent(
+                        options: options,
+                        selected: $selected,
+                        onSelect: { id in toggle(id) },
+                        isKeyboard: true
+                    )
+                } else {
+                    SingleSelectContent(
+                        options: options,
+                        selected: selected,
+                        onSelect: { id in
+                            onOptionSelected(id)
+                        },
+                        isKeyboard: true
+                    )
+                }
+                
+                if isMultiSelect {
+                    SaaQConfirmButton(
+                        onConfirm: {
+                            onMultipleSelected(Array(selected))
+                        },
+                        isConfirmDisabled: isConfirmDisabled
+                    )
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+        }
+    }
+    
     private func toggle(_ id: String) {
         if selected.contains(id) {
             selected.remove(id)
@@ -124,22 +195,25 @@ public struct SaaQMultipleChoicePresentationView: View {
         let options: [Option]
         let selected: Set<String>
         let onSelect: (String) -> Void
+        let isKeyboard: Bool
         
         var body: some View {
-            VStack(spacing: 8) {
-                VStack(spacing: 12) {
+            VStack(spacing: isKeyboard ? 6 : 8) {
+                VStack(spacing: isKeyboard ? 8 : 12) {
                     ForEach(options) { option in
                         Button {
                             onSelect(option.id)
                         } label: {
                             HStack(alignment: .center) {
                                 Text(option.displayName)
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundStyle(.primary)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.9)
+                                    .frame(height: 48)
                             }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 12)
+                            .padding(.vertical, isKeyboard ? 8 : 12)
+                            .padding(.horizontal, isKeyboard ? 10 : 12)
                             .frame(maxWidth: .infinity)
                             .background(
                                 Capsule()
@@ -158,34 +232,111 @@ public struct SaaQMultipleChoicePresentationView: View {
         let options: [Option]
         @Binding var selected: Set<String>
         let onSelect: (String) -> Void
+        let isKeyboard: Bool
         
         var body: some View {
-            List(options) { option in
-                Button {
-                    onSelect(option.id)
-                } label: {
-                    HStack(alignment: .center) {
-                        Text(option.displayName)
-                            .font(.subheadline.weight(.semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.9)
-                        Spacer()
-                        if selected.contains(option.id) {
-                            Image(systemName: "checkmark")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(Color.blue)
+            if isKeyboard {
+                VStack(spacing: 10) {
+                    ForEach(options) { option in
+                        Button {
+                            onSelect(option.id)
+                        } label: {
+                            HStack(alignment: .center) {
+                                Text(option.displayName)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.9)
+                                    .frame(height: 48)
+                                Spacer()
+                                if selected.contains(option.id) {
+                                    Image(systemName: "checkmark")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(Color.blue)
+                                }
+                            }
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+                            .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.plain)
-                .listRowBackground(Color.black.opacity(0.125))
+            } else {
+                List(options) { option in
+                    Button {
+                        onSelect(option.id)
+                    } label: {
+                        HStack(alignment: .center) {
+                            Text(option.displayName)
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.9)
+                            Spacer()
+                            if selected.contains(option.id) {
+                                Image(systemName: "checkmark")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(Color.blue)
+                            }
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(Color.black.opacity(0.125))
+                }
+                .scrollContentBackground(.hidden)
+                .scrollDisabled(true)
+                .padding(0)
             }
-            .scrollContentBackground(.hidden)
-            .scrollDisabled(true)
-            .padding(0)
+        }
+    }
+}
+
+
+#Preview {
+    ScrollView {
+        VStack(spacing: 20) {
+            SaaQMultipleChoicePresentationView(title: "Choices", options: [
+                .init(id: "c_id_1", displayName: "Display Name 1"),
+                .init(id: "c_id_2", displayName: "Display Name 2"),
+                .init(id: "c_id_3", displayName: "Display Name 3"),
+                .init(id: "c_id_4", displayName: "Display Name 4")
+            ], isMultiSelect: false, dismissable: true) { _ in
+                
+            } onMultipleSelected: { _ in
+                
+            } onClose: {
+                
+            }
+            
+            SaaQMultipleChoicePresentationView(title: "Choices", options: [
+                .init(id: "c_id_1", displayName: "Display Name 1"),
+                .init(id: "c_id_2", displayName: "Display Name 2"),
+                .init(id: "c_id_3", displayName: "Display Name 3"),
+                .init(id: "c_id_4", displayName: "Display Name 4")
+            ], isMultiSelect: false, dismissable: true, isKeyboard: true) { _ in
+                
+            } onMultipleSelected: { _ in
+                
+            } onClose: {
+                
+            }
+            
+            SaaQMultipleChoicePresentationView(title: "Choices", options: [
+                .init(id: "c_id_1", displayName: "Display Name 1"),
+                .init(id: "c_id_2", displayName: "Display Name 2"),
+                .init(id: "c_id_3", displayName: "Display Name 3"),
+                .init(id: "c_id_4", displayName: "Display Name 4")
+            ], isMultiSelect: true, dismissable: true, isKeyboard: true) { _ in
+                
+            } onMultipleSelected: { _ in
+                
+            } onClose: {
+                
+            }
         }
     }
 }

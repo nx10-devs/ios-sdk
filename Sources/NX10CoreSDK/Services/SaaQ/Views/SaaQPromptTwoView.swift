@@ -14,6 +14,7 @@ public struct SaaQPromptTwoView: View {
     private let onConfirm: SaaQAnswerBlock
     private let onClose: SaaQAnswerBlock
     private let displayTimestamp = Date().iso8601
+    private let isKeyboard: Bool
     
     @State private var viewState: ViewState = .showingMultipleChoice
     @State private var savedMultipleChoiceAnswer: SaaQTwoAnswer?
@@ -28,11 +29,13 @@ public struct SaaQPromptTwoView: View {
     internal init(
         payload: SaaQTwoTrigger.Payload,
         onConfirm: @escaping SaaQAnswerBlock,
-        onClose: @escaping SaaQAnswerBlock
+        onClose: @escaping SaaQAnswerBlock,
+        isKeyboard: Bool = false
     ) {
         self.payload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
+        self.isKeyboard = isKeyboard
     }
     
     public var body: some View {
@@ -63,6 +66,7 @@ public struct SaaQPromptTwoView: View {
             options: presentationOptions,
             isMultiSelect: isMultiSelect,
             dismissable: payload.dismissable,
+            isKeyboard: isKeyboard,
             onOptionSelected: { selectedId in
                 handleSingleSelect(selectedId: selectedId)
             },
@@ -71,7 +75,7 @@ public struct SaaQPromptTwoView: View {
             },
             onClose: {
                 handleClose()
-            }
+            },
         )
     }
     
@@ -90,6 +94,7 @@ public struct SaaQPromptTwoView: View {
                 startingValue: Double(followon.startingValue ?? 0),
                 dismissable: payload.dismissable,
                 confirmButtonEnabled: followon.confirmButtonEnabled,
+                isKeyboard: isKeyboard,
                 onSliderChanged: { value in
                     self.followonSliderValue = value
                 },

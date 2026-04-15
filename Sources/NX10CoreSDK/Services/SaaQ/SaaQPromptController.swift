@@ -93,19 +93,36 @@ private struct SaaQPromptKeyboardPresenterModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             if let payload = controller.payload {
-                ZStack {
-                    VStack {
-                        if let saaqOneTrigger = payload.saaqOneTrigger {
-                            Text("SaaQ 1")
-                            //                        openSaaQType1(with: saaqOneTrigger.data)
-                        }
-                        
-                        if let saaqTwoTrigger = payload.saaqTwoTrigger {
-                            //                        openSaaQType2(with: saaqTwoTrigger.data)
-                            Text("SaaQ 2")
-                        }
+                VStack {
+                    if let saaqOneTrigger = payload.saaqOneTrigger {
+                        SaaQPromptOneView(
+                            payload: saaqOneTrigger.data,
+                            onConfirm: { answer in
+                                controller.didAnswerSaaQ?(answer)
+                                controller.dismiss()
+                            },
+                            onClose: { answer in
+                                controller.didAnswerSaaQ?(answer)
+                                controller.dismiss()
+                            },
+                            isKeyboard: true
+                        )
                     }
-                    .frame(minHeight: 300)
+                    
+                    if let saaqTwoTrigger = payload.saaqTwoTrigger {
+                        SaaQPromptTwoView(
+                            payload: saaqTwoTrigger.data,
+                            onConfirm: { answer in
+                                controller.didAnswerSaaQ?(answer)
+                                controller.dismiss()
+                            },
+                            onClose: { answer in
+                                controller.didAnswerSaaQ?(answer)
+                                controller.dismiss()
+                            },
+                            isKeyboard: true
+                        )
+                    }
                 }
             } else {
                 content

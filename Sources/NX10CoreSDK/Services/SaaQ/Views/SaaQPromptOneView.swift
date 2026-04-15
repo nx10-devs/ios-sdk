@@ -13,6 +13,7 @@ public struct SaaQPromptOneView: View {
     private let payload: SaaQOneTrigger.Payload
     private let onConfirm: SaaQAnswerBlock
     private let onClose: SaaQAnswerBlock
+    private let isKeyboard: Bool
     
     @State private var promptDisplayTimestamp: String = ""
     @State private var sliderValue: Double = 0
@@ -20,11 +21,13 @@ public struct SaaQPromptOneView: View {
     internal init(
         payload: SaaQOneTrigger.Payload,
         onConfirm: @escaping SaaQAnswerBlock,
-        onClose: @escaping SaaQAnswerBlock
+        onClose: @escaping SaaQAnswerBlock,
+        isKeyboard: Bool = false
     ) {
         self.payload = payload
         self.onConfirm = onConfirm
         self.onClose = onClose
+        self.isKeyboard = isKeyboard
         self._sliderValue = State(initialValue: Double(payload.prompt.startingValue))
     }
     
@@ -37,6 +40,7 @@ public struct SaaQPromptOneView: View {
             startingValue: Double(payload.prompt.startingValue),
             dismissable: payload.dismissable,
             confirmButtonEnabled: payload.prompt.confirmButtonEnabled,
+            isKeyboard: isKeyboard,
             onSliderChanged: { _ in },
             onConfirm: {
                 let answer = buildAnswer(with: Int(sliderValue), type: .answered)
@@ -45,7 +49,7 @@ public struct SaaQPromptOneView: View {
             onClose: {
                 let answer = buildAnswer(with: payload.prompt.startingValue, type: .dismissed)
                 onClose(SaaQAnswerWrapper(saaqOneAnswer: answer))
-            }
+            },
         )
         .onAppear {
             promptDisplayTimestamp = Date().iso8601

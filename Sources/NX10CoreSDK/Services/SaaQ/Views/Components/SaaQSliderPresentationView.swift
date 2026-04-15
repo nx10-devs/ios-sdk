@@ -20,6 +20,7 @@ public struct SaaQSliderPresentationView: View {
     let onSliderChanged: (Double) -> Void
     let onConfirm: () -> Void
     let onClose: () -> Void
+    let isKeyboard: Bool
     
     @State private var value: Double
     @State private var hasChanged: Bool = false
@@ -32,9 +33,10 @@ public struct SaaQSliderPresentationView: View {
         startingValue: Double,
         dismissable: Bool,
         confirmButtonEnabled: Bool?,
+        isKeyboard: Bool = false,
         onSliderChanged: @escaping (Double) -> Void,
         onConfirm: @escaping () -> Void,
-        onClose: @escaping () -> Void
+        onClose: @escaping () -> Void,
     ) {
         self.title = title
         self.leftLabel = leftLabel
@@ -46,6 +48,7 @@ public struct SaaQSliderPresentationView: View {
         self.onSliderChanged = onSliderChanged
         self.onConfirm = onConfirm
         self.onClose = onClose
+        self.isKeyboard = isKeyboard
         self._value = State(initialValue: startingValue)
     }
     
@@ -55,6 +58,14 @@ public struct SaaQSliderPresentationView: View {
     }
     
     public var body: some View {
+        if isKeyboard {
+            keyboardView
+        } else {
+            styledView
+        }
+    }
+    
+    private var styledView: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 20) {
                 Text(title)
@@ -75,11 +86,11 @@ public struct SaaQSliderPresentationView: View {
                     
                     HStack {
                         Text(leftLabel)
-                            .font(.subheadline)
+                            .font(.system(size: 12))
                             .foregroundStyle(.primary)
                         Spacer()
                         Text(rightLabel)
-                            .font(.subheadline)
+                            .font(.system(size: 12))
                             .foregroundStyle(.primary)
                     }
                 }
@@ -110,14 +121,80 @@ public struct SaaQSliderPresentationView: View {
         }
         .padding()
     }
+    
+    private var keyboardView: some View {
+        VStack(spacing: 20) {
+            // Header with title and close button
+            ZStack {
+                HStack {
+                    Spacer()
+                    if dismissable {
+                        CloseButton(onClose: onClose)
+                            .frame(width: 36, height: 36)
+                    }
+                }
+                
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            
+            Divider()
+            
+            // Content area
+            VStack(spacing: 16) {
+                VStack(spacing: 12) {
+                    Slider(value: $value, in: range, step: 1)
+                        .onChange(of: value) { _, newValue in
+                            hasChanged = true
+                            onSliderChanged(newValue)
+                        }
+                    
+                    HStack(spacing: 8) {
+                        Text(leftLabel)
+                            .font(.system(size: 12))
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                        Text(rightLabel)
+                            .font(.system(size: 12))
+                            .lineLimit(1)
+                    }
+                }
+                
+                // Confirm button
+                SaaQConfirmButton(
+                    onConfirm: onConfirm,
+                    isConfirmDisabled: isConfirmDisabled
+                )
+                
+                Divider()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+        }
+        .padding()
+    }
 }
 
 #Preview {
-    SaaQSliderPresentationView(title: "Title", leftLabel: "Left", rightLabel: "Right", range: 0...10, startingValue: 0.0, dismissable: true, confirmButtonEnabled: true) { _ in
-        
-    } onConfirm: {
-        
-    } onClose: {
-        
+    VStack {
+        ScrollView {
+            SaaQSliderPresentationView(title: "Title", leftLabel: "Left", rightLabel: "Right", range: 0...10, startingValue: 0.0, dismissable: true, confirmButtonEnabled: true) { _ in
+                
+            } onConfirm: {
+                
+            } onClose: {
+                
+            }
+            Spacer().frame(height: 50)
+            SaaQSliderPresentationView(title: "Title", leftLabel: "Left", rightLabel: "Right", range: 0...10, startingValue: 0.0, dismissable: true, confirmButtonEnabled: true, isKeyboard: true) { _ in
+                
+            } onConfirm: {
+                
+            } onClose: {
+                
+            }
+        }
     }
 }
