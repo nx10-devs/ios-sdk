@@ -10,7 +10,6 @@ internal import UIKit
 
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
-    var accessProvider: AccessProviding { get }
     var errorProvider: ErrorProviding { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
@@ -32,7 +31,6 @@ public final class NX10Core: NX10CoreProtocol {
     // MARK: Public properties
     public let errorProvider: ErrorProviding
     public let telemetryService: TelemetryService
-    public let accessProvider: AccessProviding
     public let saaqService: SaaQServiceProtocol
     
     // MARK: Internal properties
@@ -56,7 +54,6 @@ public final class NX10Core: NX10CoreProtocol {
         let appService = AppInfoProvider()
         let endpointProvider = EndpointProvider(configLoader: configLoader)
         let networkService = NetworkService(endpointProvider: endpointProvider)
-        let accessProvider = AccessProvider(errorProvider: errorProvider)
         let analyticsService = AnalyticsProvider(networkService: networkService)
         let appLifecycleService = LifecyleProvider()
         
@@ -104,7 +101,6 @@ public final class NX10Core: NX10CoreProtocol {
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.telemetryService = telemetryService
-        self.accessProvider = accessProvider
         self.saaqService = saaqService
         
         // Internal properties for lifecycle management
@@ -137,29 +133,14 @@ public final class NX10Core: NX10CoreProtocol {
         }
         
         errorProvider.setTrackingEnabled(errorTrackingEnabled)
-        accessProvider.setAppGroupID(appGroupdID)
         
-        let accessReady = accessProvider.isReady ?? false
-        
-        guard
-            accessReady
-        else {
-            if isDebug {
-                fatalError("API's failed to load correctly")
-            }
-            return
-        }
         
         if shouldStartSession {
-            print("should start session")
-            let enabled = await accessProvider.startFullAccessMonitoring(interval: 0.2, url: nil, timeout: 2.0)
-            if enabled {
-                print("LOG: Full access available")
                 Task(name: "telemetry-task", priority: .utility) {
                     try await startSession()
                 }
             }
-        }
+
         print("LOG: isConfigured is true")
         isConfigured = true
     }

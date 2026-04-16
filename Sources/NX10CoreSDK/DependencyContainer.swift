@@ -25,7 +25,6 @@ public final class DependencyContainer {
     public let eventPublisher: TelemetryEventPublisher
     
     // MARK: - Higher-level Services
-    public let accessProvider: AccessProviding
     public let analyticsService: AnalyticsProviding
     public let attributesService: AttributesProviding
     public let appLifecycleService: LifecycleProviding
@@ -63,10 +62,6 @@ public final class DependencyContainer {
         // Initialize scheduler and event publisher
         self.scheduler = scheduler ?? DefaultTelemetryScheduler()
         self.eventPublisher = eventPublisher ?? DefaultTelemetryEventPublisher()
-        
-        // Initialize higher-level services
-        let accessProvider = AccessProvider(errorProvider: errorProvider)
-        self.accessProvider = accessProvider
         
         let analytics = AnalyticsProvider(networkService: networkService)
         self.analyticsService = analytics
