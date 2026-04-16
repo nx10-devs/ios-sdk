@@ -134,7 +134,6 @@ public final class NX10Core: NX10CoreProtocol {
         
         errorProvider.setTrackingEnabled(errorTrackingEnabled)
         
-        
         if shouldStartSession {
                 Task(name: "telemetry-task", priority: .utility) {
                     try await startSession()
@@ -151,31 +150,33 @@ extension NX10Core {
         if isStartingSession { return }
         isStartingSession = true
         
-        do {
-            print("LOG: startSession")
-            let start = try await self.sessionProvider.startSession()
-            
-            if start {
-                print("LOG: sendInitialMetadata")
-                try await attributesService.sendInitialMetadata()
-                print("LOG: shouldStartTelemetry")
-                try await self.telemetryService.shouldStartTelemetry()
-                isStartingSession = false
-            } else {
-                if isDebug {
-                    fatalError("failed to start session")
+        await Task(name:"start-session-task", priority: .utility) {
+            do {
+                print("LOG: startSession")
+                let start = try await self.sessionProvider.startSession()
+                
+                if start {
+                    print("LOG: sendInitialMetadata")
+                    try await attributesService.sendInitialMetadata()
+                    print("LOG: shouldStartTelemetry")
+                    try await self.telemetryService.shouldStartTelemetry()
+                    isStartingSession = false
+                } else {
+                    if isDebug {
+                        fatalError("failed to start session")
+                    }
+                    errorProvider.sendSDKError(.sessionFailed)
                 }
-                errorProvider.sendSDKError(.sessionFailed)
+            } catch {
+                if isDebug {
+                    print("start session failed")
+                }
+                self.errorProvider.sendError(error)
+                throw error
             }
-        } catch {
-            if isDebug {
-                print("start session failed")
-            }
-            self.errorProvider.sendError(error)
-            throw error
+            isStartingSession = true
+            return
         }
-        isStartingSession = true
-        return
     }
 }
 
