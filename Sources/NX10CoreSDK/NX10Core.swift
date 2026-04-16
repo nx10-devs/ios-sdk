@@ -8,6 +8,20 @@
 import Foundation
 internal import UIKit
 
+public struct NX10CoreConfig {
+    let apiKey: String
+    let appGroup: String
+    let errorTrackingEnabled: Bool
+    let startSession: Bool
+    
+    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, startSession: Bool) {
+        self.apiKey = apiKey
+        self.appGroup = appGroup
+        self.errorTrackingEnabled = errorTrackingEnabled
+        self.startSession = startSession
+    }
+}
+
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
