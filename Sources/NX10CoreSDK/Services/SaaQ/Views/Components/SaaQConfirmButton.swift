@@ -26,7 +26,6 @@ public struct SaaQConfirmButton: View {
         }
         .buttonStyle(ConfirmButtonStyle(disabled: isConfirmDisabled))
         .disabled(isConfirmDisabled)
-        .padding(.horizontal)
     }
 }
 
