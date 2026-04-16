@@ -82,6 +82,7 @@ public struct SaaQMultipleChoicePresentationView: View {
                             onSelect: { id in toggle(id) },
                             isKeyboard: false
                         )
+                        .padding(.vertical)
                     } else {
                         SingleSelectContent(
                             options: options,
@@ -235,67 +236,74 @@ public struct SaaQMultipleChoicePresentationView: View {
         let isKeyboard: Bool
         
         var body: some View {
-            if isKeyboard {
-                VStack(spacing: 10) {
-                    ForEach(options) { option in
+                VStack(spacing: 0) {
+                    ForEach(0..<options.count) { idx in
+                        let option = options[idx]
                         Button {
                             onSelect(option.id)
                         } label: {
-                            HStack(alignment: .center) {
-                                Text(option.displayName)
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.9)
-                                    .frame(height: 48)
-                                Spacer()
-                                if selected.contains(option.id) {
-                                    Image(systemName: "checkmark")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(Color.blue)
+                            ZStack {
+                                Color.black.opacity(0.001)
+                                VStack(alignment: .center) {
+                                    HStack(alignment: .center) {
+                                        Text(option.displayName)
+                                            .font(.system(size: 17, weight: .medium))
+                                            .foregroundStyle(.primary)
+                                            
+                                        Spacer()
+                                        if selected.contains(option.id) {
+                                            Image(systemName: "checkmark")
+                                                .font(.caption.weight(.semibold))
+                                                .foregroundStyle(Color.blue)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 52)
+                                    .offset(y: 4)
+                                    
+                                    if options.count > 1, idx < options.count - 1 {
+                                        Divider().frame(height: 1)
+                                    }
                                 }
                             }
-                            .padding(.horizontal, 10)
-                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.plain)
-                        Divider().frame(height: 1)
                     }
-                    .padding()
                 }
+                .padding(.horizontal, 20)
                 .background(
                     .thinMaterial,
-                    in: RoundedRectangle(cornerSize: .init(width: 30, height: 30))
+                    in: RoundedRectangle(cornerSize: .init(width: 32, height: 32))
                 )
-            } else {
-                List(options) { option in
-                    Button {
-                        onSelect(option.id)
-                    } label: {
-                        HStack(alignment: .center) {
-                            Text(option.displayName)
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.9)
-                            Spacer()
-                            if selected.contains(option.id) {
-                                Image(systemName: "checkmark")
-                                    .font(.body.weight(.semibold))
-                                    .foregroundStyle(Color.blue)
-                            }
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.plain)
-                    .listRowBackground(Color.black.opacity(0.125))
-                }
-                .scrollContentBackground(.hidden)
-                .scrollDisabled(true)
-                .padding(0)
-            }
+                .padding(.bottom, isKeyboard ? 0 : 20)
+//            } else {
+//                List(options) { option in
+//                    Button {
+//                        onSelect(option.id)
+//                    } label: {
+//                        HStack(alignment: .center) {
+//                            Text(option.displayName)
+//                                .font(.system(size: 17, weight: .medium))
+//                                .foregroundStyle(.primary)
+//                                .lineLimit(1)
+//                            Spacer()
+//                            if selected.contains(option.id) {
+//                                Image(systemName: "checkmark")
+//                                    .font(.body.weight(.semibold))
+//                                    .foregroundStyle(Color.blue)
+//                            }
+//                        }
+//                        .padding(.vertical, 12)
+//                        .padding(.horizontal, 12)
+//                        .frame(maxWidth: .infinity)
+//                    }
+//                    .buttonStyle(.plain)
+//                    .listRowBackground(Color.black.opacity(0.125))
+//                }
+//                .scrollContentBackground(.hidden)
+//                .scrollDisabled(true)
+//                .padding(0)
+//            }
         }
     }
 }
@@ -336,6 +344,19 @@ public struct SaaQMultipleChoicePresentationView: View {
                 .init(id: "c_id_3", displayName: "Display Name 3"),
                 .init(id: "c_id_4", displayName: "Display Name 4")
             ], isMultiSelect: true, dismissable: true, isKeyboard: true) { _ in
+                
+            } onMultipleSelected: { _ in
+                
+            } onClose: {
+                
+            }
+            
+            SaaQMultipleChoicePresentationView(title: "Choices", options: [
+                .init(id: "c_id_1", displayName: "Display Name 1"),
+                .init(id: "c_id_2", displayName: "Display Name 2"),
+                .init(id: "c_id_3", displayName: "Display Name 3"),
+                .init(id: "c_id_4", displayName: "Display Name 4")
+            ], isMultiSelect: true, dismissable: true, isKeyboard: false) { _ in
                 
             } onMultipleSelected: { _ in
                 
