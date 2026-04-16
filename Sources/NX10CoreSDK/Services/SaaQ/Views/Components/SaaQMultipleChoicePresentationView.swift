@@ -271,39 +271,13 @@ public struct SaaQMultipleChoicePresentationView: View {
                     }
                 }
                 .padding(.horizontal, 20)
+                .padding(.bottom, 15)
+                .padding(.top, 5)
                 .background(
                     .thinMaterial,
-                    in: RoundedRectangle(cornerSize: .init(width: 32, height: 32))
+                    in: RoundedRectangle(cornerSize: .init(width: 26, height: 26))
                 )
                 .padding(.bottom, isKeyboard ? 0 : 20)
-//            } else {
-//                List(options) { option in
-//                    Button {
-//                        onSelect(option.id)
-//                    } label: {
-//                        HStack(alignment: .center) {
-//                            Text(option.displayName)
-//                                .font(.system(size: 17, weight: .medium))
-//                                .foregroundStyle(.primary)
-//                                .lineLimit(1)
-//                            Spacer()
-//                            if selected.contains(option.id) {
-//                                Image(systemName: "checkmark")
-//                                    .font(.body.weight(.semibold))
-//                                    .foregroundStyle(Color.blue)
-//                            }
-//                        }
-//                        .padding(.vertical, 12)
-//                        .padding(.horizontal, 12)
-//                        .frame(maxWidth: .infinity)
-//                    }
-//                    .buttonStyle(.plain)
-//                    .listRowBackground(Color.black.opacity(0.125))
-//                }
-//                .scrollContentBackground(.hidden)
-//                .scrollDisabled(true)
-//                .padding(0)
-//            }
         }
     }
 }
