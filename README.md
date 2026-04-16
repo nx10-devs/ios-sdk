@@ -22,7 +22,7 @@ The SDK uses App Groups to securely share data between your main app and extensi
 
 1. Select **File** → **Add Packages**
 2. Enter `https://github.com/nx10-devs/ios-sdk.git`
-3. Select version 1.0.3 or later
+3. Select version 1.2.0 or later
 
 ---
 
@@ -328,25 +328,37 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 ```
 
-To stop the presenter and tear down its overlay:
+### SwiftUI Keyboard Integration
+
+Add the prompt presenter to your toolbar view with a single modifier. The modifier occupies the space of a toolbar. It automatically hides the toolbar's content when a prompt is visible. Once dismissed the original toolbar's content will show.
 
 ```swift
-SaaQPromptWindowPresenter.shared.stop()
-```
+import SwiftUI
+import NX10CoreSDK
 
-### Presenting and Dismissing Prompts
-
-Present a prompt from anywhere in your app:
-
-```swift
-// Present using a full trigger payload
-SaaQPromptController.shared.present(trigger: trigger)
-
-// Or present using just the prompt data
-SaaQPromptController.shared.present(prompt: trigger.data.prompt)
-
-// Dismiss when needed
-SaaQPromptController.shared.dismiss()
+ struct CustomKeyboardView: View {
+        var body: some View {
+            KeyboardView( // A Custom keyboard View
+                toolbar: { _ in
+                    CustomToolbarView() // A Custom toolbar for a keyboard
+                        .nx10SaaQPromptKeyboardPresenter() 
+                }
+            )
+            .simultaneousGesture( // Example of reading touches 
+                DragGesture(minimumDistance: isEmojiKeybard ? 8 : 0)
+                    .onChanged { v in
+                        if v.translation == .zero {
+                            nx10Core.telemetryService.appendTouch(at: (v.location, nil, nil))
+                        } else {
+                            nx10Core.telemetryService.appendTouch(at: (nil, v.location, nil))
+                        }
+                    }
+                    .onEnded { v in
+                        nx10Core.telemetryService.appendTouch(at: (nil, nil, v.location))
+                    }
+            )
+        }
+    }
 ```
 
 ### Example Prompt Data
