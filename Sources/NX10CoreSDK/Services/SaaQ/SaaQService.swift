@@ -68,11 +68,11 @@ public final class SaaQService: SaaQServiceProtocol {
             do {
                 Task(name: "saaq-task", priority: .utility) {
                     if let answerOne = answer.saaqOneAnswer {
-                        let _: GenericResponse? = try await networkService.post(answerOne, for: .saaqTriggered)
+                        let _: GenericResponse? = try await networkService.POST(answerOne, for: .saaqTriggered)
                     }
                     
                     if let answerTwo = answer.saaqTwoAnswer {
-                        let _: GenericResponse? = try await networkService.post(answerTwo, for: .saaqTriggered)
+                        let _: GenericResponse? = try await networkService.POST(answerTwo, for: .saaqTriggered)
                     }
                 }
             } catch {

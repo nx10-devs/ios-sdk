@@ -37,7 +37,7 @@ public class AttributesProvider: AttributesProviding {
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
         Task(name: "analytics-task", priority: .utility) {
             do {
-                let response: GenericResponse? = try await networkService.post(deviceLog, for: .attributes)
+                let response: GenericResponse? = try await networkService.POST(deviceLog, for: .attributes)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -76,7 +76,7 @@ public class AttributesProvider: AttributesProviding {
             let keyboardLanguage = appService.keyboardLanguage
             let data = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
-                let response: GenericResponse? = try await networkService.post(data, for: .attributes)
+                let response: GenericResponse? = try await networkService.POST(data, for: .attributes)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -86,7 +86,7 @@ public class AttributesProvider: AttributesProviding {
     public func appDidChangeState(_ state: AppState) async {
         Task(name: "attributes-task", priority: .utility) {
             do {
-                let response: GenericResponse? = try await networkService.post(state, for: .attributes)
+                let response: GenericResponse? = try await networkService.POST(state, for: .attributes)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -106,7 +106,7 @@ public class AttributesProvider: AttributesProviding {
             let appState = AppState(timestamp: Date().iso8601, state: data)
             Task {
                 do {
-                    let response: GenericResponse? = try await self?.networkService.post(appState, for: .attributes)
+                    let response: GenericResponse? = try await self?.networkService.POST(appState, for: .attributes)
                 } catch {
                     self?.errorProvider.sendError(error)
                 }

@@ -27,6 +27,7 @@ public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
+    var brainJuiceProvider: BrainJuiceProviding { get }
     static var shared: NX10CoreProtocol { get }
     
     func configure(
@@ -46,7 +47,8 @@ public final class NX10Core: NX10CoreProtocol {
     public let errorProvider: ErrorProviding
     public let telemetryService: TelemetryService
     public let saaqService: SaaQServiceProtocol
-    
+    public let brainJuiceProvider: BrainJuiceProviding
+
     // MARK: Internal properties
     let networkservice: Networking
     let appService: AppInfoProviding
@@ -111,6 +113,7 @@ public final class NX10Core: NX10CoreProtocol {
             networking: networkService,
             applicationInfoProvider: appService
         )
+        let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
@@ -129,6 +132,7 @@ public final class NX10Core: NX10CoreProtocol {
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
         self.touchTracker = TouchTracker()
+        self.brainJuiceProvider = brainJuiceProvider
     }
     
     @MainActor public func configure(
