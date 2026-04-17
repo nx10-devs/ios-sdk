@@ -35,5 +35,6 @@ public struct Endpoint: Decodable, Hashable {
         case saaqTriggered = "saaq-triggered"
         case analytics
         case attributes
+        case brainJuice = "brain-juice"
     }
 }
