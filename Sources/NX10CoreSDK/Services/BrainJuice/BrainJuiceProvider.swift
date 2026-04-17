@@ -26,7 +26,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
         
         let bjModel = BrainJuice.BrainJuiceRequest(info: "GET Request. No body sent.")
     
-        let brResponse: BrainJuice.BrainJuiceResponse? = try await networking.post(bjModel, for: .brainJuice)
+        let brResponse: BrainJuice.BrainJuiceResponse? = try await networking.GET(for: .brainJuice)
         
         return brResponse
     }

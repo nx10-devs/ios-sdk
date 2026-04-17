@@ -78,7 +78,7 @@ public final class SessionProvider: SessionProviding {
                 throw APIError.malformedURL
             }
             
-            let result: StartSessionAPIResponse? = try await networking.post(
+            let result: StartSessionAPIResponse? = try await networking.execute(
                 payload,
                 for: url
             )
