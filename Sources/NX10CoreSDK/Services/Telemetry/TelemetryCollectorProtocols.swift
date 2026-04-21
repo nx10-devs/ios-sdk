@@ -20,6 +20,12 @@ public protocol SensorDataCollector {
     func appendGyro(_ sample: MotionSample)
     func appendAccel(_ sample: MotionSample)
     func appendTouch(_ sample: TouchSample)
+    // V2 event types
+    func appendGeneralTouch(_ sample: GeneralTouchSample)
+    func appendKbState(_ sample: KbStateSample)
+    func appendTextDeletion(_ sample: TextDelSample)
+    func appendTextCorrection(_ sample: TextCorSample)
+    func appendScreenEvent(_ sample: ScreenEventSample)
 }
 
 /// Manages telemetry session lifecycle

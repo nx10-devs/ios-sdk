@@ -49,6 +49,28 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
     public func appendTouch(_ sample: TouchSample) {
         session.appendTouch(sample)
     }
+
+    // MARK: - V2 event types
+
+    public func appendGeneralTouch(_ sample: GeneralTouchSample) {
+        session.appendGeneralTouch(sample)
+    }
+
+    public func appendKbState(_ sample: KbStateSample) {
+        session.appendKbState(sample)
+    }
+
+    public func appendTextDeletion(_ sample: TextDelSample) {
+        session.appendTextDeletion(sample)
+    }
+
+    public func appendTextCorrection(_ sample: TextCorSample) {
+        session.appendTextCorrection(sample)
+    }
+
+    public func appendScreenEvent(_ sample: ScreenEventSample) {
+        session.appendScreenEvent(sample)
+    }
     
     public func setEventPublisher(_ publisher: any TelemetryEventPublisher) {
         self.eventPublisher = publisher
@@ -104,15 +126,20 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
         let appBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
 
         return TelemetryEnvelope(
-            deviceName: deviceName,
-            deviceToken: deviceToken,
-            deviceType: deviceType,
-            appVersion: appVersion,
-            appBuild: appBuild,
-            keyboard: session.totalKeyPresses > 0 ? [session.keyboardMetricsSummary()] : nil,
-            gyroscope: session.gyro.isEmpty ? nil : session.gyro,
-            accelerometer: session.accel.isEmpty ? nil : session.accel,
-            touch: session.touches.isEmpty ? nil : session.touches
+            deviceName:    deviceName,
+            deviceToken:   deviceToken,
+            deviceType:    deviceType,
+            appVersion:    appVersion,
+            appBuild:      appBuild,
+            keyboard:      session.totalKeyPresses > 0 ? [session.keyboardMetricsSummary()] : nil,
+            gyroscope:     session.gyro.isEmpty     ? nil : session.gyro,
+            accelerometer: session.accel.isEmpty    ? nil : session.accel,
+            touch:         session.touches.isEmpty  ? nil : session.touches,
+            generalTouch:  session.generalTouches.isEmpty  ? nil : session.generalTouches,
+            kbStateEvents: session.kbStateEvents.isEmpty   ? nil : session.kbStateEvents,
+            textDelEvents: session.textDelEvents.isEmpty   ? nil : session.textDelEvents,
+            textCorEvents: session.textCorEvents.isEmpty   ? nil : session.textCorEvents,
+            screenEvents:  session.screenEvents.isEmpty    ? nil : session.screenEvents
         )
     }
     

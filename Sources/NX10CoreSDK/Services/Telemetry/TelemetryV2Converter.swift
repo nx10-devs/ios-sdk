@@ -29,7 +29,12 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         let allTimestamps: [Int64] =
             (env.gyroscope?.map(\.timestampMs) ?? []) +
             (env.accelerometer?.map(\.timestampMs) ?? []) +
-            (env.touch?.map(\.timestampMs) ?? [])
+            (env.touch?.map(\.timestampMs) ?? []) +
+            (env.generalTouch?.map(\.timestampMs) ?? []) +
+            (env.kbStateEvents?.map(\.timestampMs) ?? []) +
+            (env.textDelEvents?.map(\.timestampMs) ?? []) +
+            (env.textCorEvents?.map(\.timestampMs) ?? []) +
+            (env.screenEvents?.map(\.timestampMs) ?? [])
 
         let baseMs: Int64 = allTimestamps.min() ?? Int64(Date().timeIntervalSince1970 * 1000)
 
@@ -74,7 +79,55 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
 
         // Keyboard summary (schema: no timestamp offset)
         if let k = env.keyboard?.first {
-            events.append(.kb(totalKeyPresses:  k.totalKeyPresses, erasedTextLength: k.erasedTextLength, averageHoldTimeMs: Int(k.averageHoldTimeMs), typingSpeedWpm: k.typingSpeedWpm, backspaceCount: k.backspaceCount, flightTimesMs: k.flightTimesMs as? [Int] ?? []))
+            events.append(.kb(totalKeyPresses:  k.totalKeyPresses, erasedTextLength: k.erasedTextLength, averageHoldTimeMs: Int(k.averageHoldTimeMs), typingSpeedWpm: k.typingSpeedWpm, backspaceCount: k.backspaceCount, flightTimesMs: k.flightTimesMs.map { Int($0) }))
+        }
+
+        // General (app-level) screen touches → "touch" events
+        if let generalTouches = env.generalTouch {
+            for t in generalTouches {
+                let off = offsetMs(baseMs: baseMs, eventMs: t.timestampMs)
+                events.append(.touch(
+                    offsetMs:    off,
+                    touchId:     t.touchId,
+                    touchType:   t.touchType.rawValue,
+                    touchObject: t.touchObject?.rawValue,
+                    xMm:         t.xMm,
+                    yMm:         t.yMm,
+                    radiusMm:    t.radiusMm
+                ))
+            }
+        }
+
+        // Keyboard state events → "kb-state"
+        if let kbStates = env.kbStateEvents {
+            for e in kbStates {
+                let off = offsetMs(baseMs: baseMs, eventMs: e.timestampMs)
+                events.append(.kbState(offsetMs: off, state: e.state))
+            }
+        }
+
+        // Text deletion events → "text-del"
+        if let dels = env.textDelEvents {
+            for e in dels {
+                let off = offsetMs(baseMs: baseMs, eventMs: e.timestampMs)
+                events.append(.textDel(offsetMs: off, erasedLength: e.erasedLength))
+            }
+        }
+
+        // Text correction events → "text-cor"
+        if let cors = env.textCorEvents {
+            for e in cors {
+                let off = offsetMs(baseMs: baseMs, eventMs: e.timestampMs)
+                events.append(.textCor(offsetMs: off, correction: e.correction))
+            }
+        }
+
+        // Screen lock/unlock events → "screen"
+        if let screens = env.screenEvents {
+            for e in screens {
+                let off = offsetMs(baseMs: baseMs, eventMs: e.timestampMs)
+                events.append(.screen(offsetMs: off, event: e.event))
+            }
         }
 
         // Optional but recommended: sort by offset where applicable (touch/gyro/acc).
@@ -99,13 +152,17 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
     }
 
     private func sortEventsStable(_ events: [TelemetryV2Event]) -> [TelemetryV2Event] {
-        // Extract offset when present, else nil (kb)
         func off(_ e: TelemetryV2Event) -> Int? {
             switch e {
             case .touchKB(let o, _, _, _, _, _, _, _): return o
-            case .gyro(let o, _, _, _): return o
-            case .acc(let o, _, _, _): return o
-            case .kb: return nil
+            case .touch(let o, _, _, _, _, _, _):       return o
+            case .gyro(let o, _, _, _):                 return o
+            case .acc(let o, _, _, _):                  return o
+            case .kbState(let o, _):                    return o
+            case .textDel(let o, _):                    return o
+            case .textCor(let o, _):                    return o
+            case .screen(let o, _):                     return o
+            case .kb:                                   return nil
             }
         }
 
@@ -122,3 +179,4 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         return sorted + withoutOffset
     }
 }
+

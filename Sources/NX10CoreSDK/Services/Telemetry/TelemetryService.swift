@@ -19,9 +19,10 @@ public final class TelemetryService: TelemetryServicing {
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
     private let analyticsService: AnalyticsProviding
-    
+
     private var sessionStarted = false
-    
+    private var screenObservers: [NSObjectProtocol] = []
+
     // MARK: - Initialization
     public init(
         telemetryCollector: TelemetryCollectorComprehensive,
@@ -37,9 +38,40 @@ public final class TelemetryService: TelemetryServicing {
         self.scheduler = scheduler
         self.eventPublisher = eventPublisher
         self.analyticsService = analyticsService
-        
+
         // Wire event publisher into collector
         self.telemetryCollector.setEventPublisher(eventPublisher)
+        observeScreenEvents()
+    }
+
+    deinit {
+        Task { @MainActor [weak self] in
+            self?.screenObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        }
+    }
+
+    // MARK: - Screen lock/unlock observation
+
+    private func observeScreenEvents() {
+        let lock = NotificationCenter.default.addObserver(
+            forName: UIApplication.protectedDataWillBecomeUnavailableNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.screenLocked() }
+        }
+        let unlock = NotificationCenter.default.addObserver(
+            forName: UIApplication.protectedDataDidBecomeAvailableNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.screenUnlocked() }
+        }
+        screenObservers = [lock, unlock]
+    }
+
+    // MARK: - Private helpers
+
+    private func nowMs() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
     }
     
     // MARK: - Public API
@@ -74,30 +106,72 @@ public final class TelemetryService: TelemetryServicing {
     }
     
     // MARK: - Input Handling
-    
+
     public func keyPressed(_ key: String) {
         telemetryCollector.keyPressed(key)
     }
-    
+
     public func keyReleased(_ key: String) {
         telemetryCollector.keyReleased(key)
     }
-    
+
     public func appendTouch(at: (began: CGPoint?, movedTo: CGPoint?, endedAt: CGPoint?)) {
         if let began = at.began {
             let sample = touchSensor.began(at: began)
             telemetryCollector.appendTouch(sample)
         }
-        
         if let movedTo = at.movedTo {
             let sample = touchSensor.moved(to: movedTo)
             telemetryCollector.appendTouch(sample)
         }
-        
         if let endedAt = at.endedAt {
             let sample = touchSensor.ended(at: endedAt)
             telemetryCollector.appendTouch(sample)
         }
+    }
+
+    // MARK: - General screen touch (app-level, "touch" V2 events)
+
+    public func processGeneralTouch(_ sample: GeneralTouchSample) {
+        telemetryCollector.appendGeneralTouch(sample)
+    }
+
+    // MARK: - Keyboard state ("kb-state" V2 events)
+
+    public func keyboardDidShow() {
+        let sample = KbStateSample(state: "down", timestampMs: nowMs())
+        telemetryCollector.appendKbState(sample)
+    }
+
+    public func keyboardDidHide() {
+        let sample = KbStateSample(state: "up", timestampMs: nowMs())
+        telemetryCollector.appendKbState(sample)
+    }
+
+    // MARK: - Text deletion ("text-del" V2 events)
+
+    public func backspacePressed(erasedCharacterCount count: Int) {
+        let sample = TextDelSample(erasedLength: count, timestampMs: nowMs())
+        telemetryCollector.appendTextDeletion(sample)
+    }
+
+    // MARK: - Text correction ("text-cor" V2 events)
+
+    public func textCorrected(_ type: TextCorrectionType) {
+        let sample = TextCorSample(correction: type.rawValue, timestampMs: nowMs())
+        telemetryCollector.appendTextCorrection(sample)
+    }
+
+    // MARK: - Screen lock/unlock ("screen" V2 events)
+
+    public func screenLocked() {
+        let sample = ScreenEventSample(event: "lock", timestampMs: nowMs())
+        telemetryCollector.appendScreenEvent(sample)
+    }
+
+    public func screenUnlocked() {
+        let sample = ScreenEventSample(event: "unlock", timestampMs: nowMs())
+        telemetryCollector.appendScreenEvent(sample)
     }
     
     // MARK: - Data Management

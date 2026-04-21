@@ -30,9 +30,17 @@ public final class TelemetrySession {
     private var keyPressStartTimes: [String: TimeInterval] = [:]
 
     // MARK: - Sensor buffers
-    public private(set) var gyro: [MotionSample] = []
-    public private(set) var accel: [MotionSample] = []
-    public private(set) var touches: [TouchSample] = []
+    public private(set) var gyro:    [MotionSample]       = []
+    public private(set) var accel:   [MotionSample]       = []
+    public private(set) var touches: [TouchSample]        = []
+
+    // MARK: - V2 event buffers
+    public private(set) var generalTouches: [GeneralTouchSample] = []
+    public private(set) var kbStateEvents:  [KbStateSample]      = []
+    public private(set) var textDelEvents:  [TextDelSample]       = []
+    public private(set) var textCorEvents:  [TextCorSample]       = []
+    public private(set) var screenEvents:   [ScreenEventSample]   = []
+
     public init() {}
 
     public func reset() {
@@ -50,6 +58,11 @@ public final class TelemetrySession {
         gyro.removeAll()
         accel.removeAll()
         touches.removeAll()
+        generalTouches.removeAll()
+        kbStateEvents.removeAll()
+        textDelEvents.removeAll()
+        textCorEvents.removeAll()
+        screenEvents.removeAll()
         print("LOG: Data flushed (cleared)")
     }
 
@@ -145,7 +158,33 @@ public final class TelemetrySession {
         }
     }
 
+    // MARK: - V2 event append methods
+
+    public func appendGeneralTouch(_ sample: GeneralTouchSample) {
+        telemetryQueue.async { [unowned self] in generalTouches.append(sample) }
+    }
+
+    public func appendKbState(_ sample: KbStateSample) {
+        telemetryQueue.async { [unowned self] in kbStateEvents.append(sample) }
+    }
+
+    public func appendTextDeletion(_ sample: TextDelSample) {
+        telemetryQueue.async { [unowned self] in textDelEvents.append(sample) }
+    }
+
+    public func appendTextCorrection(_ sample: TextCorSample) {
+        telemetryQueue.async { [unowned self] in textCorEvents.append(sample) }
+    }
+
+    public func appendScreenEvent(_ sample: ScreenEventSample) {
+        telemetryQueue.async { [unowned self] in screenEvents.append(sample) }
+    }
+
     public func hasAnyData() -> Bool {
-        totalKeyPresses > 0 || !gyro.isEmpty || !accel.isEmpty || !touches.isEmpty
+        totalKeyPresses > 0
+            || !gyro.isEmpty || !accel.isEmpty
+            || !touches.isEmpty || !generalTouches.isEmpty
+            || !kbStateEvents.isEmpty || !textDelEvents.isEmpty
+            || !textCorEvents.isEmpty || !screenEvents.isEmpty
     }
 }

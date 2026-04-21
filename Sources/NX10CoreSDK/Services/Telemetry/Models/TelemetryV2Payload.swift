@@ -25,9 +25,19 @@ public struct TelemetryV2Payload: Encodable {
 // MARK: - Tuple Events
 public enum TelemetryV2Event: Encodable {
     case touchKB(offsetMs: Int, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double)
+    /// App-level touch event — coordinates in mm, bottom-left origin.  V2 spec event "touch".
+    case touch(offsetMs: Int, touchId: String, touchType: String, touchObject: String?, xMm: Double, yMm: Double, radiusMm: Double)
     case gyro(offsetMs: Int, x: Double, y: Double, z: Double)
     case acc(offsetMs: Int, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
+    /// Keyboard shown / hidden.  V2 spec event "kb-state".
+    case kbState(offsetMs: Int, state: String)
+    /// Characters erased by a single backspace touch.  V2 spec event "text-del".
+    case textDel(offsetMs: Int, erasedLength: Int)
+    /// Text correction (autocorrect / suggest / undo).  V2 spec event "text-cor".
+    case textCor(offsetMs: Int, correction: String)
+    /// Screen locked or unlocked.  V2 spec event "screen".
+    case screen(offsetMs: Int, event: String)
 
     public func encode(to encoder: Encoder) throws {
         var c = encoder.unkeyedContainer()
@@ -43,6 +53,18 @@ public enum TelemetryV2Event: Encodable {
             try c.encode(s)
             try c.encode(vx)
             try c.encode(vy)
+
+        case let .touch(o, id, type, obj, x, y, r):
+            // ["touch", "2", offsetMs, touchId, touchType, touchObject|null, xMm, yMm, radiusMm]
+            try c.encode("touch")
+            try c.encode("2")
+            try c.encode(o)
+            try c.encode(id)
+            try c.encode(type)
+            if let obj { try c.encode(obj) } else { try c.encodeNil() }
+            try c.encode(x)
+            try c.encode(y)
+            try c.encode(r)
 
         case let .gyro(o, x, y, z):
             try c.encode("gyro")
@@ -66,6 +88,34 @@ public enum TelemetryV2Event: Encodable {
             try c.encode(wpm)
             try c.encode(bs)
             try c.encode(flights)
+
+        case let .kbState(o, state):
+            // ["kb-state", "1", offsetMs, "up"|"down"]
+            try c.encode("kb-state")
+            try c.encode("1")
+            try c.encode(o)
+            try c.encode(state)
+
+        case let .textDel(o, length):
+            // ["text-del", "1", offsetMs, erasedLength]
+            try c.encode("text-del")
+            try c.encode("1")
+            try c.encode(o)
+            try c.encode(length)
+
+        case let .textCor(o, correction):
+            // ["text-cor", "1", offsetMs, "autocorrect"|"suggest"|"undo"]
+            try c.encode("text-cor")
+            try c.encode("1")
+            try c.encode(o)
+            try c.encode(correction)
+
+        case let .screen(o, event):
+            // ["screen", "1", offsetMs, "lock"|"unlock"]
+            try c.encode("screen")
+            try c.encode("1")
+            try c.encode(o)
+            try c.encode(event)
         }
     }
 }
