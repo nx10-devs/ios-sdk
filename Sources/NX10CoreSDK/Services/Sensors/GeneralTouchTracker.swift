@@ -141,7 +141,6 @@ public import UIKit
             xMm:         xMm,
             yMm:         yMm,
             radiusMm:    radiusMm,
-            pressure:    pressure,
             size:        radiusMm * 2,  // major-axis diameter in mm
             velocityX:   0,
             velocityY:   0,

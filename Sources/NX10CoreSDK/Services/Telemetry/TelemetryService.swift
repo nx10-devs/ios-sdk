@@ -145,7 +145,6 @@ public final class TelemetryService: TelemetryServicing {
             xMm:         xMm,
             yMm:         yMm,
             radiusMm:    radiusMm,
-            pressure:    resolvedPressure,
             size:        resolvedSize,
             velocityX:   Double(velocityPoints.dx),
             velocityY:   Double(velocityPoints.dy),

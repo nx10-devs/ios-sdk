@@ -93,8 +93,6 @@ public struct GeneralTouchSample: Codable {
     public let yMm:         Double
     /// Touch contact radius in millimetres (major axis of the contact ellipse).
     public let radiusMm:    Double
-    /// Normalised pressure 0…1 (0 when not available).
-    public let pressure:    Double
     /// Touch size in millimetres (major axis, same units as radius × 2; 0 when unavailable).
     public let size:        Double
     /// Velocity components in UIKit points / second (0 when unavailable).
@@ -108,7 +106,6 @@ public struct GeneralTouchSample: Codable {
                 xMm: Double,
                 yMm: Double,
                 radiusMm: Double,
-                pressure: Double = 0,
                 size: Double = 0,
                 velocityX: Double = 0,
                 velocityY: Double = 0,
@@ -119,7 +116,6 @@ public struct GeneralTouchSample: Codable {
         self.xMm         = xMm
         self.yMm         = yMm
         self.radiusMm    = radiusMm
-        self.pressure    = pressure
         self.size        = size
         self.velocityX   = velocityX
         self.velocityY   = velocityY
