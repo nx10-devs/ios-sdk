@@ -1,190 +1,145 @@
 //
 //  TelemetrySession.swift
-//  NX10KeyboardExtensionPOC
+//  NX10CoreSDK
 //
-//  Created by Warrd Adlani on 12/02/2026.
+//  Holds in-memory buffers for telemetry data and exposes append APIs and
+//  keyboard metrics aggregation. Updated for Telemetry V2 to include
+//  general screen touches and lightweight event logs.
 //
 
 import Foundation
 
+@MainActor
 public final class TelemetrySession {
-
-    // MARK: - Capture window
-    /// Epoch milliseconds marking the start of the current capture window.
-    /// Used to generate V2 offsets (eventTimeMs - windowStartEpochMs).
-    private(set) var windowStartEpochMs: Int64 = Int64(Date().timeIntervalSince1970 * 1000)
-    let telemetryQueue = DispatchQueue(label: "com.nx10.telemetry", qos: .default)
-
-    // MARK: - Typing metrics
-    public private(set) var totalKeyPresses = 0
-    public private(set) var totalCharactersTyped = 0
-    public private(set) var backspaceCount = 0
-    public private(set) var erasedTextLength = 0
-
-    private var startTime = Date().timeIntervalSince1970
-    private var lastKeyPressTime: TimeInterval = 0
-    private var currentWord = ""
-
-    private var holdTimes: [TimeInterval] = []
-    private var flightTimes: [TimeInterval] = []
-    private var keyPressStartTimes: [String: TimeInterval] = [:]
-
     // MARK: - Sensor buffers
-    public private(set) var gyro:    [MotionSample]       = []
-    public private(set) var accel:   [MotionSample]       = []
-    public private(set) var touches: [TouchSample]        = []
+    public private(set) var gyro: [MotionSample] = []
+    public private(set) var accel: [MotionSample] = []
+    /// Keyboard touch samples ("touch-kb" events)
+    public private(set) var touches: [TouchSample] = []
 
-    // MARK: - V2 event buffers
+    /// App-level screen touches ("touch" events, mm coordinates)
     public private(set) var generalTouches: [GeneralTouchSample] = []
-    public private(set) var kbStateEvents:  [KbStateSample]      = []
-    public private(set) var textDelEvents:  [TextDelSample]       = []
-    public private(set) var textCorEvents:  [TextCorSample]       = []
-    public private(set) var screenEvents:   [ScreenEventSample]   = []
+    /// Keyboard visibility transitions ("kb-state" events)
+    public private(set) var kbStateEvents: [KbStateSample] = []
+    /// Characters erased by a single backspace ("text-del" events)
+    public private(set) var textDelEvents: [TextDelSample] = []
+    /// Text corrections ("text-cor" events)
+    public private(set) var textCorEvents: [TextCorSample] = []
+    /// Screen lock/unlock ("screen" events)
+    public private(set) var screenEvents: [ScreenEventSample] = []
+
+    // MARK: - Keyboard metrics aggregation (for "kb" summary)
+    public private(set) var totalKeyPresses: Int = 0
+    private var backspaceCount: Int = 0
+    private var erasedTextLength: Int = 0
+
+    private var keyDownTimestamps: [String: Int64] = [:]
+    private var holdTimesMs: [Int64] = []
+    private var flightTimesMs: [Int64] = []
+    private var lastKeyUpMs: Int64?
 
     public init() {}
 
-    public func reset() {
-        windowStartEpochMs = Int64(Date().timeIntervalSince1970 * 1000)
-        totalKeyPresses = 0
-        totalCharactersTyped = 0
-        backspaceCount = 0
-        erasedTextLength = 0
-        startTime = Date().timeIntervalSince1970
-        lastKeyPressTime = 0
-        currentWord = ""
-        holdTimes.removeAll()
-        flightTimes.removeAll()
-        keyPressStartTimes.removeAll()
-        gyro.removeAll()
-        accel.removeAll()
-        touches.removeAll()
-        generalTouches.removeAll()
-        kbStateEvents.removeAll()
-        textDelEvents.removeAll()
-        textCorEvents.removeAll()
-        screenEvents.removeAll()
-        print("LOG: Data flushed (cleared)")
+    // MARK: - Append APIs
+    public func appendGyro(_ sample: MotionSample) { gyro.append(sample) }
+    public func appendAccel(_ sample: MotionSample) { accel.append(sample) }
+    public func appendTouch(_ sample: TouchSample) { touches.append(sample) }
+
+    public func appendGeneralTouch(_ sample: GeneralTouchSample) {
+        generalTouches.append(sample)
     }
 
-    /// Call when you want to explicitly start a new capture window without resetting metrics.
-    /// Useful if you rotate windows on a timer.
-    public func startNewWindow(nowEpochMs: Int64 = Int64(Date().timeIntervalSince1970 * 1000)) {
-        windowStartEpochMs = nowEpochMs
+    public func appendKbState(_ sample: KbStateSample) {
+        kbStateEvents.append(sample)
     }
 
-    /// Epoch milliseconds for "now".
-    public func nowEpochMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
+    public func appendTextDeletion(_ sample: TextDelSample) {
+        textDelEvents.append(sample)
+        // Update summary metrics
+        backspaceCount += 1
+        erasedTextLength += sample.erasedLength
     }
 
-    /// End timestamp offset (ms) from the current window base.
-    public func endOffsetMs(endEpochMs: Int64) -> Int {
-        max(0, Int(endEpochMs - windowStartEpochMs))
+    public func appendTextCorrection(_ sample: TextCorSample) {
+        textCorEvents.append(sample)
     }
 
-    // MARK: - Typing
-    public func recordKeyPress(_ key: String, now: TimeInterval = Date().timeIntervalSince1970) {
-        telemetryQueue.async { [unowned self] in
-            if lastKeyPressTime > 0 {
-                flightTimes.append(now - lastKeyPressTime)
-            }
-            lastKeyPressTime = now
-            totalKeyPresses += 1
-            keyPressStartTimes[key] = now
-            
-            if key == "⌫" {
-                backspaceCount += 1
-                if !currentWord.isEmpty {
-                    currentWord.removeLast()
-                    erasedTextLength += 1
-                }
-                return
-            }
-            
-            if key == " " || key == "\n" {
-                if !currentWord.isEmpty {
-                    totalCharactersTyped += currentWord.count
-                    currentWord = ""
-                }
-                totalCharactersTyped += 1
-            } else {
-                currentWord += key
-            }
+    public func appendScreenEvent(_ sample: ScreenEventSample) {
+        screenEvents.append(sample)
+    }
+
+    // MARK: - Keyboard input lifecycle
+    public func recordKeyPress(_ key: String) {
+        totalKeyPresses += 1
+        let now = Self.nowMs()
+        keyDownTimestamps[key] = now
+        if let lastUp = lastKeyUpMs {
+            let flight = max(0, now - lastUp)
+            flightTimesMs.append(flight)
         }
     }
 
-    public func recordKeyRelease(_ key: String, now: TimeInterval = Date().timeIntervalSince1970) {
-        telemetryQueue.async { [weak self] in
-            guard let start = self?.keyPressStartTimes[key] else { return }
-            self?.holdTimes.append(now - start)
-            self?.keyPressStartTimes.removeValue(forKey: key)
+    public func recordKeyRelease(_ key: String) {
+        let now = Self.nowMs()
+        if let down = keyDownTimestamps.removeValue(forKey: key) {
+            let hold = max(0, now - down)
+            holdTimesMs.append(hold)
         }
+        lastKeyUpMs = now
     }
 
-    public func typingSpeedWpm(now: TimeInterval = Date().timeIntervalSince1970) -> Int {
-        let minutes = max((now - startTime) / 60.0, 0.0001)
-        return totalCharactersTyped > 0 ? Int(Double(totalCharactersTyped) / minutes) : 0
-    }
-
+    // MARK: - Summary & lifecycle
     public func keyboardMetricsSummary() -> KeyboardMetricsSummary {
-        let avgHoldMs: Int64 = holdTimes.isEmpty
-        ? 0
-        : Int64((holdTimes.reduce(0, +) / Double(holdTimes.count)) * 1000.0)
-
+        let avgHold: Int64
+        if holdTimesMs.isEmpty {
+            avgHold = 0
+        } else {
+            let total = holdTimesMs.reduce(0, +)
+            avgHold = total / Int64(holdTimesMs.count)
+        }
         return KeyboardMetricsSummary(
-            typingSpeedWpm: typingSpeedWpm(),
+            typingSpeedWpm: 0, // Not computed here
             backspaceCount: backspaceCount,
             erasedTextLength: erasedTextLength,
-            averageHoldTimeMs: avgHoldMs,
-            flightTimesMs: flightTimes.map { Int64($0 * 1000.0) },
+            averageHoldTimeMs: avgHold,
+            flightTimesMs: flightTimesMs,
             totalKeyPresses: totalKeyPresses
         )
     }
 
-    // MARK: - Sensors
-    public func appendGyro(_ sample: MotionSample) {
-        telemetryQueue.async { [unowned self] in
-            gyro.append(sample)
-        }
-    }
-    public func appendAccel(_ sample: MotionSample) {
-        telemetryQueue.async { [unowned self] in
-            accel.append(sample)
-        }
-    }
-    public func appendTouch(_ sample: TouchSample) {
-        telemetryQueue.async { [unowned self] in
-            touches.append(sample)
-        }
-    }
-
-    // MARK: - V2 event append methods
-
-    public func appendGeneralTouch(_ sample: GeneralTouchSample) {
-        telemetryQueue.async { [unowned self] in generalTouches.append(sample) }
-    }
-
-    public func appendKbState(_ sample: KbStateSample) {
-        telemetryQueue.async { [unowned self] in kbStateEvents.append(sample) }
-    }
-
-    public func appendTextDeletion(_ sample: TextDelSample) {
-        telemetryQueue.async { [unowned self] in textDelEvents.append(sample) }
-    }
-
-    public func appendTextCorrection(_ sample: TextCorSample) {
-        telemetryQueue.async { [unowned self] in textCorEvents.append(sample) }
-    }
-
-    public func appendScreenEvent(_ sample: ScreenEventSample) {
-        telemetryQueue.async { [unowned self] in screenEvents.append(sample) }
-    }
-
     public func hasAnyData() -> Bool {
-        totalKeyPresses > 0
-            || !gyro.isEmpty || !accel.isEmpty
-            || !touches.isEmpty || !generalTouches.isEmpty
-            || !kbStateEvents.isEmpty || !textDelEvents.isEmpty
-            || !textCorEvents.isEmpty || !screenEvents.isEmpty
+        return !gyro.isEmpty ||
+               !accel.isEmpty ||
+               !touches.isEmpty ||
+               !generalTouches.isEmpty ||
+               !kbStateEvents.isEmpty ||
+               !textDelEvents.isEmpty ||
+               !textCorEvents.isEmpty ||
+               !screenEvents.isEmpty ||
+               totalKeyPresses > 0
+    }
+
+    public func reset() {
+        gyro.removeAll(keepingCapacity: false)
+        accel.removeAll(keepingCapacity: false)
+        touches.removeAll(keepingCapacity: false)
+        generalTouches.removeAll(keepingCapacity: false)
+        kbStateEvents.removeAll(keepingCapacity: false)
+        textDelEvents.removeAll(keepingCapacity: false)
+        textCorEvents.removeAll(keepingCapacity: false)
+        screenEvents.removeAll(keepingCapacity: false)
+
+        totalKeyPresses = 0
+        backspaceCount = 0
+        erasedTextLength = 0
+        keyDownTimestamps.removeAll(keepingCapacity: false)
+        holdTimesMs.removeAll(keepingCapacity: false)
+        flightTimesMs.removeAll(keepingCapacity: false)
+        lastKeyUpMs = nil
+    }
+
+    // MARK: - Helpers
+    private static func nowMs() -> Int64 {
+        Int64(Date().timeIntervalSince1970 * 1000)
     }
 }
