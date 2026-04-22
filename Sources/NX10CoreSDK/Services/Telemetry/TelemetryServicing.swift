@@ -47,7 +47,6 @@ public protocol TelemetryServicing: AnyObject {
                              touchObject: GeneralTouchSample.TouchObject,
                              point: CGPoint,
                              radiusPoints: CGFloat,
-                             pressure: Double,
                              size: Double,
                              velocityPoints: CGVector,
                              screen: UIScreen)
@@ -90,7 +89,6 @@ public extension TelemetryServicing {
             touchObject: touchObject,
             point: point,
             radiusPoints: radiusPoints,
-            pressure: 0,
             size: 0,
             velocityPoints: .zero,
             screen: screen

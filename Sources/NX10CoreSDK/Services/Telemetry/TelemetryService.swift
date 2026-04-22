@@ -123,7 +123,6 @@ public final class TelemetryService: TelemetryServicing {
                                     touchObject: GeneralTouchSample.TouchObject,
                                     point: CGPoint,
                                     radiusPoints: CGFloat,
-                                    pressure: Double,
                                     size: Double,
                                     velocityPoints: CGVector,
                                     screen: UIScreen) {
@@ -132,9 +131,6 @@ public final class TelemetryService: TelemetryServicing {
 
         // If the caller didn't supply a real pressure reading (e.g. no 3D Touch),
         // approximate it from the contact radius the same way Android does.
-        let resolvedPressure = pressure > 0
-            ? pressure
-            : CoordinateConverter.pressureFromRadius(radiusMm)
         // When no explicit size is provided, use the contact diameter (mm).
         let resolvedSize = size > 0 ? size : radiusMm * 2
 

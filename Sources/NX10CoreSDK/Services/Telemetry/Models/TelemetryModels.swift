@@ -121,6 +121,19 @@ public struct GeneralTouchSample: Codable {
         self.velocityY   = velocityY
         self.timestampMs = timestampMs
     }
+    
+    enum CodingKeys: String, CodingKey {
+        case touchId
+        case touchType
+        case touchObject
+        case xMm
+        case yMm
+        case radiusMm = "touchRadiusMm"
+        case size
+        case velocityX
+        case velocityY
+        case timestampMs
+    }
 }
 
 // MARK: - Lightweight event-log samples for new V2 event types
