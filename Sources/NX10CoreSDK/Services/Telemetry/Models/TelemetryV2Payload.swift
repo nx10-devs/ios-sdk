@@ -33,11 +33,7 @@ public enum TelemetryV2Event: Encodable {
                touchObject: String?,
                xMm: Double,
                yMm: Double,
-               radiusMm: Double,
-               pressure: Double,
-               size: Double,
-               vx: Double,
-               vy: Double)
+               radiusMm: Double)
     case gyro(offsetMs: Int, x: Double, y: Double, z: Double)
     case acc(offsetMs: Int, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
@@ -54,9 +50,9 @@ public enum TelemetryV2Event: Encodable {
         var c = encoder.unkeyedContainer()
 
         switch self {
-        case let .touch(o, id, type, obj, x, y, r, p, s, vx, vy):
+        case let .touch(o, id, type, obj, x, y, r):
             // ["touch", "2", offsetMs, touchId, touchType, touchObject|null,
-            //  xMm, yMm, radiusMm, pressure, size, vx, vy]
+            //  xMm, yMm, touchRadiusMm]  — 9 items per API spec
             try c.encode("touch")
             try c.encode("2")
             try c.encode(o)
@@ -66,10 +62,6 @@ public enum TelemetryV2Event: Encodable {
             try c.encode(x)
             try c.encode(y)
             try c.encode(r)
-            try c.encode(p)
-            try c.encode(s)
-            try c.encode(vx)
-            try c.encode(vy)
 
         case let .gyro(o, x, y, z):
             try c.encode("gyro")

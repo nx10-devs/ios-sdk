@@ -77,11 +77,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
                     touchObject: t.touchObject?.rawValue,
                     xMm:         t.xMm,
                     yMm:         t.yMm,
-                    radiusMm:    t.radiusMm,
-                    pressure:    t.pressure,
-                    size:        t.size,
-                    vx:          t.velocityX,
-                    vy:          t.velocityY
+                    radiusMm:    t.radiusMm
                 ))
             }
         }
@@ -142,7 +138,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
     private func sortEventsStable(_ events: [TelemetryV2Event]) -> [TelemetryV2Event] {
         func off(_ e: TelemetryV2Event) -> Int? {
             switch e {
-            case .touch(let o, _, _, _, _, _, _, _, _, _, _): return o
+            case .touch(let o, _, _, _, _, _, _): return o
             case .gyro(let o, _, _, _):                 return o
             case .acc(let o, _, _, _):                  return o
             case .kbState(let o, _):                    return o
