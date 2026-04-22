@@ -18,13 +18,6 @@ public protocol MotionSensorProvider: AnyObject {
     func stop()
 }
 
-/// Protocol for touch sensor callbacks
-public protocol TouchSensorProvider: AnyObject {
-    func began(at: CGPoint) -> TouchSample
-    func moved(to: CGPoint) -> TouchSample
-    func ended(at: CGPoint) -> TouchSample
-}
-
 /// Concrete implementation of motion sensor using CoreMotion
 public final class CoreMotionSensorProvider: MotionSensorProvider {
     private let motionTracker: MotionTracker
@@ -42,27 +35,6 @@ public final class CoreMotionSensorProvider: MotionSensorProvider {
     
     public func stop() {
         motionTracker.stop()
-    }
-}
-
-/// Concrete implementation of touch sensor
-public final class CoreTouchSensorProvider: TouchSensorProvider {
-    private let touchTracker: TouchTracker
-    
-    public init() {
-        self.touchTracker = TouchTracker()
-    }
-    
-    public func began(at: CGPoint) -> TouchSample {
-        touchTracker.began(at: at)
-    }
-    
-    public func moved(to: CGPoint) -> TouchSample {
-        touchTracker.moved(to: to)
-    }
-    
-    public func ended(at: CGPoint) -> TouchSample {
-        touchTracker.ended(at: at)
     }
 }
 

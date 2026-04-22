@@ -52,33 +52,16 @@ public struct MotionSample: Codable {
     public let z: Double
 }
 
-public struct TouchSample: Codable {
-    public init(touchType: TouchSample.TouchType, timestampMs: Int64, x: Double, y: Double, pressure: Double, size: Double, velocityX: Double, velocityY: Double) {
-        self.touchType = touchType
-        self.timestampMs = timestampMs
-        self.x = x
-        self.y = y
-        self.pressure = pressure
-        self.size = size
-        self.velocityX = velocityX
-        self.velocityY = velocityY
-    }
-    
-    public enum TouchType: String, Codable { case down, move, up }
-    public let touchType: TouchType
-    public let timestampMs: Int64
-    public let x: Double
-    public let y: Double
-    public let pressure: Double
-    public let size: Double
-    public let velocityX: Double
-    public let velocityY: Double
-}
-
-// MARK: - General (app-level) touch sample — maps to the "touch" V2 event
-
-/// A single touch sample captured at the app level, with coordinates in
-/// millimetres and a bottom-left screen origin, as required by the V2 API.
+// MARK: - Unified touch sample — maps to the "touch" V2 event
+//
+// Covers BOTH app-level touches (e.g. via ``NX10Window`` / ``GeneralTouchTracker``)
+// AND keyboard-extension touches. The legacy "touch-kb" event has been removed;
+// keyboard touches are emitted as "touch" events with a populated ``touchObject``
+// and optional pressure / size / velocity carried over from the old schema.
+//
+// `radiusMm` is derived from `UITouch.majorRadius`, iOS's equivalent of Android's
+// `MotionEvent.getTouchMajor()` — both report the major axis of the contact
+// ellipse. See `CoordinateConverter.radiusToMm(_:on:)` for the conversion.
 public struct GeneralTouchSample: Codable {
 
     /// Touch event sub-types for the "touch" V2 event.
@@ -102,24 +85,44 @@ public struct GeneralTouchSample: Codable {
     /// Stable UUID string identifying this gesture (constant for down → move* → up).
     public let touchId:     String
     public let touchType:   TouchType
-    /// Keyboard key classification; `nil` for non-keyboard touches.
+    /// Key classification for keyboard touches; `nil` for non-keyboard touches.
     public let touchObject: TouchObject?
     /// X coordinate in millimetres, bottom-left origin.
     public let xMm:         Double
     /// Y coordinate in millimetres, bottom-left origin.
     public let yMm:         Double
-    /// Touch contact radius in millimetres.
+    /// Touch contact radius in millimetres (major axis of the contact ellipse).
     public let radiusMm:    Double
+    /// Normalised pressure 0…1 (0 when not available).
+    public let pressure:    Double
+    /// Touch size in millimetres (major axis, same units as radius × 2; 0 when unavailable).
+    public let size:        Double
+    /// Velocity components in UIKit points / second (0 when unavailable).
+    public let velocityX:   Double
+    public let velocityY:   Double
     public let timestampMs: Int64
 
-    public init(touchId: String, touchType: TouchType, touchObject: TouchObject?,
-                xMm: Double, yMm: Double, radiusMm: Double, timestampMs: Int64) {
+    public init(touchId: String,
+                touchType: TouchType,
+                touchObject: TouchObject?,
+                xMm: Double,
+                yMm: Double,
+                radiusMm: Double,
+                pressure: Double = 0,
+                size: Double = 0,
+                velocityX: Double = 0,
+                velocityY: Double = 0,
+                timestampMs: Int64) {
         self.touchId     = touchId
         self.touchType   = touchType
         self.touchObject = touchObject
         self.xMm         = xMm
         self.yMm         = yMm
         self.radiusMm    = radiusMm
+        self.pressure    = pressure
+        self.size        = size
+        self.velocityX   = velocityX
+        self.velocityY   = velocityY
         self.timestampMs = timestampMs
     }
 }
@@ -179,29 +182,11 @@ public enum TextCorrectionType: String {
 // MARK: - Telemetry Envelope
 
 public struct TelemetryEnvelope: Codable {
-    public init(deviceName: String, deviceToken: String, deviceType: DeviceTypePayload, appVersion: String, appBuild: String, keyboard: [KeyboardMetricsSummary]? = nil, gyroscope: [MotionSample]? = nil, accelerometer: [MotionSample]? = nil, touch: [TouchSample]? = nil) {
-        self.deviceName = deviceName
-        self.deviceToken = deviceToken
-        self.deviceType = deviceType
-        self.appVersion = appVersion
-        self.appBuild = appBuild
-        self.keyboard = keyboard
-        self.gyroscope = gyroscope
-        self.accelerometer = accelerometer
-        self.touch = touch
-        self.generalTouch  = nil
-        self.kbStateEvents = nil
-        self.textDelEvents = nil
-        self.textCorEvents = nil
-        self.screenEvents  = nil
-    }
-
     public init(deviceName: String, deviceToken: String, deviceType: DeviceTypePayload,
                 appVersion: String, appBuild: String,
                 keyboard: [KeyboardMetricsSummary]? = nil,
                 gyroscope: [MotionSample]? = nil,
                 accelerometer: [MotionSample]? = nil,
-                touch: [TouchSample]? = nil,
                 generalTouch: [GeneralTouchSample]? = nil,
                 kbStateEvents: [KbStateSample]? = nil,
                 textDelEvents: [TextDelSample]? = nil,
@@ -215,7 +200,6 @@ public struct TelemetryEnvelope: Codable {
         self.keyboard      = keyboard
         self.gyroscope     = gyroscope
         self.accelerometer = accelerometer
-        self.touch         = touch
         self.generalTouch  = generalTouch
         self.kbStateEvents = kbStateEvents
         self.textDelEvents = textDelEvents
@@ -233,9 +217,7 @@ public struct TelemetryEnvelope: Codable {
     public let keyboard: [KeyboardMetricsSummary]?
     public let gyroscope: [MotionSample]?
     public let accelerometer: [MotionSample]?
-    /// Keyboard touch samples ("touch-kb" events).
-    public let touch: [TouchSample]?
-    /// App-level screen touch samples ("touch" events, mm coordinates).
+    /// Unified touch samples — both keyboard and app-level — as "touch" V2 events.
     public let generalTouch:  [GeneralTouchSample]?
     public let kbStateEvents: [KbStateSample]?
     public let textDelEvents: [TextDelSample]?

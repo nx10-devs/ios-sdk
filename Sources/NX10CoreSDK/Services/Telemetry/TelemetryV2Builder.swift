@@ -44,19 +44,11 @@ public final class TelemetryV2Builder {
 
         var events: [TelemetryV2Event] = []
 
-        // touch-kb
-        for e in touchKbEvents {
-            let o = offsetMs(e.timestampMs)
-            guard o >= 0, o <= ets else { continue }
-            events.append(.touchKB(
-                offsetMs: o,
-                touchType: e.touchType, // "down" | "move" | "up"
-                x: e.x, y: e.y,
-                pressure: e.pressure,
-                size: e.size,
-                vx: e.vx, vy: e.vy
-            ))
-        }
+        // Legacy touch-kb input is dropped — "touch-kb" was merged into "touch" in
+        // the V2 schema. This builder is kept for the non-primary collection path;
+        // callers wanting unified "touch" events should use `TelemetryV2Converter`.
+        _ = touchKbEvents
+        _ = touchEvents
 
         // gyro: your arrays look like ["timestamp": Int64(ms), "x": Double, "y": Double, "z": Double]
         for dp in gyroscopeData {

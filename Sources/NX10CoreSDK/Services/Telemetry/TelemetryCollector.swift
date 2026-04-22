@@ -45,10 +45,6 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
     public func appendAccel(_ sample: MotionSample) {
         session.appendAccel(sample)
     }
-    
-    public func appendTouch(_ sample: TouchSample) {
-        session.appendTouch(sample)
-    }
 
     // MARK: - V2 event types
 
@@ -134,7 +130,6 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
             keyboard:      session.totalKeyPresses > 0 ? [session.keyboardMetricsSummary()] : nil,
             gyroscope:     session.gyro.isEmpty     ? nil : session.gyro,
             accelerometer: session.accel.isEmpty    ? nil : session.accel,
-            touch:         session.touches.isEmpty  ? nil : session.touches,
             generalTouch:  session.generalTouches.isEmpty  ? nil : session.generalTouches,
             kbStateEvents: session.kbStateEvents.isEmpty   ? nil : session.kbStateEvents,
             textDelEvents: session.textDelEvents.isEmpty   ? nil : session.textDelEvents,

@@ -6,7 +6,7 @@
 //
 import Foundation
 import CoreGraphics
-internal import UIKit
+public import UIKit
 
 /// Refactored TelemetryService - now focused on lifecycle and coordination
 @MainActor
@@ -15,7 +15,6 @@ public final class TelemetryService: TelemetryServicing {
     // MARK: - Dependencies (Protocol-based, not concrete)
     private let telemetryCollector: TelemetryCollectorComprehensive
     private let motionSensor: MotionSensorProvider
-    private let touchSensor: TouchSensorProvider
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
     private let analyticsService: AnalyticsProviding
@@ -27,14 +26,12 @@ public final class TelemetryService: TelemetryServicing {
     public init(
         telemetryCollector: TelemetryCollectorComprehensive,
         motionSensor: MotionSensorProvider,
-        touchSensor: TouchSensorProvider,
         scheduler: TelemetryScheduler,
         eventPublisher: TelemetryEventPublisher,
         analyticsService: AnalyticsProviding
     ) {
         self.telemetryCollector = telemetryCollector
         self.motionSensor = motionSensor
-        self.touchSensor = touchSensor
         self.scheduler = scheduler
         self.eventPublisher = eventPublisher
         self.analyticsService = analyticsService
@@ -115,24 +112,45 @@ public final class TelemetryService: TelemetryServicing {
         telemetryCollector.keyReleased(key)
     }
 
-    public func appendTouch(at: (began: CGPoint?, movedTo: CGPoint?, endedAt: CGPoint?)) {
-        if let began = at.began {
-            let sample = touchSensor.began(at: began)
-            telemetryCollector.appendTouch(sample)
-        }
-        if let movedTo = at.movedTo {
-            let sample = touchSensor.moved(to: movedTo)
-            telemetryCollector.appendTouch(sample)
-        }
-        if let endedAt = at.endedAt {
-            let sample = touchSensor.ended(at: endedAt)
-            telemetryCollector.appendTouch(sample)
-        }
-    }
-
-    // MARK: - General screen touch (app-level, "touch" V2 events)
+    // MARK: - Unified touch ("touch" V2 events)
 
     public func processGeneralTouch(_ sample: GeneralTouchSample) {
+        telemetryCollector.appendGeneralTouch(sample)
+    }
+
+    public func appendKeyboardTouch(touchId: String,
+                                    touchType: GeneralTouchSample.TouchType,
+                                    touchObject: GeneralTouchSample.TouchObject,
+                                    point: CGPoint,
+                                    radiusPoints: CGFloat,
+                                    pressure: Double,
+                                    size: Double,
+                                    velocityPoints: CGVector,
+                                    screen: UIScreen) {
+        let (xMm, yMm) = CoordinateConverter.toMm(point, on: screen)
+        let radiusMm   = CoordinateConverter.radiusToMm(Double(radiusPoints), on: screen)
+
+        // If the caller didn't supply a real pressure reading (e.g. no 3D Touch),
+        // approximate it from the contact radius the same way Android does.
+        let resolvedPressure = pressure > 0
+            ? pressure
+            : CoordinateConverter.pressureFromRadius(radiusMm)
+        // When no explicit size is provided, use the contact diameter (mm).
+        let resolvedSize = size > 0 ? size : radiusMm * 2
+
+        let sample = GeneralTouchSample(
+            touchId:     touchId,
+            touchType:   touchType,
+            touchObject: touchObject,
+            xMm:         xMm,
+            yMm:         yMm,
+            radiusMm:    radiusMm,
+            pressure:    resolvedPressure,
+            size:        resolvedSize,
+            velocityX:   Double(velocityPoints.dx),
+            velocityY:   Double(velocityPoints.dy),
+            timestampMs: nowMs()
+        )
         telemetryCollector.appendGeneralTouch(sample)
     }
 

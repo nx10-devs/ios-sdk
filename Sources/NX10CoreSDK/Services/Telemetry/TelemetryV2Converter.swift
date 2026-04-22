@@ -29,7 +29,6 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         let allTimestamps: [Int64] =
             (env.gyroscope?.map(\.timestampMs) ?? []) +
             (env.accelerometer?.map(\.timestampMs) ?? []) +
-            (env.touch?.map(\.timestampMs) ?? []) +
             (env.generalTouch?.map(\.timestampMs) ?? []) +
             (env.kbStateEvents?.map(\.timestampMs) ?? []) +
             (env.textDelEvents?.map(\.timestampMs) ?? []) +
@@ -47,21 +46,6 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
 
         // 4) Build tuples
         var events: [TelemetryV2Event] = []
-
-        if let touches = env.touch {
-            // Your TouchSample matches "touch-kb" schema perfectly.
-            for t in touches {
-                let off = offsetMs(baseMs: baseMs, eventMs: t.timestampMs)
-                events.append(.touchKB(
-                    offsetMs: off,
-                    touchType: t.touchType.rawValue,
-                    x: t.x, y: t.y,
-                    pressure: t.pressure,
-                    size: t.size,
-                    vx: t.velocityX, vy: t.velocityY
-                ))
-            }
-        }
 
         if let gyro = env.gyroscope {
             for g in gyro {
@@ -82,7 +66,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             events.append(.kb(totalKeyPresses:  k.totalKeyPresses, erasedTextLength: k.erasedTextLength, averageHoldTimeMs: Int(k.averageHoldTimeMs), typingSpeedWpm: k.typingSpeedWpm, backspaceCount: k.backspaceCount, flightTimesMs: k.flightTimesMs.map { Int($0) }))
         }
 
-        // General (app-level) screen touches → "touch" events
+        // Unified touch events ("touch") — covers both keyboard and app-level touches.
         if let generalTouches = env.generalTouch {
             for t in generalTouches {
                 let off = offsetMs(baseMs: baseMs, eventMs: t.timestampMs)
@@ -93,7 +77,11 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
                     touchObject: t.touchObject?.rawValue,
                     xMm:         t.xMm,
                     yMm:         t.yMm,
-                    radiusMm:    t.radiusMm
+                    radiusMm:    t.radiusMm,
+                    pressure:    t.pressure,
+                    size:        t.size,
+                    vx:          t.velocityX,
+                    vy:          t.velocityY
                 ))
             }
         }
@@ -154,8 +142,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
     private func sortEventsStable(_ events: [TelemetryV2Event]) -> [TelemetryV2Event] {
         func off(_ e: TelemetryV2Event) -> Int? {
             switch e {
-            case .touchKB(let o, _, _, _, _, _, _, _): return o
-            case .touch(let o, _, _, _, _, _, _):       return o
+            case .touch(let o, _, _, _, _, _, _, _, _, _, _): return o
             case .gyro(let o, _, _, _):                 return o
             case .acc(let o, _, _, _):                  return o
             case .kbState(let o, _):                    return o

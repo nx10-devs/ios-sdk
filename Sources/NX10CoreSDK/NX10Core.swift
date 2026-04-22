@@ -53,7 +53,6 @@ public final class NX10Core: NX10CoreProtocol {
     let networkservice: Networking
     let appService: AppInfoProviding
     let motionTracker: MotionTracker
-    let touchTracker: TouchTracker
     let analyticsService: AnalyticsProviding
     let attributesService: AttributesProviding
     let appLifecycleService: LifecycleProviding
@@ -75,7 +74,6 @@ public final class NX10Core: NX10CoreProtocol {
         
         // MARK: - Sensor Providers (Protocol-based)
         let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
-        let touchSensor: TouchSensorProvider = CoreTouchSensorProvider()
         
         // MARK: - Scheduler & Event Publisher
         let scheduler: TelemetryScheduler = DefaultTelemetryScheduler()
@@ -93,7 +91,6 @@ public final class NX10Core: NX10CoreProtocol {
         let telemetryService = TelemetryService(
             telemetryCollector: telemetryCollector,
             motionSensor: motionSensor,
-            touchSensor: touchSensor,
             scheduler: scheduler,
             eventPublisher: eventPublisher,
             analyticsService: analyticsService
@@ -131,7 +128,6 @@ public final class NX10Core: NX10CoreProtocol {
         
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
-        self.touchTracker = TouchTracker()
         self.brainJuiceProvider = brainJuiceProvider
     }
     

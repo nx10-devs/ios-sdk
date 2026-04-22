@@ -19,8 +19,7 @@ public protocol KeyboardEventHandler {
 public protocol SensorDataCollector {
     func appendGyro(_ sample: MotionSample)
     func appendAccel(_ sample: MotionSample)
-    func appendTouch(_ sample: TouchSample)
-    // V2 event types
+    // V2 event types — unified "touch" covers keyboard + app-level touches
     func appendGeneralTouch(_ sample: GeneralTouchSample)
     func appendKbState(_ sample: KbStateSample)
     func appendTextDeletion(_ sample: TextDelSample)

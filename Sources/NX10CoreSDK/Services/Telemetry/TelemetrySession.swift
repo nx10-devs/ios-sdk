@@ -14,10 +14,8 @@ public final class TelemetrySession {
     // MARK: - Sensor buffers
     public private(set) var gyro: [MotionSample] = []
     public private(set) var accel: [MotionSample] = []
-    /// Keyboard touch samples ("touch-kb" events)
-    public private(set) var touches: [TouchSample] = []
 
-    /// App-level screen touches ("touch" events, mm coordinates)
+    /// Unified touch samples ("touch" V2 events) — keyboard + app-level.
     public private(set) var generalTouches: [GeneralTouchSample] = []
     /// Keyboard visibility transitions ("kb-state" events)
     public private(set) var kbStateEvents: [KbStateSample] = []
@@ -43,7 +41,6 @@ public final class TelemetrySession {
     // MARK: - Append APIs
     public func appendGyro(_ sample: MotionSample) { gyro.append(sample) }
     public func appendAccel(_ sample: MotionSample) { accel.append(sample) }
-    public func appendTouch(_ sample: TouchSample) { touches.append(sample) }
 
     public func appendGeneralTouch(_ sample: GeneralTouchSample) {
         generalTouches.append(sample)
@@ -110,7 +107,6 @@ public final class TelemetrySession {
     public func hasAnyData() -> Bool {
         return !gyro.isEmpty ||
                !accel.isEmpty ||
-               !touches.isEmpty ||
                !generalTouches.isEmpty ||
                !kbStateEvents.isEmpty ||
                !textDelEvents.isEmpty ||
@@ -122,7 +118,6 @@ public final class TelemetrySession {
     public func reset() {
         gyro.removeAll(keepingCapacity: false)
         accel.removeAll(keepingCapacity: false)
-        touches.removeAll(keepingCapacity: false)
         generalTouches.removeAll(keepingCapacity: false)
         kbStateEvents.removeAll(keepingCapacity: false)
         textDelEvents.removeAll(keepingCapacity: false)

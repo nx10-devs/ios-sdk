@@ -18,7 +18,6 @@ public final class DependencyContainer {
     
     // MARK: - Sensor Providers
     public let motionSensor: MotionSensorProvider
-    public let touchSensor: TouchSensorProvider
     
     // MARK: - Telemetry Infrastructure
     public let scheduler: TelemetryScheduler
@@ -34,7 +33,6 @@ public final class DependencyContainer {
     public init(
         configService: ConfigProvider? = nil,
         motionSensor: MotionSensorProvider? = nil,
-        touchSensor: TouchSensorProvider? = nil,
         scheduler: TelemetryScheduler? = nil,
         eventPublisher: TelemetryEventPublisher? = nil
     ) {
@@ -57,7 +55,6 @@ public final class DependencyContainer {
         
         // Initialize sensor providers
         self.motionSensor = motionSensor ?? CoreMotionSensorProvider(errorProvider: errorProvider)
-        self.touchSensor = touchSensor ?? CoreTouchSensorProvider()
         
         // Initialize scheduler and event publisher
         self.scheduler = scheduler ?? DefaultTelemetryScheduler()

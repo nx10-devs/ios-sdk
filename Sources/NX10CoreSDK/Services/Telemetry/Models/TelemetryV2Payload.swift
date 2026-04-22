@@ -24,9 +24,20 @@ public struct TelemetryV2Payload: Encodable {
 
 // MARK: - Tuple Events
 public enum TelemetryV2Event: Encodable {
-    case touchKB(offsetMs: Int, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double)
-    /// App-level touch event — coordinates in mm, bottom-left origin.  V2 spec event "touch".
-    case touch(offsetMs: Int, touchId: String, touchType: String, touchObject: String?, xMm: Double, yMm: Double, radiusMm: Double)
+    /// Unified touch event — merges the former "touch-kb" and "touch" events.
+    /// Coordinates in mm, bottom-left origin. Pressure / size / velocity carry over
+    /// from the old "touch-kb" schema and may be 0 when unavailable.
+    case touch(offsetMs: Int,
+               touchId: String,
+               touchType: String,
+               touchObject: String?,
+               xMm: Double,
+               yMm: Double,
+               radiusMm: Double,
+               pressure: Double,
+               size: Double,
+               vx: Double,
+               vy: Double)
     case gyro(offsetMs: Int, x: Double, y: Double, z: Double)
     case acc(offsetMs: Int, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
@@ -43,19 +54,9 @@ public enum TelemetryV2Event: Encodable {
         var c = encoder.unkeyedContainer()
 
         switch self {
-        case let .touchKB(o, t, x, y, p, s, vx, vy):
-            try c.encode("touch-kb")
-            try c.encode(o)
-            try c.encode(t)
-            try c.encode(x)
-            try c.encode(y)
-            try c.encode(p)
-            try c.encode(s)
-            try c.encode(vx)
-            try c.encode(vy)
-
-        case let .touch(o, id, type, obj, x, y, r):
-            // ["touch", "2", offsetMs, touchId, touchType, touchObject|null, xMm, yMm, radiusMm]
+        case let .touch(o, id, type, obj, x, y, r, p, s, vx, vy):
+            // ["touch", "2", offsetMs, touchId, touchType, touchObject|null,
+            //  xMm, yMm, radiusMm, pressure, size, vx, vy]
             try c.encode("touch")
             try c.encode("2")
             try c.encode(o)
@@ -65,6 +66,10 @@ public enum TelemetryV2Event: Encodable {
             try c.encode(x)
             try c.encode(y)
             try c.encode(r)
+            try c.encode(p)
+            try c.encode(s)
+            try c.encode(vx)
+            try c.encode(vy)
 
         case let .gyro(o, x, y, z):
             try c.encode("gyro")

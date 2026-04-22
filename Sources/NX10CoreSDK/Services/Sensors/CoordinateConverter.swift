@@ -47,6 +47,35 @@ public import UIKit
         return radiusPoints * mmPerPoint(on: screen)
     }
 
+    // MARK: - Radius-derived pressure
+    //
+    // On devices without a real pressure sensor (most iOS devices; iOS dropped
+    // 3D Touch after the iPhone XR / 11 line), Android approximates pressure
+    // from the contact-ellipse size reported by the touchscreen digitiser —
+    // a larger contact patch implies a firmer press. We mirror that heuristic
+    // so pressure is informative even when `UITouch.force` is zero.
+    //
+    // Calibration is a linear ramp between two anchor radii (in mm):
+    //   • `minPressureRadiusMm` (2.0 mm) — typical light finger-tap contact → 0.0
+    //   • `maxPressureRadiusMm` (9.0 mm) — heavy / flat-finger contact      → 1.0
+    // The output is clamped to the 0…1 range.
+
+    /// Light-tap reference radius (mm) — below this, pressure is reported as 0.
+    public static let minPressureRadiusMm: Double = 2.0
+    /// Firm-press reference radius (mm) — at or above this, pressure is 1.0.
+    public static let maxPressureRadiusMm: Double = 9.0
+
+    /// Approximate normalised pressure (0…1) from a contact radius in millimetres.
+    ///
+    /// Mirrors Android's approach of inferring pressure from the contact-ellipse
+    /// major axis on devices without dedicated pressure hardware.
+    public static func pressureFromRadius(_ radiusMm: Double) -> Double {
+        let span = maxPressureRadiusMm - minPressureRadiusMm
+        guard span > 0 else { return 0 }
+        let normalised = (radiusMm - minPressureRadiusMm) / span
+        return min(1.0, max(0.0, normalised))
+    }
+
     /// Look up the physical PPI for a screen based on its native pixel dimensions.
     ///
     /// Falls back to 326 PPI (standard Retina density) when the device is not in
