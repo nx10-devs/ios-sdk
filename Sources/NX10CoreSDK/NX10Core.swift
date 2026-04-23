@@ -39,7 +39,7 @@ public protocol NX10CoreProtocol: AnyObject {
         shouldStartSession: Bool,
         didStartSessionCallback: ((Bool) -> Void)?
     ) async throws
-    func startSession() async throws
+    func startSession() async throws -> Bool
 }
 
 public final class NX10Core: NX10CoreProtocol {
@@ -158,51 +158,44 @@ extension NX10Core {
         
         if shouldStartSession {
             Task(name: "telemetry-task", priority: .utility) {
-                try await startSession()
-                isConfigured = true
-                didStartSessionCallback?(true)
-                didStartSession = true
+                let sessionStarted = try await startSession()
+                if sessionStarted {
+                    isConfigured = true
+                    isStartingSession = true
+                    didStartSession = true
+                }
+                    
+                didStartSessionCallback?(sessionStarted)
             }
         } else {
             didStartSessionCallback?(false)
         }
         
         print("LOG: isConfigured is true")
-        
     }
     
-    public func startSession() async throws  {
-        if isStartingSession { return }
+    public func startSession() async throws -> Bool {
+        if isStartingSession { return false }
         isStartingSession = true
+        var sessionStarted = false
         
-        await Task(name:"start-session-task", priority: .utility) {
-            do {
-                print("LOG: startSession")
-                let start = try await self.sessionProvider.startSession()
-                
-                if start {
-                    print("LOG: sendInitialMetadata")
-                    try await attributesService.sendInitialMetadata()
-                    print("LOG: shouldStartTelemetry")
-                    try await self.telemetryService.shouldStartTelemetry()
-                    isStartingSession = false
-                } else {
-                    if isDebug {
-                        fatalError("failed to start session")
-                    }
-                    errorProvider.sendSDKError(.sessionFailed)
-                }
-            } catch {
-                if isDebug {
-                    print("start session failed")
-                }
-                self.errorProvider.sendError(error)
-                throw error
+        print("LOG: startSession")
+        let start = try await self.sessionProvider.startSession()
+        
+        if start {
+            print("LOG: sendInitialMetadata")
+            try await attributesService.sendInitialMetadata()
+            print("LOG: shouldStartTelemetry")
+            try await self.telemetryService.shouldStartTelemetry()
+            isStartingSession = false
+            sessionStarted = true
+        } else {
+            if isDebug {
+                fatalError("failed to start session")
             }
-            isStartingSession = true
-            didStartSession = true
-            return
+            errorProvider.sendSDKError(.sessionFailed)
         }
+        return sessionStarted
     }
 }
 
