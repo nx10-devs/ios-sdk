@@ -128,6 +128,7 @@ public final class NX10Core: NX10CoreProtocol {
         
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
+        self.touchTracker = TouchTracker()
         self.brainJuiceProvider = brainJuiceProvider
     }
     
