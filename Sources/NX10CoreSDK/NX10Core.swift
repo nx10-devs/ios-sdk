@@ -7,6 +7,7 @@
 
 import Foundation
 internal import UIKit
+import Combine
 
 public struct NX10CoreConfig {
     public let apiKey: String
@@ -29,12 +30,14 @@ public protocol NX10CoreProtocol: AnyObject {
     var saaqService: SaaQServiceProtocol { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
     static var shared: NX10CoreProtocol { get }
+    var didStartSession: Bool { get set }
     
     func configure(
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool
+        shouldStartSession: Bool,
+        didStartSessionCallback: ((Bool) -> Void)?
     ) async throws
     func startSession() async throws
 }
@@ -48,7 +51,8 @@ public final class NX10Core: NX10CoreProtocol {
     public let telemetryService: TelemetryService
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
-
+    @Published public var didStartSession: Bool = false
+    
     // MARK: Internal properties
     let networkservice: Networking
     let appService: AppInfoProviding
@@ -61,6 +65,7 @@ public final class NX10Core: NX10CoreProtocol {
     
     private var isConfigured = false
     private var isStartingSession = false
+    private var didStartSessionCallback: ((Bool) -> Void)?
     
     @MainActor private init () {
         // MARK: - Core Services
@@ -130,12 +135,15 @@ public final class NX10Core: NX10CoreProtocol {
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
         self.brainJuiceProvider = brainJuiceProvider
     }
-    
+}
+
+extension NX10Core {
     @MainActor public func configure(
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool
+        shouldStartSession: Bool,
+        didStartSessionCallback: ((Bool) -> Void)? = nil
     ) async throws {
         guard
             isConfigured == false
@@ -149,17 +157,20 @@ public final class NX10Core: NX10CoreProtocol {
         errorProvider.setTrackingEnabled(errorTrackingEnabled)
         
         if shouldStartSession {
-                Task(name: "telemetry-task", priority: .utility) {
-                    try await startSession()
-                }
+            Task(name: "telemetry-task", priority: .utility) {
+                try await startSession()
+                isConfigured = true
+                didStartSessionCallback?(true)
+                didStartSession = true
             }
-
+        } else {
+            didStartSessionCallback?(false)
+        }
+        
         print("LOG: isConfigured is true")
-        isConfigured = true
+        
     }
-}
-
-extension NX10Core {
+    
     public func startSession() async throws  {
         if isStartingSession { return }
         isStartingSession = true
@@ -189,6 +200,7 @@ extension NX10Core {
                 throw error
             }
             isStartingSession = true
+            didStartSession = true
             return
         }
     }
