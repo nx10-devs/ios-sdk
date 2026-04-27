@@ -34,7 +34,7 @@ public struct SaaQTwoTrigger: Decodable, Identifiable {
 
 // MARK: Prompt
 public extension SaaQTwoTrigger {
-    public struct Prompt: Decodable, Identifiable {
+    struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
         public let confirmButtonEnabled: Bool?
@@ -67,13 +67,13 @@ public extension SaaQTwoTrigger.Prompt {
 }
 
 public extension SaaQTwoTrigger.Prompt {
-    public struct Feeling: Decodable, Hashable, Identifiable, Equatable {
+    struct Feeling: Decodable, Hashable, Identifiable, Equatable {
         public let feeling: FeelingPayload
         public let followonQuestion: [Followon]?
         public let id: String
         
-        public var hashValue: Int {
-            return id.hashValue
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
         }
         
         public static func ==(lhs: Feeling, rhs: Feeling) -> Bool {
@@ -81,14 +81,14 @@ public extension SaaQTwoTrigger.Prompt {
         }
     }
     
-    public struct FeelingPayload: Decodable {
+    struct FeelingPayload: Decodable {
         public let suggestedEmoji: String?
         public let feelingsType: String
         public let displayName: String
         public let id: String
     }
     
-    public struct Followon: Decodable {
+    struct Followon: Decodable {
         public let blockType: BlockType
         public let questionText: String
         public let leftAnchorValue: String

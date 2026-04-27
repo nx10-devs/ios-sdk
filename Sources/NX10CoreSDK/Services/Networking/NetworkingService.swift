@@ -38,7 +38,7 @@ public final class NetworkService: Networking {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         let url = try endpointProvider.url(for: endpoint)
         
-        return await try self.execute(payload, for: url)
+        return try await self.execute(payload, for: url)
     }
     
     public func execute<T: Encodable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R? {

@@ -28,6 +28,7 @@ public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
+    var touchProcessorProvider: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
     static var shared: NX10CoreProtocol { get }
     var didStartSession: Bool { get set }
@@ -51,6 +52,7 @@ public final class NX10Core: NX10CoreProtocol {
     public let telemetryService: TelemetryService
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
+    public let touchProcessorProvider: TouchProcessorProviding
     @Published public var didStartSession: Bool = false
     
     // MARK: Internal properties
@@ -62,7 +64,7 @@ public final class NX10Core: NX10CoreProtocol {
     let appLifecycleService: LifecycleProviding
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
-    
+
     private var isConfigured = false
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
@@ -79,6 +81,7 @@ public final class NX10Core: NX10CoreProtocol {
         
         // MARK: - Sensor Providers (Protocol-based)
         let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
+        let touchProcessorProvider = TouchProcessorProvider()
         
         // MARK: - Scheduler & Event Publisher
         let scheduler: TelemetryScheduler = DefaultTelemetryScheduler()
@@ -134,6 +137,7 @@ public final class NX10Core: NX10CoreProtocol {
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
         self.brainJuiceProvider = brainJuiceProvider
+        self.touchProcessorProvider = touchProcessorProvider
     }
 }
 
@@ -184,9 +188,9 @@ extension NX10Core {
         
         if start {
             print("LOG: sendInitialMetadata")
-            try await attributesService.sendInitialMetadata()
+            _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
-            try await self.telemetryService.shouldStartTelemetry()
+            _ = try await self.telemetryService.shouldStartTelemetry()
             isStartingSession = false
             sessionStarted = true
         } else {

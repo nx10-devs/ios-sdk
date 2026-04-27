@@ -22,7 +22,7 @@ public enum AnalyticEvent: String, Encodable {
 }
 
 public extension AnalyticsProvider {
-    public struct Payload: Encodable, Hashable {
+    struct Payload: Encodable, Hashable {
         
         public let eventName: AnalyticEvent
         public let sourceName: String

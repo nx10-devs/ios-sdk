@@ -8,7 +8,7 @@
 import Foundation
 
 public extension AttributesProvider {
-    public struct DeviceLog: Codable {
+    struct DeviceLog: Codable {
         public let timestamp: String
         public let data: DeviceData?
         
@@ -40,7 +40,7 @@ public extension AttributesProvider {
         }
     }
     
-    public struct KeyboardData: Encodable {
+    struct KeyboardData: Encodable {
         public let keyboardLanguage: String
         public let timestamp: String
         
@@ -50,7 +50,7 @@ public extension AttributesProvider {
         }
     }
     
-    public struct AppState: Encodable {
+    struct AppState: Encodable {
         public let timestamp: String
         public let state: AppStates
         

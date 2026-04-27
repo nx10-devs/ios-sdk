@@ -27,7 +27,7 @@ public struct SaaQOneTrigger: Decodable, Identifiable {
 
 // MARK: Prompt
 public extension SaaQOneTrigger {
-    public struct Prompt: Decodable, Identifiable {
+    struct Prompt: Decodable, Identifiable {
         public let blockType: BlockType
         public let questionText: String
         public let leftAnchorValue: String

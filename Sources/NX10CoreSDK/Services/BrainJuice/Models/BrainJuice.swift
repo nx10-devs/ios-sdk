@@ -10,7 +10,7 @@ import Foundation
 public struct BrainJuice {}
 
 public extension BrainJuice {
-    public struct BrainJuiceRequest: Encodable {
+    struct BrainJuiceRequest: Encodable {
         let info: String
         
         enum CodingKeys: String, CodingKey {
@@ -18,7 +18,7 @@ public extension BrainJuice {
         }
     }
     
-    public struct BrainJuiceResponse: Decodable {
+    struct BrainJuiceResponse: Decodable {
         public let status: String
         public let data: BrainJuiceData
         
@@ -28,14 +28,14 @@ public extension BrainJuice {
         }
     }
     
-    public struct BrainJuiceData: Decodable {
+    struct BrainJuiceData: Decodable {
         public let results: [BrainJuiceResult]
         
         enum CodingKeys: String, CodingKey {
             case results
         }
     }
-    public struct BrainJuiceResult: Decodable {
+    struct BrainJuiceResult: Decodable {
         public let timeEnd: BrainJuiceTimestamp
         public let featAccTremorAmp: Double?
         
@@ -45,7 +45,7 @@ public extension BrainJuice {
         }
     }
     
-    public struct BrainJuiceTimestamp: Decodable {
+    struct BrainJuiceTimestamp: Decodable {
         public let value: String
         
         enum CodingKeys: String, CodingKey {

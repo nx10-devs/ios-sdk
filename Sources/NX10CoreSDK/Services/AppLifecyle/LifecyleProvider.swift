@@ -14,7 +14,7 @@ public protocol LifecycleProviding {
 }
 
 public extension LifecyleProvider {
-    public enum LifeCycle {
+    enum LifeCycle {
         case background
         case foreground
     }

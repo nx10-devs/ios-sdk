@@ -59,7 +59,7 @@ public struct SaaQPromptTwoView: View {
             )
         }
         
-        let isMultiSelect = (payload.prompt.multipleSelect ?? false) ?? true
+        let isMultiSelect = (payload.prompt.multipleSelect ?? false) 
         
         SaaQMultipleChoicePresentationView(
             title: payload.prompt.questionText,
@@ -81,7 +81,9 @@ public struct SaaQPromptTwoView: View {
     
     @ViewBuilder
     private func renderFollowonSliderView() -> some View {
-        guard let followon = savedFeelingSelection?.followonQuestion?.first else {
+        guard
+            let followon = savedFeelingSelection?.followonQuestion?.first
+        else {
             return AnyView(EmptyView())
         }
         
@@ -91,7 +93,7 @@ public struct SaaQPromptTwoView: View {
                 leftLabel: followon.leftAnchorValue,
                 rightLabel: followon.rightAnchorValue,
                 range: followon.getRangeSize(),
-                startingValue: Double(followon.startingValue ?? 0),
+                startingValue: Double(followon.startingValue),
                 dismissable: payload.dismissable,
                 confirmButtonEnabled: followon.confirmButtonEnabled,
                 isKeyboard: isKeyboard,
