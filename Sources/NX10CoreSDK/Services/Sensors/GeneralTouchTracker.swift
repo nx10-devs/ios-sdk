@@ -26,14 +26,19 @@ public import UIKit
     
     private var sensor: DeviceConfig.Sensor? {
         didSet {
-            moveThrottleInterval = 1.0 / Double(sensor?.touchSampleHz ?? 30)
+            guard
+                let touchSampleHz = sensor?.touchSampleHz
+            else {
+                return
+            }
+            moveThrottleInterval = 1.0 / Double(touchSampleHz)
         }
     }
 
     // MARK: - Configuration
 
     /// Minimum interval between emitted "move" samples per touch ID (≈30 Hz).
-    private var moveThrottleInterval: TimeInterval = 1.0 / 30.0
+    private var moveThrottleInterval: TimeInterval
 
     /// Movement below this threshold (in UIKit points) is classified as "stationary".
     private let stationaryThresholdPt: CGFloat = 3.0
@@ -53,6 +58,11 @@ public import UIKit
 
     public init(touchProcessor: TouchProcessorProviding) {
         self.touchProcessor = touchProcessor
+        
+        let maximumHz = DeviceHzUtility.shared.maximumHz
+        let hz = 1.0/Double(maximumHz)
+        
+        moveThrottleInterval = hz
     }
     
     func setSensorData(_ data: DeviceConfig.Sensor) {

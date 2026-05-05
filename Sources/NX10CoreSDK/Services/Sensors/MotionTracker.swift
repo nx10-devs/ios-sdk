@@ -12,17 +12,26 @@ public final class MotionTracker {
     
     private let motionManager = CMMotionManager()
     private let errorProvider: ErrorProviding
-    private var accUpdateInterval: TimeInterval = 0.1
-    private var gyrUpdateInterval: TimeInterval = 0.1
+    private var accUpdateInterval: TimeInterval
+    private var gyrUpdateInterval: TimeInterval
     private var sensor: DeviceConfig.Sensor? {
         didSet {
-            accUpdateInterval = (1.0 / Double(sensor?.accelerometerSampleHz ?? 30))
-            gyrUpdateInterval = (1.0 / Double(sensor?.gyroscopeSampleHz ?? 30))
+            guard
+                let accelerometerSampleHz = sensor?.accelerometerSampleHz,
+                let gyroscopeSampleHz = sensor?.gyroscopeSampleHz
+            else { return }
+            accUpdateInterval = (1.0 / Double(accelerometerSampleHz))
+            gyrUpdateInterval = (1.0 / Double(gyroscopeSampleHz))
         }
     }
     
     init(errorProvider: ErrorProviding) {
         self.errorProvider = errorProvider
+        let maximumHz = DeviceHzUtility.shared.maximumHz
+        let hz = 1.0/Double(maximumHz)
+        
+        gyrUpdateInterval = hz
+        accUpdateInterval = hz
     }
     
     public func setSensorData(_ data: DeviceConfig.Sensor) {
