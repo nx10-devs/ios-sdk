@@ -12,9 +12,9 @@ import JWTDecode
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<T:Encodable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R?
+    func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R?
     func GET<R:Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R?
-    func execute<T: Encodable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R?
+    func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R?
 }
 
 public final class NetworkService: Networking {
@@ -34,14 +34,14 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<T:Encodable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R? {
+    public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         let url = try endpointProvider.url(for: endpoint)
         
         return try await self.execute(payload, for: url)
     }
     
-    public func execute<T: Encodable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R? {
+    public func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R? {
         print("LOG: Sending payload \(payload) for url \(url)")
         
         let encoder = JSONEncoder()

@@ -45,7 +45,6 @@ public import UIKit
 
     // MARK: - Init
 
-    
     public init(touchProcessor: TouchProcessorProviding) {
         self.touchProcessor = touchProcessor
     }

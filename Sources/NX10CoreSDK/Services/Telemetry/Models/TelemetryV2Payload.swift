@@ -10,7 +10,7 @@ import Foundation
 import CoreGraphics
 
 // MARK: - Telemetry V2 Payload
-public struct TelemetryV2Payload: Encodable {
+public struct TelemetryV2Payload: Codable {
     public let bts: String          // ISO 8601 UTC
     public let ets: Int             // end offset in ms
     public let d: [TelemetryV2Event] // tuple events
@@ -23,7 +23,7 @@ public struct TelemetryV2Payload: Encodable {
 }
 
 // MARK: - Tuple Events
-public enum TelemetryV2Event: Encodable {
+public enum TelemetryV2Event: Codable {
     /// Unified touch event — merges the former "touch-kb" and "touch" events.
     /// Coordinates in mm, bottom-left origin. Pressure / size / velocity carry over
     /// from the old "touch-kb" schema and may be 0 when unavailable.

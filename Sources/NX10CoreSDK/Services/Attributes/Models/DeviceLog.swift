@@ -40,7 +40,7 @@ public extension AttributesProvider {
         }
     }
     
-    struct KeyboardData: Encodable {
+    struct KeyboardData: Codable {
         public let keyboardLanguage: String
         public let timestamp: String
         
@@ -50,11 +50,11 @@ public extension AttributesProvider {
         }
     }
     
-    struct AppState: Encodable {
+    struct AppState: Codable {
         public let timestamp: String
         public let state: AppStates
         
-        public enum AppStates: String, Encodable {
+        public enum AppStates: String, Codable {
             case foreground
             case background
         }

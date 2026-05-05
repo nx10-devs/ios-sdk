@@ -10,15 +10,8 @@ import Foundation
 public struct BrainJuice {}
 
 public extension BrainJuice {
-    struct BrainJuiceRequest: Encodable {
-        let info: String
-        
-        enum CodingKeys: String, CodingKey {
-            case info = "_info"
-        }
-    }
     
-    struct BrainJuiceResponse: Decodable {
+    struct BrainJuiceConfigResponse: Decodable {
         public let status: String
         public let data: BrainJuiceData
         
@@ -35,6 +28,7 @@ public extension BrainJuice {
             case results
         }
     }
+    
     struct BrainJuiceResult: Decodable {
         public let timeEnd: BrainJuiceTimestamp
         public let featAccTremorAmp: Double?
@@ -51,5 +45,26 @@ public extension BrainJuice {
         enum CodingKeys: String, CodingKey {
             case value
         }
+    }
+    
+    public struct BrainJuiceWeights: Codable {
+        public let brainjuice: BrainJuiceWeightContainer
+    }
+    
+    public struct BrainJuiceWeightContainer: Codable {
+        public let weights: [BrainJuiceWeight]
+    }
+    
+    public struct BrainJuiceWeight: Codable {
+        public let featureName: String
+        public let weight: Double
+        public let direction: Int
+        public let children: [BrainJuiceWeightChild]?
+    }
+    
+    public struct BrainJuiceWeightChild: Codable {
+        public let featureName: String
+        public let weight: Double
+        public let direction: Int
     }
 }

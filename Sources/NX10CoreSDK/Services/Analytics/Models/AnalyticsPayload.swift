@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum AnalyticEvent: String, Encodable {
+public enum AnalyticEvent: String, Codable {
     
     // SDK keys
     case sessionStarted = "session_started"
@@ -22,7 +22,7 @@ public enum AnalyticEvent: String, Encodable {
 }
 
 public extension AnalyticsProvider {
-    struct Payload: Encodable, Hashable {
+    struct Payload: Codable, Hashable {
         
         public let eventName: AnalyticEvent
         public let sourceName: String

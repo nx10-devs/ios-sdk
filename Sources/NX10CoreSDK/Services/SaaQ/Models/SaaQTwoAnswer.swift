@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SaaQTwoAnswer: Encodable {
+public struct SaaQTwoAnswer: Codable {
     
     public let triggerID: String
     public let answer: SaaQAnswer
@@ -39,15 +39,15 @@ public struct SaaQTwoAnswer: Encodable {
     }
     
     // MARK: Composition structs
-    public struct MetaData: Encodable {
+    public struct MetaData: Codable {
         public let skipReason: SkipReason
         
-        public enum SkipReason: String, Encodable {
+        public enum SkipReason: String, Codable {
             case tappedClose = "user_tapped_close"
         }
     }
     
-    public struct SaaQAnswer: Encodable {
+    public struct SaaQAnswer: Codable {
         public let type: SaaQType
         public let data: SaaQData?
         
@@ -56,24 +56,24 @@ public struct SaaQTwoAnswer: Encodable {
             self.data = data
         }
         
-        public enum SaaQType: String, Encodable {
+        public enum SaaQType: String, Codable {
             case answered
             case dismissed
             case partial
         }
         
-        public struct SaaQData: Encodable {
+        public struct SaaQData: Codable {
             public let selectedValues: [SelectedValue]?
 
             public init(selectedValues: [SelectedValue]?) {
                 self.selectedValues = selectedValues
             }
             
-            public struct SelectedValue: Encodable {
+            public struct SelectedValue: Codable {
                 public let feelingType: String
                 public let followonAnswer: FollowonAnswer?
                 
-                public struct FollowonAnswer: Encodable {
+                public struct FollowonAnswer: Codable {
                     public let selectedValue: Int
                 }
             }

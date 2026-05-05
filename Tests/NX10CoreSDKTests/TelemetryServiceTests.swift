@@ -137,7 +137,7 @@ final class MockNetworking: Networking, Sendable {
     nonisolated let config: NX10CoreSDK.NetworkConfig
     nonisolated let isReady: Bool
     
-    nonisolated func post<T: Sendable, R: Sendable>(_ payload: T, for url: URL) async throws -> R? where T : Encodable, R : Decodable {
+    nonisolated func post<T: Sendable, R: Sendable>(_ payload: T, for url: URL) async throws -> R? where T : Codable, R : Decodable {
         // Return a mock response that conforms to the expected type
         let response = GenericResponse(status: "success")
         if let typedResponse = response as? R {

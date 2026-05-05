@@ -70,10 +70,11 @@ public final class NX10Core: NX10CoreProtocol {
     private var didStartSessionCallback: ((Bool) -> Void)?
     private var sessionData: SessionData? = nil {
         didSet {
-            guard let touchSampleHz = sessionData?.deviceConfig.sensor.touchSampleHz else { return }
-            let updateInterval: TimeInterval = 1.0/Double(touchSampleHz)
+            guard let sensor = sessionData?.deviceConfig.sensor else { return }
             print("LOG: Did set Session Data")
-            motionTracker.setUpdateInterval(with: updateInterval)
+            motionTracker.setSensorData(sensor)
+            guard let brainJuiceConfig = sessionData?.deviceConfig.brainjuice else { return }
+            brainJuiceProvider.setBrainJuiceConfig(brainJuiceConfig)
         }
     }
     

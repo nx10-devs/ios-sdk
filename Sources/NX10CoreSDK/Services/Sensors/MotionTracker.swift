@@ -9,18 +9,25 @@ import Foundation
 import CoreMotion
 
 public final class MotionTracker {
-
+    
     private let motionManager = CMMotionManager()
     private let errorProvider: ErrorProviding
-    private var updateInterval: TimeInterval = 0.1
+    private var accUpdateInterval: TimeInterval = 0.1
+    private var gyrUpdateInterval: TimeInterval = 0.1
+    private var sensor: DeviceConfig.Sensor? {
+        didSet {
+            accUpdateInterval = (1.0 / Double(sensor?.accelerometerSampleHz ?? 30))
+            gyrUpdateInterval = (1.0 / Double(sensor?.gyroscopeSampleHz ?? 30))
+        }
+    }
     
     init(errorProvider: ErrorProviding) {
         self.errorProvider = errorProvider
     }
     
-    public func setUpdateInterval(with interval: TimeInterval) {
-        print("LOG: Did update interval to \(interval)")
-        self.updateInterval = interval
+    public func setSensorData(_ data: DeviceConfig.Sensor) {
+        print("LOG: Sensor resoultions set")
+        self.sensor = data
     }
 
     @MainActor func start(
@@ -29,7 +36,7 @@ public final class MotionTracker {
     ) {
         if motionManager.isGyroAvailable {
             print("LOG: Started gyro tracking")
-            motionManager.gyroUpdateInterval = updateInterval
+            motionManager.gyroUpdateInterval = gyrUpdateInterval
             motionManager.startGyroUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 gyro(MotionSample(
@@ -46,7 +53,7 @@ public final class MotionTracker {
 
         if motionManager.isAccelerometerAvailable {
             print("LOG: Started accelerometer tracking")
-            motionManager.accelerometerUpdateInterval = updateInterval
+            motionManager.accelerometerUpdateInterval = accUpdateInterval
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 accel(MotionSample(
