@@ -18,7 +18,9 @@ public final class TelemetryService: TelemetryServicing {
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
     private let analyticsService: AnalyticsProviding
-
+    private let touchProcessor: TouchProcessorProviding
+    
+    private let standardisedTapPoint = TouchCoordinateProvider()
     private var sessionStarted = false
     private var screenObservers: [NSObjectProtocol] = []
 
@@ -28,13 +30,15 @@ public final class TelemetryService: TelemetryServicing {
         motionSensor: MotionSensorProvider,
         scheduler: TelemetryScheduler,
         eventPublisher: TelemetryEventPublisher,
-        analyticsService: AnalyticsProviding
+        analyticsService: AnalyticsProviding,
+        touchProcessor: TouchProcessorProviding
     ) {
         self.telemetryCollector = telemetryCollector
         self.motionSensor = motionSensor
         self.scheduler = scheduler
         self.eventPublisher = eventPublisher
         self.analyticsService = analyticsService
+        self.touchProcessor = touchProcessor
 
         // Wire event publisher into collector
         self.telemetryCollector.setEventPublisher(eventPublisher)
@@ -126,12 +130,9 @@ public final class TelemetryService: TelemetryServicing {
                                     size: Double,
                                     velocityPoints: CGVector,
                                     screen: UIScreen) {
-        let (xMm, yMm) = CoordinateConverter.toMm(point, on: screen)
+        
+        let (xMm, yMm) = CoordinateConverter.toMm(point)
         let radiusMm   = CoordinateConverter.radiusToMm(Double(radiusPoints), on: screen)
-
-        // If the caller didn't supply a real pressure reading (e.g. no 3D Touch),
-        // approximate it from the contact radius the same way Android does.
-        // When no explicit size is provided, use the contact diameter (mm).
         let resolvedSize = size > 0 ? size : radiusMm * 2
 
         let sample = GeneralTouchSample(

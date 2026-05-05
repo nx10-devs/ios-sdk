@@ -28,18 +28,17 @@ public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
     var telemetryService: TelemetryService { get }
     var saaqService: SaaQServiceProtocol { get }
-    var touchProcessorProvider: TouchProcessorProviding { get }
+    var touchProcessor: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
     static var shared: NX10CoreProtocol { get }
-    var didStartSession: Bool { get set }
+    var touchTracker: GeneralTouchTracker { get }
     
     func configure(
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool,
-        didStartSessionCallback: ((Bool) -> Void)?
-    ) async throws
+        shouldStartSession: Bool
+    ) async throws -> Bool
     func startSession() async throws -> Bool
 }
 
@@ -52,9 +51,11 @@ public final class NX10Core: NX10CoreProtocol {
     public let telemetryService: TelemetryService
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
-    public let touchProcessorProvider: TouchProcessorProviding
-    @Published public var didStartSession: Bool = false
-    
+    public let touchProcessor: TouchProcessorProviding
+    public let touchTracker: GeneralTouchTracker
+    // NEW: Add TextInputObserverService
+    let textInputObserverService: TextInputObserving
+
     // MARK: Internal properties
     let networkservice: Networking
     let appService: AppInfoProviding
@@ -65,24 +66,34 @@ public final class NX10Core: NX10CoreProtocol {
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
 
-    private var isConfigured = false
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
+    private var sessionData: SessionData? = nil {
+        didSet {
+            guard let touchSampleHz = sessionData?.deviceConfig.sensor.touchSampleHz else { return }
+            let updateInterval: TimeInterval = 1.0/Double(touchSampleHz)
+            print("LOG: Did set Session Data")
+            motionTracker.setUpdateInterval(with: updateInterval)
+        }
+    }
     
     @MainActor private init () {
         // MARK: - Core Services
+        
+        // MARK: Agnostic services
         let configLoader = ConfigProvider()
         let errorProvider = ErrorProvider(configLoader: configLoader)
         let appService = AppInfoProvider()
+        let touchProcessor = TouchProcessorProvider()
+        let appLifecycleService = LifecyleProvider()
+        
         let endpointProvider = EndpointProvider(configLoader: configLoader)
         let networkService = NetworkService(endpointProvider: endpointProvider)
         let analyticsService = AnalyticsProvider(networkService: networkService)
-        let appLifecycleService = LifecyleProvider()
-        
-        // MARK: - Sensor Providers (Protocol-based)
+
+        // MARK: - Sensor Providers 
         let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
-        let touchProcessorProvider = TouchProcessorProvider()
-        
+
         // MARK: - Scheduler & Event Publisher
         let scheduler: TelemetryScheduler = DefaultTelemetryScheduler()
         let eventPublisher: TelemetryEventPublisher = DefaultTelemetryEventPublisher()
@@ -101,7 +112,8 @@ public final class NX10Core: NX10CoreProtocol {
             motionSensor: motionSensor,
             scheduler: scheduler,
             eventPublisher: eventPublisher,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            touchProcessor: touchProcessor
         )
         
         // MARK: - Higher-level Services
@@ -119,7 +131,11 @@ public final class NX10Core: NX10CoreProtocol {
             applicationInfoProvider: appService
         )
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
+        let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         
+        // NEW: Initialize TextInputObserverService
+        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
+
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.telemetryService = telemetryService
@@ -137,7 +153,9 @@ public final class NX10Core: NX10CoreProtocol {
         // Keep original references for backward compatibility
         self.motionTracker = MotionTracker(errorProvider: errorProvider)
         self.brainJuiceProvider = brainJuiceProvider
-        self.touchProcessorProvider = touchProcessorProvider
+        self.touchProcessor = touchProcessor
+        self.touchTracker = touchTracker
+        self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
 
@@ -146,16 +164,15 @@ extension NX10Core {
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool,
-        didStartSessionCallback: ((Bool) -> Void)? = nil
-    ) async throws {
+        shouldStartSession: Bool
+    ) async throws -> Bool {
         guard
-            isConfigured == false
+            sessionData == nil
         else {
             if isDebug {
                 print("configuration has already been called")
             }
-            return
+            return false
         }
         
         errorProvider.setTrackingEnabled(errorTrackingEnabled)
@@ -164,42 +181,47 @@ extension NX10Core {
             Task(name: "telemetry-task", priority: .utility) {
                 let sessionStarted = try await startSession()
                 if sessionStarted {
-                    isConfigured = true
-                    isStartingSession = true
-                    didStartSession = true
+                    isStartingSession = false
+                    // NEW: Start observing text input after session starts
+                    textInputObserverService.startObserving()
                 }
                     
-                didStartSessionCallback?(sessionStarted)
+                return sessionStarted
             }
-        } else {
-            didStartSessionCallback?(false)
         }
         
-        print("LOG: isConfigured is true")
+        print("LOG: isConfigured is \(shouldStartSession)")
+        
+        return shouldStartSession ? false : true
     }
     
     public func startSession() async throws -> Bool {
-        if isStartingSession { return false }
+        if isStartingSession || sessionData != nil {
+            print("LOG: session already started")
+            return false
+        }
+        
         isStartingSession = true
-        var sessionStarted = false
         
         print("LOG: startSession")
-        let start = try await self.sessionProvider.startSession()
+        let sessionData = try await self.sessionProvider.startSession()
         
-        if start {
+        if let sessionData {
             print("LOG: sendInitialMetadata")
             _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
             _ = try await self.telemetryService.shouldStartTelemetry()
             isStartingSession = false
-            sessionStarted = true
+            self.sessionData = sessionData
+            // NEW: Start observing text input after successful session start
+            textInputObserverService.startObserving()
         } else {
             if isDebug {
                 fatalError("failed to start session")
             }
             errorProvider.sendSDKError(.sessionFailed)
         }
-        return sessionStarted
+        return sessionData != nil
     }
 }
 

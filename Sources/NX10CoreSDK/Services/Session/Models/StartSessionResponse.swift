@@ -10,12 +10,13 @@ import Foundation
 // MARK: - Root Response
 public struct StartSessionAPIResponse: Decodable {
     public let status: String
-    public let data: AuthData
+    public let data: SessionData
 }
 
 // MARK: - Data Container
-public struct AuthData: Decodable {
+public struct SessionData: Decodable {
     public let token: String
+    public let deviceConfig: DeviceConfig
     public let endpoints: [Endpoint]
 }
 

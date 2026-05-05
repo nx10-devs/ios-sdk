@@ -14,7 +14,7 @@ public protocol SessionProviding {
     var apiKey: String? { get }
     var token: String? { get }
     var uploadInterval: TimeInterval { get }
-    func startSession() async throws -> Bool
+    func startSession() async throws -> SessionData?
 }
 
 public final class SessionProvider: SessionProviding {
@@ -39,7 +39,7 @@ public final class SessionProvider: SessionProviding {
         self.apiKey = configLoader.string(for: .nx10APIKey)
     }
     
-    public func startSession() async throws -> Bool {
+    public func startSession() async throws -> SessionData? {
         do {
             print("LOG: Attempting session start")
             guard let apiKey = apiKey else {
@@ -86,21 +86,20 @@ public final class SessionProvider: SessionProviding {
             guard
                 let result = result
             else {
-                return false
+                return nil
             }
             
             endpointsProvider.endpoints = result.data.endpoints
             networking.setToken(result.data.token)
             
             print("LOG: Session start established for UUID \(applicationInfoProvider.deviceID) version \(applicationInfoProvider.appVersionNumber)")
-            isReady = true
-            return true
+            return result.data
             
         } catch {
             print("LOG: Failed to start session")
             print(error.localizedDescription)
         }
         
-        return false
+        return nil
     }
 }

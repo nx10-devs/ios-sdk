@@ -40,10 +40,15 @@ public import UIKit
     private var lastMoveTime:  [String: TimeInterval]       = [:]
     /// Last known UIKit position of each active touch, keyed by touch ID.
     private var lastPosition:  [String: CGPoint]            = [:]
+    
+    private let touchProcessor: TouchProcessorProviding
 
     // MARK: - Init
 
-    public init() {}
+    
+    public init(touchProcessor: TouchProcessorProviding) {
+        self.touchProcessor = touchProcessor
+    }
 
     // MARK: - Public API
 
@@ -133,13 +138,15 @@ public import UIKit
             lastMoveTime.removeValue(forKey: touchId)
             lastPosition.removeValue(forKey: touchId)
         }
+        
+        let convertedCoordinates = touchProcessor.convert(point: locationInWindow)
 
         return GeneralTouchSample(
             touchId:     touchId,
             touchType:   touchType,
             touchObject: nil,   // Key classification is set by the keyboard layer, not here.
-            xMm:         xMm,
-            yMm:         yMm,
+            xMm:         convertedCoordinates.mmX,
+            yMm:         convertedCoordinates.mmY,
             radiusMm:    radiusMm,
             size:        radiusMm * 2,  // major-axis diameter in mm
             velocityX:   0,

@@ -46,6 +46,33 @@ public import UIKit
     public static func radiusToMm(_ radiusPoints: Double, on screen: UIScreen = .main) -> Double {
         return radiusPoints * mmPerPoint(on: screen)
     }
+    
+    private func calculatePPI() -> CGFloat {
+        let bounds = UIScreen.main.nativeBounds
+        let diagonalPixels = sqrt(pow(bounds.width, 2) + pow(bounds.height, 2))
+        return diagonalPixels / getScreenInches()
+    }
+    
+    private func getScreenInches() -> CGFloat {
+        let identifier = UIDevice.modelIdentifier
+        
+        // Comprehensive mapping for recent devices
+        let modelMap: [String: CGFloat] = [
+            // iPhone 15 Series
+            "iPhone16,1": 6.1, "iPhone16,2": 6.7, "iPhone15,4": 6.1, "iPhone15,5": 6.7,
+            // iPhone 14 Series
+            "iPhone15,2": 6.1, "iPhone15,3": 6.7, "iPhone14,7": 6.1, "iPhone14,8": 6.7,
+            // iPhone 13 Series
+            "iPhone14,4": 5.4, "iPhone14,5": 6.1, "iPhone14,2": 6.1, "iPhone14,3": 6.7,
+            // iPhone 12 Series
+            "iPhone13,1": 5.4, "iPhone13,2": 6.1, "iPhone13,3": 6.1, "iPhone13,4": 6.7,
+            // SE models
+            "iPhone12,8": 4.7, "iPhone14,6": 4.7
+        ]
+        
+        // Defaulting to 6.1" as it is the most common modern size
+        return modelMap[identifier] ?? 6.1
+    }
 
     // MARK: - Radius-derived pressure
     //

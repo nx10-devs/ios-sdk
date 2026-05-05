@@ -12,9 +12,15 @@ public final class MotionTracker {
 
     private let motionManager = CMMotionManager()
     private let errorProvider: ErrorProviding
+    private var updateInterval: TimeInterval = 0.1
     
     init(errorProvider: ErrorProviding) {
         self.errorProvider = errorProvider
+    }
+    
+    public func setUpdateInterval(with interval: TimeInterval) {
+        print("LOG: Did update interval to \(interval)")
+        self.updateInterval = interval
     }
 
     @MainActor func start(
@@ -23,7 +29,7 @@ public final class MotionTracker {
     ) {
         if motionManager.isGyroAvailable {
             print("LOG: Started gyro tracking")
-            motionManager.gyroUpdateInterval = 0.1
+            motionManager.gyroUpdateInterval = updateInterval
             motionManager.startGyroUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 gyro(MotionSample(
@@ -40,7 +46,7 @@ public final class MotionTracker {
 
         if motionManager.isAccelerometerAvailable {
             print("LOG: Started accelerometer tracking")
-            motionManager.accelerometerUpdateInterval = 0.1
+            motionManager.accelerometerUpdateInterval = updateInterval
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 accel(MotionSample(
