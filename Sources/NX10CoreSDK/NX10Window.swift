@@ -41,12 +41,24 @@ public final class NX10Window: UIWindow {
 
     // MARK: - State
 
-    private let touchTracker = GeneralTouchTracker()
+    private let touchTracker: GeneralTouchTracker
+    private let touchProcessor: TouchProcessorProviding
 
     /// Called on the main thread for every ``GeneralTouchSample`` that passes the
     /// 30 Hz throttle.  Set by ``attach(to:)``.
     private var onTouch: ((GeneralTouchSample) -> Void)?
-
+    
+    public init(touchTracker: GeneralTouchTracker, touchProcessor: TouchProcessorProviding, windowScene: UIWindowScene) {
+        self.touchTracker = touchTracker
+        self.touchProcessor = touchProcessor
+        
+        super.init(windowScene: windowScene)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - Attachment
 
     /// Connect this window to the SDK's telemetry service so that touch samples
@@ -68,10 +80,12 @@ public final class NX10Window: UIWindow {
 
         guard event.type == .touches, let allTouches = event.allTouches else { return }
 
-        let screen = self.screen
-        for touch in allTouches {
-            if let sample = touchTracker.process(touch: touch, screen: screen) {
-                onTouch?(sample)
+        Task(name: "capture-task", priority: .background) {
+            let screen = self.screen
+            for touch in allTouches {
+                if let sample = touchTracker.process(touch: touch, screen: screen) {
+                    onTouch?(sample)
+                }
             }
         }
     }

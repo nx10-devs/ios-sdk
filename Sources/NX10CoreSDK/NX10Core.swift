@@ -54,7 +54,7 @@ public final class NX10Core: NX10CoreProtocol {
     public let touchProcessor: TouchProcessorProviding
     public let touchTracker: GeneralTouchTracker
     // NEW: Add TextInputObserverService
-    let textInputObserverService: TextInputObserving
+//    let textInputObserverService: TextInputObserving
 
     // MARK: Internal properties
     let networkservice: Networking
@@ -134,7 +134,7 @@ public final class NX10Core: NX10CoreProtocol {
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         
         // NEW: Initialize TextInputObserverService
-        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
+//        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
 
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
@@ -155,7 +155,7 @@ public final class NX10Core: NX10CoreProtocol {
         self.brainJuiceProvider = brainJuiceProvider
         self.touchProcessor = touchProcessor
         self.touchTracker = touchTracker
-        self.textInputObserverService = textInputObserverService // NEW: Assign
+        // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
 
@@ -183,7 +183,7 @@ extension NX10Core {
                 if sessionStarted {
                     isStartingSession = false
                     // NEW: Start observing text input after session starts
-                    textInputObserverService.startObserving()
+//                    textInputObserverService.startObserving()
                 }
                     
                 return sessionStarted
@@ -214,7 +214,7 @@ extension NX10Core {
             isStartingSession = false
             self.sessionData = sessionData
             // NEW: Start observing text input after successful session start
-            textInputObserverService.startObserving()
+//            textInputObserverService.startObserving()
         } else {
             if isDebug {
                 fatalError("failed to start session")
