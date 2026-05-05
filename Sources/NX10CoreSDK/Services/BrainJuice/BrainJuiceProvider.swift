@@ -34,7 +34,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.badRequest
         }
         
-        let brResponse: BrainJuice.BrainJuiceStatusResponse? = try await networking.POST(brainJuiceConfig, for: .brainJuice)
+        let brResponse: BrainJuice.BrainJuiceStatusResponse? = try await networking.POST(brainJuiceConfig.weights, for: .brainJuice)
         
         return brResponse
     }

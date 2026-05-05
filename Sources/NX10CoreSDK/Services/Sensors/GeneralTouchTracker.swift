@@ -23,11 +23,17 @@ public import UIKit
 /// inside `UIWindow.sendEvent(_:)`.  All calls must be made on the main thread.
 
 @MainActor public final class GeneralTouchTracker {
+    
+    private var sensor: DeviceConfig.Sensor? {
+        didSet {
+            moveThrottleInterval = 1.0 / Double(sensor?.touchSampleHz ?? 30)
+        }
+    }
 
     // MARK: - Configuration
 
     /// Minimum interval between emitted "move" samples per touch ID (≈30 Hz).
-    private let moveThrottleInterval: TimeInterval = 1.0 / 30.0
+    private var moveThrottleInterval: TimeInterval = 1.0 / 30.0
 
     /// Movement below this threshold (in UIKit points) is classified as "stationary".
     private let stationaryThresholdPt: CGFloat = 3.0
@@ -47,6 +53,10 @@ public import UIKit
 
     public init(touchProcessor: TouchProcessorProviding) {
         self.touchProcessor = touchProcessor
+    }
+    
+    func setSensorData(_ data: DeviceConfig.Sensor) {
+        self.sensor = data
     }
 
     // MARK: - Public API
