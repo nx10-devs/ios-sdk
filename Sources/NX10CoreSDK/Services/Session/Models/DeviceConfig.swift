@@ -30,7 +30,7 @@ public struct DeviceConfig: Decodable {
         public let featureName: String
         public let weight: Double
         public let direction: Int
-        public let children: [Weight]
+        public let children: [Weight]?
     }
 
     public struct Device: Decodable {
