@@ -32,6 +32,7 @@ public protocol NX10CoreProtocol: AnyObject {
     var brainJuiceProvider: BrainJuiceProviding { get }
     static var shared: NX10CoreProtocol { get }
     var touchTracker: GeneralTouchTracker { get }
+    var networkservice: Networking { get }
     
     func configure(
         apiKey: String,
@@ -53,11 +54,11 @@ public final class NX10Core: NX10CoreProtocol {
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
     public let touchTracker: GeneralTouchTracker
+    public let networkservice: Networking
     // NEW: Add TextInputObserverService
 //    let textInputObserverService: TextInputObserving
 
     // MARK: Internal properties
-    let networkservice: Networking
     let appService: AppInfoProviding
     let motionTracker: MotionTracker
     let analyticsService: AnalyticsProviding
