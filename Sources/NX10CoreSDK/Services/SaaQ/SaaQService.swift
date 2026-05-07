@@ -36,7 +36,7 @@ public protocol SaaQServiceProtocol {
     
     init(
         networkService: Networking,
-        telemetryService: TelemetryService,
+        telemetryService: TelemetryProvider,
         promptController: SaaQPromptController,
         promptPresenter: SaaQPromptWindowPresenter
     )
@@ -46,11 +46,11 @@ public final class SaaQService: SaaQServiceProtocol {
     private let promptController: SaaQPromptController
     private let promptPresenter: SaaQPromptWindowPresenter
     private let networkService: Networking
-    private let telemetryService: TelemetryService
+    private let telemetryService: TelemetryProvider
     
     public init(
         networkService: Networking,
-        telemetryService: TelemetryService,
+        telemetryService: TelemetryProvider,
         promptController: SaaQPromptController = .shared,
         promptPresenter: SaaQPromptWindowPresenter = .shared
     ) {

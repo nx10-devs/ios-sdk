@@ -65,7 +65,7 @@ public final class NX10Window: UIWindow {
     /// are automatically forwarded.  Call this after `NX10Core.shared.configure(...)`.
     ///
     /// - Parameter telemetryService: The service to receive general touch events.
-    public func attach(to telemetryService: TelemetryServicing) {
+    public func attach(to telemetryService: TelemetryProviding) {
         onTouch = { [weak telemetryService] sample in
             telemetryService?.processGeneralTouch(sample)
         }

@@ -11,12 +11,12 @@ public protocol TextInputObserving: AnyObject {
 
 @MainActor
 final class TextInputObserverService: TextInputObserving {
-    private weak var telemetryService: TelemetryServicing?
+    private weak var telemetryService: TelemetryProviding?
     private var currentObservedTextField: UITextField?
     private var currentObservedTextView: UITextView?
     private var lastTextContent: String = "" // To track changes for diffing
 
-    init(telemetryService: TelemetryServicing) {
+    init(telemetryService: TelemetryProviding) {
         self.telemetryService = telemetryService
         print("TextInputObserverService: Initialized with telemetryService: \(telemetryService != nil ? "present" : "nil")")
     }

@@ -34,7 +34,7 @@ public final class MotionTracker {
         accUpdateInterval = hz
     }
     
-    public func setSensorData(_ data: DeviceConfig.Sensor) {
+    public func setSensorData(_ data: DeviceConfig.Sensor?) {
         print("LOG: Sensor resoultions set")
         self.sensor = data
     }

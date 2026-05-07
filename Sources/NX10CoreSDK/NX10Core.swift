@@ -26,7 +26,7 @@ public struct NX10CoreConfig {
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
-    var telemetryService: TelemetryService { get }
+    var telemetryService: TelemetryProvider { get }
     var saaqService: SaaQServiceProtocol { get }
     var touchProcessor: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
@@ -48,7 +48,7 @@ public final class NX10Core: NX10CoreProtocol {
     
     // MARK: Public properties
     public let errorProvider: ErrorProviding
-    public let telemetryService: TelemetryService
+    public let telemetryService: TelemetryProvider
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
@@ -70,11 +70,11 @@ public final class NX10Core: NX10CoreProtocol {
     private var didStartSessionCallback: ((Bool) -> Void)?
     private var sessionData: SessionData? = nil {
         didSet {
-            guard let sensor = sessionData?.deviceConfig.sensor else { return }
+            guard
+                let sessionData = sessionData
+            else { return }
             print("LOG: Did set Session Data")
-            motionTracker.setSensorData(sensor)
-            guard let brainJuiceConfig = sessionData?.deviceConfig.brainjuice else { return }
-            brainJuiceProvider.setBrainJuiceConfig(brainJuiceConfig)
+            setSessionDataDependencies(with: sessionData)
         }
     }
     
@@ -108,7 +108,7 @@ public final class NX10Core: NX10CoreProtocol {
         )
         
         // MARK: - Telemetry Service (Protocol-based initialization)
-        let telemetryService = TelemetryService(
+        let telemetryService = TelemetryProvider(
             telemetryCollector: telemetryCollector,
             motionSensor: motionSensor,
             scheduler: scheduler,
@@ -208,12 +208,10 @@ extension NX10Core {
         let sessionData = try await self.sessionProvider.startSession()
         
         if let sessionData {
-            print("LOG: sendInitialMetadata")
-            _ = await attributesService.sendInitialMetadata()
-            print("LOG: shouldStartTelemetry")
-            _ = try await self.telemetryService.shouldStartTelemetry()
+          
             isStartingSession = false
             self.sessionData = sessionData
+            
             // NEW: Start observing text input after successful session start
 //            textInputObserverService.startObserving()
         } else {
@@ -223,6 +221,25 @@ extension NX10Core {
             errorProvider.sendSDKError(.sessionFailed)
         }
         return sessionData != nil
+    }
+    
+    fileprivate func setSessionDataDependencies(with sessionData: SessionData) {
+        // MARK: Motion tracking sensor data
+        motionTracker.setSensorData(sessionData.deviceConfig.sensor)
+        
+        // MARK: Brainhuice data and weights
+        brainJuiceProvider.setBrainJuiceConfig(sessionData.deviceConfig.brainjuice)
+        
+        // MARK: DPI Conversion map per device
+        CoordinateConverter.shared.setDeviceModelToDPIMap(sessionData.deviceConfig.device.deviceModelToDpiMap)
+        
+        Task {
+            
+            print("LOG: sending initial metata data - sendInitialMetadata")
+            _ = await attributesService.sendInitialMetadata()
+            print("LOG: shouldStartTelemetry")
+            _ = try await self.telemetryService.shouldStartTelemetry(with: sessionData.deviceConfig.sensor.acquisitionWindowSize)
+        }
     }
 }
 

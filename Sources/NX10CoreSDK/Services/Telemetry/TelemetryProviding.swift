@@ -11,10 +11,10 @@ public import UIKit
 
 /// Protocol defining telemetry service public contract
 @MainActor
-public protocol TelemetryServicing: AnyObject {
+public protocol TelemetryProviding: AnyObject {
     // Lifecycle
-    func shouldStartTelemetry() async throws -> Bool
-    func startTelemetryEventLoop()
+    func shouldStartTelemetry(with window: Int) async throws -> Bool
+    func startTelemetryEventLoop(with window: Int)
     func stopTelemetry()
     func startTrackingMotion()
 
@@ -75,7 +75,7 @@ public protocol TelemetryServicing: AnyObject {
     func attemptUploadAndFlushNow()
 }
 
-public extension TelemetryServicing {
+public extension TelemetryProviding {
     /// Convenience: use sensible defaults for pressure/size/velocity.
     func appendKeyboardTouch(touchId: String,
                              touchType: GeneralTouchSample.TouchType,

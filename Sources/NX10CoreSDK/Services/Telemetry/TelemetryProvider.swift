@@ -10,7 +10,7 @@ public import UIKit
 
 /// Refactored TelemetryService - now focused on lifecycle and coordination
 @MainActor
-public final class TelemetryService: TelemetryServicing {
+public final class TelemetryProvider: TelemetryProviding {
     
     // MARK: - Dependencies (Protocol-based, not concrete)
     private let telemetryCollector: TelemetryCollectorComprehensive
@@ -77,16 +77,16 @@ public final class TelemetryService: TelemetryServicing {
     
     // MARK: - Public API
     
-    public func shouldStartTelemetry() async throws -> Bool {
+    public func shouldStartTelemetry(with window: Int) async throws -> Bool {
 
-        startTelemetryEventLoop()
+        startTelemetryEventLoop(with: window)
         startTrackingMotion()
         
         return true
     }
     
-    public func startTelemetryEventLoop() {
-        scheduler.start(interval: 30) { [weak self] in
+    public func startTelemetryEventLoop(with window: Int = 30) {
+        scheduler.start(interval: TimeInterval(window)) { [weak self] in
             Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
         }
         analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
@@ -131,8 +131,8 @@ public final class TelemetryService: TelemetryServicing {
                                     velocityPoints: CGVector,
                                     screen: UIScreen) {
         
-        let (xMm, yMm) = CoordinateConverter.toMm(point)
-        let radiusMm   = CoordinateConverter.radiusToMm(Double(radiusPoints), on: screen)
+        let (xMm, yMm) = CoordinateConverter.shared.toMm(point)
+        let radiusMm   = CoordinateConverter.shared.radiusToMm(Double(radiusPoints), on: screen)
         let resolvedSize = size > 0 ? size : radiusMm * 2
 
         let sample = GeneralTouchSample(

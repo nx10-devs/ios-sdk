@@ -13,14 +13,10 @@ public protocol SessionProviding {
     var isReady: Bool { get }
     var apiKey: String? { get }
     var token: String? { get }
-    var uploadInterval: TimeInterval { get }
     func startSession() async throws -> SessionData?
 }
 
 public final class SessionProvider: SessionProviding {
-    public var uploadInterval: TimeInterval {
-        return 10
-    }
     public private(set) var isReady: Bool = false
     public var token: String?
     
