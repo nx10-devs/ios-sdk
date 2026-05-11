@@ -12,8 +12,8 @@ public final class MotionTracker {
     
     private let motionManager = CMMotionManager()
     private let errorProvider: ErrorProviding
-    private var accUpdateInterval: TimeInterval
-    private var gyrUpdateInterval: TimeInterval
+    private var accUpdateInterval: TimeInterval?
+    private var gyrUpdateInterval: TimeInterval?
     private var sensor: DeviceConfig.Sensor? {
         didSet {
             guard
@@ -45,6 +45,9 @@ public final class MotionTracker {
     ) {
         if motionManager.isGyroAvailable {
             print("LOG: Started gyro tracking")
+            guard
+                let gyrUpdateInterval
+            else { return }
             motionManager.gyroUpdateInterval = gyrUpdateInterval
             motionManager.startGyroUpdates(to: .main) { data, _ in
                 guard let data else { return }
@@ -62,6 +65,9 @@ public final class MotionTracker {
 
         if motionManager.isAccelerometerAvailable {
             print("LOG: Started accelerometer tracking")
+            guard
+                let accUpdateInterval
+            else { return }
             motionManager.accelerometerUpdateInterval = accUpdateInterval
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
                 guard let data else { return }

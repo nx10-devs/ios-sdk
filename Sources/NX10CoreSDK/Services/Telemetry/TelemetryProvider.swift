@@ -85,7 +85,7 @@ public final class TelemetryProvider: TelemetryProviding {
         return true
     }
     
-    public func startTelemetryEventLoop(with window: Int = 30) {
+    public func startTelemetryEventLoop(with window: Int) {
         scheduler.start(interval: TimeInterval(window)) { [weak self] in
             Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
         }

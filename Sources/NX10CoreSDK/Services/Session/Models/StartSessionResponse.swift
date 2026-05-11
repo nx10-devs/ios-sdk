@@ -16,7 +16,7 @@ public struct StartSessionAPIResponse: Decodable {
 // MARK: - Data Container
 public struct SessionData: Decodable {
     public let token: String
-    public let deviceConfig: DeviceConfig
+    public let deviceConfig: DeviceConfig?
     public let endpoints: [Endpoint]
 }
 

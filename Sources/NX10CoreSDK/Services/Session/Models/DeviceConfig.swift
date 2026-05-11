@@ -9,21 +9,21 @@ import Foundation
 
 public struct DeviceConfig: Decodable {
     
-    public let sensor: Sensor
-    public let brainjuice: BrainJuiceConfig // NEW: Add brainjuice config
+    public let sensor: Sensor?
+    public let brainjuice: BrainJuiceConfig? // NEW: Add brainjuice config
     public let device: Device
 
     public struct Sensor: Decodable {
-        public let touchSampleHz: Int
-        public let gyroscopeSampleHz: Int
-        public let accelerometerSampleHz: Int
-        public let keyboardTouchSampleHz: Int
-        public let acquisitionWindowSize: Int
+        public let touchSampleHz: Int?
+        public let gyroscopeSampleHz: Int?
+        public let accelerometerSampleHz: Int?
+        public let keyboardTouchSampleHz: Int?
+        public let acquisitionWindowSize: Int?
     }
 
     // MARK: - BrainJuice Config
     public struct BrainJuiceConfig: Codable {
-        public let weights: [Weight]
+        public let weights: [Weight]?
     }
 
     public struct Weight: Codable {
@@ -40,5 +40,4 @@ public struct DeviceConfig: Decodable {
             case deviceModelToDpiMap
         }
     }
-
 }

@@ -38,7 +38,7 @@ public import UIKit
     // MARK: - Configuration
 
     /// Minimum interval between emitted "move" samples per touch ID (≈30 Hz).
-    private var moveThrottleInterval: TimeInterval
+    private var moveThrottleInterval: TimeInterval?
 
     /// Movement below this threshold (in UIKit points) is classified as "stationary".
     private let stationaryThresholdPt: CGFloat = 3.0
@@ -79,6 +79,11 @@ public import UIKit
     ///   - touch:  The `UITouch` extracted from `UIEvent.allTouches`.
     ///   - screen: The screen the touch occurred on; used for DPI/mm conversion.
     public func process(touch: UITouch, screen: UIScreen = .main) -> GeneralTouchSample? {
+        
+        guard
+            let moveThrottleInterval
+        else { return nil }
+        
         let objectId = ObjectIdentifier(touch)
         let phase    = touch.phase
         let now      = Date().timeIntervalSince1970

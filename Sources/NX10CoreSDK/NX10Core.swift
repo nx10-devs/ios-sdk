@@ -225,18 +225,28 @@ extension NX10Core {
     }
     
     fileprivate func setSessionDataDependencies(with sessionData: SessionData) {
+        guard
+            let deviceConfig = sessionData.deviceConfig
+        else {
+            return
+        }
+        
         // MARK: Motion tracking sensor data
-        motionTracker.setSensorData(sessionData.deviceConfig.sensor)
+        motionTracker.setSensorData(deviceConfig.sensor)
         
         // MARK: Brainhuice data and weights
-        brainJuiceProvider.setBrainJuiceConfig(sessionData.deviceConfig.brainjuice)
+        if let brainJuice = deviceConfig.brainjuice {
+            brainJuiceProvider.setBrainJuiceConfig(brainJuice)
+        }
         
         Task {
             
             print("LOG: sending initial metata data - sendInitialMetadata")
             _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
-            _ = try await self.telemetryProvider.shouldStartTelemetry(with: sessionData.deviceConfig.sensor.acquisitionWindowSize)
+            if let acquisitionWindowSize = deviceConfig.sensor?.acquisitionWindowSize {
+                _ = try await self.telemetryProvider.shouldStartTelemetry(with: acquisitionWindowSize)
+            }
         }
     }
 }

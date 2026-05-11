@@ -16,11 +16,3 @@ public extension CGPoint {
         return self.y.toMillimeters
     }
 }
-
-public extension CGFloat {
-    var toMillimeters: CGFloat {
-        // 163 is the standard points-per-inch for most iPhones
-        
-        return (self * 0.35278)
-    }
-}

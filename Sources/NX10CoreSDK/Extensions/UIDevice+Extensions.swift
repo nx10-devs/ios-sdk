@@ -28,6 +28,3 @@ public extension UIDevice {
         return identifier
     }()
 }
-
-
-
