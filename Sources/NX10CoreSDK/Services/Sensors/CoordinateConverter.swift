@@ -65,22 +65,4 @@ public final class CoordinateConverter {
         let scale = Double(screen.scale)
         return (scale / dpi) * 25.4
     }
-
-    // ───── Radius-derived pressure ─────
-
-    /// Light-tap reference radius (mm) — below this, pressure is reported as 0.
-    public static let minPressureRadiusMm: Double = 2.0
-    /// Firm-press reference radius (mm) — at or above this, pressure is 1.0.
-    public static let maxPressureRadiusMm: Double = 9.0
-
-    /// Approximate normalised pressure (0…1) from a contact radius in millimetres.
-    ///
-    /// Mirrors Android's approach of inferring pressure from the contact-ellipse
-    /// major axis on devices without dedicated pressure hardware.
-    public static func pressureFromRadius(_ radiusMm: Double) -> Double {
-        let span = maxPressureRadiusMm - minPressureRadiusMm
-        guard span > 0 else { return 0 }
-        let normalised = (radiusMm - minPressureRadiusMm) / span
-        return min(1.0, max(0.0, normalised))
-    }
 }
