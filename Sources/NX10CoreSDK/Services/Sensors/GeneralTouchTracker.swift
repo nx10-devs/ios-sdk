@@ -137,8 +137,9 @@ public import UIKit
         }
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
-        let (xMm, yMm) = CoordinateConverter.shared.toMm(locationInWindow, on: screen)
-        let radiusMm   = CoordinateConverter.shared.radiusToMm(Double(touch.majorRadius), on: screen)
+        let xMm = locationInWindow.x.toMillimeters
+        let yMm =  locationInWindow.y.toMillimeters
+        let radiusMm = touch.majorRadius.toMillimeters
 
         // ── Pressure: prefer real UITouch.force when available, otherwise
         //    approximate from the contact radius (Android-style).
@@ -147,10 +148,6 @@ public import UIKit
             guard maxForce > 0 else { return 0 }
             return min(1.0, max(0.0, Double(touch.force) / maxForce))
         }()
-        let pressure = normalisedForce > 0
-            ? normalisedForce
-            : CoordinateConverter.pressureFromRadius(radiusMm)
-
         // ── Clean up completed touches ─────────────────────────────────────
         if phase == .ended || phase == .cancelled {
             touchIdMap.removeValue(forKey: objectId)

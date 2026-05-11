@@ -26,7 +26,7 @@ public struct NX10CoreConfig {
 @MainActor
 public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
-    var telemetryService: TelemetryProvider { get }
+    var telemetryProvider: TelemetryProvider { get }
     var saaqService: SaaQServiceProtocol { get }
     var touchProcessor: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
@@ -49,7 +49,7 @@ public final class NX10Core: NX10CoreProtocol {
     
     // MARK: Public properties
     public let errorProvider: ErrorProviding
-    public let telemetryService: TelemetryProvider
+    public let telemetryProvider: TelemetryProvider
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
@@ -109,7 +109,7 @@ public final class NX10Core: NX10CoreProtocol {
         )
         
         // MARK: - Telemetry Service (Protocol-based initialization)
-        let telemetryService = TelemetryProvider(
+        let telemetryProvider = TelemetryProvider(
             telemetryCollector: telemetryCollector,
             motionSensor: motionSensor,
             scheduler: scheduler,
@@ -119,7 +119,7 @@ public final class NX10Core: NX10CoreProtocol {
         )
         
         // MARK: - Higher-level Services
-        let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryService)
+        let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryProvider)
         let attributesService = AttributesProvider(
             networkService: networkService,
             errorProvider: errorProvider,
@@ -140,7 +140,7 @@ public final class NX10Core: NX10CoreProtocol {
 
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
-        self.telemetryService = telemetryService
+        self.telemetryProvider = telemetryProvider
         self.saaqService = saaqService
         
         // Internal properties for lifecycle management
@@ -231,15 +231,12 @@ extension NX10Core {
         // MARK: Brainhuice data and weights
         brainJuiceProvider.setBrainJuiceConfig(sessionData.deviceConfig.brainjuice)
         
-        // MARK: DPI Conversion map per device
-        CoordinateConverter.shared.setDeviceModelToDPIMap(sessionData.deviceConfig.device.deviceModelToDpiMap)
-        
         Task {
             
             print("LOG: sending initial metata data - sendInitialMetadata")
             _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
-            _ = try await self.telemetryService.shouldStartTelemetry(with: sessionData.deviceConfig.sensor.acquisitionWindowSize)
+            _ = try await self.telemetryProvider.shouldStartTelemetry(with: sessionData.deviceConfig.sensor.acquisitionWindowSize)
         }
     }
 }
