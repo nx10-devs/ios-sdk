@@ -11,7 +11,7 @@ public struct DeviceConfig: Decodable {
     
     public let sensor: Sensor?
     public let brainjuice: BrainJuiceConfig? // NEW: Add brainjuice config
-    public let device: Device
+    public let device: Device?
 
     public struct Sensor: Decodable {
         public let touchSampleHz: Int?

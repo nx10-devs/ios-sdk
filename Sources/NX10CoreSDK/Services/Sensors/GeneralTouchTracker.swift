@@ -142,9 +142,8 @@ public import UIKit
         }
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
-        let xMm = locationInWindow.x.toMillimeters
-        let yMm =  locationInWindow.y.toMillimeters
-        let radiusMm = touch.majorRadius.toMillimeters
+        let (xMm, yMm) = CoordinateConverter.shared.toMm(locationInWindow, on: screen)
+        let radiusMm   = CoordinateConverter.shared.radiusToMm(Double(touch.majorRadius), on: screen)
 
         // ── Pressure: prefer real UITouch.force when available, otherwise
         //    approximate from the contact radius (Android-style).

@@ -239,8 +239,9 @@ extension NX10Core {
             brainJuiceProvider.setBrainJuiceConfig(brainJuice)
         }
         
+        CoordinateConverter.shared.setDeviceModelToDPIMap(deviceConfig.device?.deviceModelToDpiMap)
+        
         Task {
-            
             print("LOG: sending initial metata data - sendInitialMetadata")
             _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
