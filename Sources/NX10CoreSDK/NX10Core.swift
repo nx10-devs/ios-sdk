@@ -239,7 +239,9 @@ extension NX10Core {
             brainJuiceProvider.setBrainJuiceConfig(brainJuice)
         }
         
-        CoordinateConverter.shared.setDeviceModelToDPIMap(deviceConfig.device?.deviceModelToDpiMap)
+        if let deviceModelToDpiMap = deviceConfig.device?.deviceModelToDpiMap {
+            touchProcessor.setDeviceModelToDPIMap(deviceModelToDpiMap)
+        }
         
         Task {
             print("LOG: sending initial metata data - sendInitialMetadata")

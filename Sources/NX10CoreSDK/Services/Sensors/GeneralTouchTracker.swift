@@ -142,16 +142,9 @@ public import UIKit
         }
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
-        let (xMm, yMm) = CoordinateConverter.shared.toMm(locationInWindow, on: screen)
-        let radiusMm   = CoordinateConverter.shared.radiusToMm(Double(touch.majorRadius), on: screen)
+        let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil))
+        let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius)
 
-        // ── Pressure: prefer real UITouch.force when available, otherwise
-        //    approximate from the contact radius (Android-style).
-        let normalisedForce: Double = {
-            let maxForce = Double(touch.maximumPossibleForce)
-            guard maxForce > 0 else { return 0 }
-            return min(1.0, max(0.0, Double(touch.force) / maxForce))
-        }()
         // ── Clean up completed touches ─────────────────────────────────────
         if phase == .ended || phase == .cancelled {
             touchIdMap.removeValue(forKey: objectId)
