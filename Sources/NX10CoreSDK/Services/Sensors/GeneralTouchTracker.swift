@@ -101,7 +101,7 @@ public import UIKit
             guard let existingId = touchIdMap[objectId] else { return nil }
             touchId = existingId
 
-        @unknown default:
+        default:
             return nil
         }
 
@@ -137,7 +137,7 @@ public import UIKit
         case .cancelled:
             touchType = .cancelled
 
-        @unknown default:
+        default:
             touchType = .up
         }
 

@@ -16,8 +16,8 @@ public extension CGFloat {
     
     
     
-    static func pointsToMillimeters(_ points: CGFloat, deviceDPI: CGFloat) -> CGFloat {
-        let scale = UIScreen.main.scale
+    @MainActor static func pointsToMillimeters(_ points: CGFloat, deviceDPI: CGFloat) -> CGFloat {
+        let scale = UIScreen.main.nativeScale
         let physicalPixels = points * scale
         let inches = physicalPixels / deviceDPI
         let millimeters = inches * 25.4

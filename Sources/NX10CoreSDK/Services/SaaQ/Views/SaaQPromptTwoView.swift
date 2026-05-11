@@ -79,7 +79,6 @@ public struct SaaQPromptTwoView: View {
         )
     }
     
-    @ViewBuilder
     private func renderFollowonSliderView() -> some View {
         guard
             let followon = savedFeelingSelection?.followonQuestion?.first

@@ -65,8 +65,9 @@ public final class SaaQService: SaaQServiceProtocol {
         }
         
         promptController.didAnswerSaaQ = { answer in
-            do {
-                Task(name: "saaq-task", priority: .utility) {
+            
+            Task(name: "saaq-task", priority: .utility) {
+                do {
                     if let answerOne = answer.saaqOneAnswer {
                         let _: GenericResponse? = try await networkService.POST(answerOne, for: .saaqTriggered)
                     }
@@ -74,10 +75,11 @@ public final class SaaQService: SaaQServiceProtocol {
                     if let answerTwo = answer.saaqTwoAnswer {
                         let _: GenericResponse? = try await networkService.POST(answerTwo, for: .saaqTriggered)
                     }
+                } catch {
+                    print(error.localizedDescription)
                 }
-            } catch {
-                print(error.localizedDescription)
             }
+            
         }
     }
     
