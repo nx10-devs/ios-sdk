@@ -17,7 +17,7 @@ public struct DeviceConfig: Decodable {
         public let touchSampleHz: Int?
         public let gyroscopeSampleHz: Int?
         public let accelerometerSampleHz: Int?
-        public let keyboardTouchSampleHz: Int?
+        public let keyboardTouchSampleHz: String?
         public let acquisitionWindowSize: Int?
     }
 

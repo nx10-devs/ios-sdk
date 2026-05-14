@@ -45,18 +45,24 @@ public final class MotionTracker {
     ) {
         if motionManager.isGyroAvailable {
             print("LOG: Started gyro tracking")
-            guard
-                let gyrUpdateInterval
-            else { return }
-            motionManager.gyroUpdateInterval = gyrUpdateInterval
+
+            motionManager.gyroUpdateInterval = gyrUpdateInterval ?? 30
             motionManager.startGyroUpdates(to: .main) { data, _ in
                 guard let data else { return }
-                gyro(MotionSample(
+                let gyroData = MotionSample(
                     timestampMs: Self.nowMs(),
                     x: data.rotationRate.x,
                     y: data.rotationRate.y,
                     z: data.rotationRate.z
-                ))
+                 )
+                if isDebug {
+                    DebugProvider.shared.gyro = gyroData
+                }
+                guard
+                    self.gyrUpdateInterval != nil
+                else { return }
+                
+                gyro(gyroData)
             }
         } else {
             print("LOG: Gyro failed to start")
@@ -65,18 +71,27 @@ public final class MotionTracker {
 
         if motionManager.isAccelerometerAvailable {
             print("LOG: Started accelerometer tracking")
-            guard
-                let accUpdateInterval
-            else { return }
-            motionManager.accelerometerUpdateInterval = accUpdateInterval
+            motionManager.accelerometerUpdateInterval = accUpdateInterval ?? 30
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
+
                 guard let data else { return }
-                accel(MotionSample(
+                
+                let accData = MotionSample(
                     timestampMs: Self.nowMs(),
                     x: data.acceleration.x,
                     y: data.acceleration.y,
                     z: data.acceleration.z
-                ))
+                )
+                
+                if isDebug {
+                    DebugProvider.shared.acc = accData
+                }
+                
+                guard
+                    self.accUpdateInterval != nil
+                else { return }
+                
+                accel(accData)
             }
         } else {
             print("LOG: accelerometer failed to start")
