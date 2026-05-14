@@ -15,4 +15,8 @@ public extension CGPoint {
     var yMillimeters: CGFloat {
         return self.y.toMillimeters
     }
+    
+    static var defaultRadiusMillimeters: CGFloat {
+        return 12.0
+    }
 }

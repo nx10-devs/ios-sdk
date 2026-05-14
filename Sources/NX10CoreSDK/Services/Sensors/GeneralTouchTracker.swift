@@ -154,11 +154,14 @@ public import UIKit
         
         let convertedCoordinates = touchProcessor.convert(point: locationInWindow)
         
-        DebugProvider.shared.xPoint = touch.location(in: nil).x
-        DebugProvider.shared.yPoint = touch.location(in: nil).y
-        DebugProvider.shared.xMm = xMm
-        DebugProvider.shared.yMm = yMm
-        DebugProvider.shared.radiusMm = radiusMm
+        // MARK: Debug View inputs
+        if isDebug {
+            DebugProvider.shared.xPoint = touch.location(in: nil).x
+            DebugProvider.shared.yPoint = touch.location(in: nil).y
+            DebugProvider.shared.xMm = xMm
+            DebugProvider.shared.yMm = yMm
+            DebugProvider.shared.radiusMm = radiusMm
+        }
 
         return GeneralTouchSample(
             touchId:     touchId,

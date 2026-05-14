@@ -50,7 +50,7 @@ public final class MotionTracker {
             motionManager.startGyroUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 let gyroData = MotionSample(
-                    timestampMs: Self.nowMs(),
+                    timestampMs: Date().nowMs,
                     x: data.rotationRate.x,
                     y: data.rotationRate.y,
                     z: data.rotationRate.z
@@ -77,7 +77,7 @@ public final class MotionTracker {
                 guard let data else { return }
                 
                 let accData = MotionSample(
-                    timestampMs: Self.nowMs(),
+                    timestampMs: Date().nowMs,
                     x: data.acceleration.x,
                     y: data.acceleration.y,
                     z: data.acceleration.z
@@ -103,9 +103,5 @@ public final class MotionTracker {
         print("LOG: Stopping motion tracking")
         motionManager.stopGyroUpdates()
         motionManager.stopAccelerometerUpdates()
-    }
-
-    private static func nowMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
     }
 }

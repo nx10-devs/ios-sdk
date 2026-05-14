@@ -18,9 +18,8 @@ public final class TelemetryProvider: TelemetryProviding {
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
     private let analyticsService: AnalyticsProviding
-    private let touchProcessor: TouchProcessorProviding
+    private let touchTracker: GeneralTouchTracker
     
-    private let standardisedTapPoint = TouchCoordinateProvider()
     private var sessionStarted = false
     private var screenObservers: [NSObjectProtocol] = []
 
@@ -31,14 +30,14 @@ public final class TelemetryProvider: TelemetryProviding {
         scheduler: TelemetryScheduler,
         eventPublisher: TelemetryEventPublisher,
         analyticsService: AnalyticsProviding,
-        touchProcessor: TouchProcessorProviding
+        touchTracker: GeneralTouchTracker
     ) {
         self.telemetryCollector = telemetryCollector
         self.motionSensor = motionSensor
         self.scheduler = scheduler
         self.eventPublisher = eventPublisher
         self.analyticsService = analyticsService
-        self.touchProcessor = touchProcessor
+        self.touchTracker = touchTracker
 
         // Wire event publisher into collector
         self.telemetryCollector.setEventPublisher(eventPublisher)
@@ -119,35 +118,6 @@ public final class TelemetryProvider: TelemetryProviding {
     // MARK: - Unified touch ("touch" V2 events)
 
     public func processGeneralTouch(_ sample: GeneralTouchSample) {
-        telemetryCollector.appendGeneralTouch(sample)
-    }
-
-    public func appendKeyboardTouch(touchId: String,
-                                    touchType: GeneralTouchSample.TouchType,
-                                    touchObject: GeneralTouchSample.TouchObject,
-                                    point: CGPoint,
-                                    radiusPoints: CGFloat,
-                                    size: Double,
-                                    velocityPoints: CGVector,
-                                    screen: UIScreen) {
-        
-        let (xMm, yMm) = touchProcessor.convert(point: point)
-        let radiusMm = touchProcessor.radiusToMm(radiusPoints)
-        
-        let resolvedSize = size > 0 ? size : radiusMm * 2
-
-        let sample = GeneralTouchSample(
-            touchId:     touchId,
-            touchType:   touchType,
-            touchObject: touchObject,
-            xMm:         xMm,
-            yMm:         yMm,
-            radiusMm:    radiusMm,
-            size:        resolvedSize,
-            velocityX:   Double(velocityPoints.dx),
-            velocityY:   Double(velocityPoints.dy),
-            timestampMs: nowMs()
-        )
         telemetryCollector.appendGeneralTouch(sample)
     }
 

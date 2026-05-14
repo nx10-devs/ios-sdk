@@ -42,15 +42,13 @@ public final class NX10Window: UIWindow {
     // MARK: - State
 
     private let touchTracker: GeneralTouchTracker
-    private let touchProcessor: TouchProcessorProviding
 
     /// Called on the main thread for every ``GeneralTouchSample`` that passes the
     /// 30 Hz throttle.  Set by ``attach(to:)``.
     private var onTouch: ((GeneralTouchSample) -> Void)?
     
-    public init(touchTracker: GeneralTouchTracker, touchProcessor: TouchProcessorProviding, windowScene: UIWindowScene) {
+    public init(touchTracker: GeneralTouchTracker, windowScene: UIWindowScene) {
         self.touchTracker = touchTracker
-        self.touchProcessor = touchProcessor
         
         super.init(windowScene: windowScene)
     }
