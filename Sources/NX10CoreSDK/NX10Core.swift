@@ -107,7 +107,6 @@ public final class NX10Core: NX10CoreProtocol {
             uploader: networkService,
             eventPublisher: eventPublisher
         )
-        let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         
         // MARK: - Telemetry Service (Protocol-based initialization)
         let telemetryProvider = TelemetryProvider(
@@ -116,7 +115,7 @@ public final class NX10Core: NX10CoreProtocol {
             scheduler: scheduler,
             eventPublisher: eventPublisher,
             analyticsService: analyticsService,
-            touchTracker: touchTracker
+            touchProcessor: touchProcessor
         )
         
         // MARK: - Higher-level Services
@@ -134,7 +133,8 @@ public final class NX10Core: NX10CoreProtocol {
             applicationInfoProvider: appService
         )
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
-
+        let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
+        
         // NEW: Initialize TextInputObserverService
 //        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
 

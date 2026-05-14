@@ -42,6 +42,14 @@ public protocol TelemetryProviding: AnyObject {
     ///   - size: Touch size in mm. Pass 0 if unknown.
     ///   - velocityPoints: Velocity in UIKit points / second. Pass `.zero` if unknown.
     ///   - screen: Screen the touch occurred on (used for px → mm conversion).
+    func appendKeyboardTouch(touchId: String,
+                             touchType: GeneralTouchSample.TouchType,
+                             touchObject: GeneralTouchSample.TouchObject,
+                             point: CGPoint,
+                             radiusPoints: CGFloat,
+                             size: Double,
+                             velocityPoints: CGVector,
+                             screen: UIScreen)
 
     // Keyboard state ("kb-state" events)
     /// Call from the keyboard extension when the keyboard becomes visible.
@@ -65,4 +73,25 @@ public protocol TelemetryProviding: AnyObject {
     // Data management
     func flushIfNeeded()
     func attemptUploadAndFlushNow()
+}
+
+public extension TelemetryProviding {
+    /// Convenience: use sensible defaults for pressure/size/velocity.
+    func appendKeyboardTouch(touchId: String,
+                             touchType: GeneralTouchSample.TouchType,
+                             touchObject: GeneralTouchSample.TouchObject,
+                             point: CGPoint,
+                             radiusPoints: CGFloat = 0,
+                             screen: UIScreen = .main) {
+        appendKeyboardTouch(
+            touchId: touchId,
+            touchType: touchType,
+            touchObject: touchObject,
+            point: point,
+            radiusPoints: radiusPoints,
+            size: 0,
+            velocityPoints: .zero,
+            screen: screen
+        )
+    }
 }
