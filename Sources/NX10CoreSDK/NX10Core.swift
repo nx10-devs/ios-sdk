@@ -27,6 +27,7 @@ public struct NX10CoreConfig {
 public protocol NX10CoreProtocol: AnyObject {
     var errorProvider: ErrorProviding { get }
     var telemetryProvider: TelemetryProvider { get }
+    var attributesProvider: AttributesProviding { get }
     var saaqService: SaaQServiceProtocol { get }
     var touchProcessor: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
@@ -55,6 +56,8 @@ public final class NX10Core: NX10CoreProtocol {
     public let touchProcessor: TouchProcessorProviding
     public let touchTracker: GeneralTouchTracker
     public let networkservice: Networking
+    public let attributesProvider: AttributesProviding
+    
     // NEW: Add TextInputObserverService
 //    let textInputObserverService: TextInputObserving
 
@@ -62,7 +65,6 @@ public final class NX10Core: NX10CoreProtocol {
     let appService: AppInfoProviding
     let motionTracker: MotionTracker
     let analyticsService: AnalyticsProviding
-    let attributesService: AttributesProviding
     let appLifecycleService: LifecycleProviding
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
@@ -120,7 +122,7 @@ public final class NX10Core: NX10CoreProtocol {
         
         // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryProvider)
-        let attributesService = AttributesProvider(
+        let attributesProvider = AttributesProvider(
             networkService: networkService,
             errorProvider: errorProvider,
             appService: appService,
@@ -149,7 +151,7 @@ public final class NX10Core: NX10CoreProtocol {
         self.networkservice = networkService
         self.analyticsService = analyticsService
         self.appLifecycleService = appLifecycleService
-        self.attributesService = attributesService
+        self.attributesProvider = attributesProvider
         self.sessionProvider = sessionProvider
         
         // Keep original references for backward compatibility
@@ -244,8 +246,6 @@ extension NX10Core {
         }
         
         Task {
-            print("LOG: sending initial metata data - sendInitialMetadata")
-            _ = await attributesService.sendInitialMetadata()
             print("LOG: shouldStartTelemetry")
             if let acquisitionWindowSize = deviceConfig.sensor?.acquisitionWindowSize {
                 _ = try await self.telemetryProvider.shouldStartTelemetry(with: acquisitionWindowSize)

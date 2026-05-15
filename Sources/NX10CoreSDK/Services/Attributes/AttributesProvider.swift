@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 public protocol AttributesProviding: AnyObject {
     
-    func sendInitialMetadata() async
     func sendDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
     func updateDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
     func resetDeviceLog() async
@@ -42,25 +41,6 @@ public class AttributesProvider: AttributesProviding {
                 errorProvider.sendError(error)
             }
         }
-    }
-    
-    public func sendInitialMetadata() async {
-        let deviceInfo = appService.deviceInfo()
-        let appVersion = appService.appVersionNumber
-        let data = DeviceLog(
-            timestamp: Date().iso8601,
-            data: .init(
-                deviceModel: deviceInfo.type,
-                os: "iOS",
-                osVersion: deviceInfo.osVersion,
-                appVersion: appVersion,
-                keyboardLanguage: appService.keyboardLanguage
-            )
-        )
-        await sendDeviceLog(data)
-        
-        // TODO: Confirm this feature
-//        beginObservingAppSate()
     }
     
     public func updateDeviceLog(_ deviceLog: DeviceLog) async {

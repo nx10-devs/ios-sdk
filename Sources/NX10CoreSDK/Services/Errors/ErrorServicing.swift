@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Sentry
 
 @MainActor
 public protocol ErrorProviding: AnyObject {
@@ -29,15 +28,12 @@ public final class ErrorProvider: ErrorProviding {
     }
     
     public func sendError(_ error: Error) {
-        SentrySDK.capture(error: error)
     }
     
     public func sendSDKError(_ error: ErrorType) {
-        SentrySDK.capture(error: error.error)
     }
     
     public func sendMessage(_ message: String) {
-        SentrySDK.capture(message: message)
     }
     
     public func setTrackingEnabled(_ enabled: Bool) {
@@ -51,17 +47,6 @@ public final class ErrorProvider: ErrorProviding {
         else { return }
         
         guard let dsn = configLoader.string(for: .sentryDNS) else { return }
-        
-        SentrySDK.start { [weak self] options in
-            options.dsn = dsn
-            options.environment = self?.configLoader.string(for: .sentryEnv) ?? "keyboard-extension"
-            options.debug = isDebug
-            
-            options.enableSwizzling = true
-            options.enableAutoPerformanceTracing = false
-            options.enableAppHangTracking = false
-            options.enableMetricKit = false
-        }
         
         didStartSentry = true
     }

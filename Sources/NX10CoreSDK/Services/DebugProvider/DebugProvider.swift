@@ -9,18 +9,6 @@ import Foundation
 import UIKit
 import Observation
 
-//@MainActor
-//public protocol DebugProviding {
-//    var xMm: Int { get set }
-//    var yMm: Int { get set }
-//    var radiusMm: Int { get set }
-//    
-//    var xPoint: CGPoint { get set }
-//    var yPoint: CGPoint { get set }
-//    
-//    static var shared: DebugProviding { get }
-//}
-
 @MainActor
 public final class DebugProvider: ObservableObject {
     @Published public var xMm: Double = 0.0
