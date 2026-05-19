@@ -156,8 +156,8 @@ public import UIKit
         
         DebugProvider.shared.xPoint = touch.location(in: nil).x
         DebugProvider.shared.yPoint = touch.location(in: nil).y
-        DebugProvider.shared.xMm = xMm
-        DebugProvider.shared.yMm = yMm
+        DebugProvider.shared.xMm = convertedCoordinates.mmX
+        DebugProvider.shared.yMm = convertedCoordinates.mmY
         DebugProvider.shared.radiusMm = radiusMm
 
         return GeneralTouchSample(
