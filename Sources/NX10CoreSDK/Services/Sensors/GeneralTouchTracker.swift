@@ -142,7 +142,7 @@ public import UIKit
         }
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
-        let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil))
+        let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil), inViewHeight: screen.bounds.height)
         let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius)
 
         // ── Clean up completed touches ─────────────────────────────────────
@@ -152,7 +152,7 @@ public import UIKit
             lastPosition.removeValue(forKey: touchId)
         }
         
-        let convertedCoordinates = touchProcessor.convert(point: locationInWindow)
+        let convertedCoordinates = touchProcessor.convert(point: locationInWindow, inViewHeight: screen.bounds.height)
         
         DebugProvider.shared.xPoint = touch.location(in: nil).x
         DebugProvider.shared.yPoint = touch.location(in: nil).y

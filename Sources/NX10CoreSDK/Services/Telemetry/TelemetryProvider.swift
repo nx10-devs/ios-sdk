@@ -131,7 +131,7 @@ public final class TelemetryProvider: TelemetryProviding {
                                     velocityPoints: CGVector,
                                     screen: UIScreen) {
         
-        let (xMm, yMm) = touchProcessor.convert(point: point)
+        let (xMm, yMm) = touchProcessor.convert(point: point, inViewHeight: screen.bounds.height)
         let radiusMm = touchProcessor.radiusToMm(radiusPoints)
         
         let resolvedSize = size > 0 ? size : radiusMm * 2
