@@ -105,15 +105,28 @@ public import UIKit
             return nil
         }
 
-        // ── 30 Hz throttle for "move" phases ──────────────────────────────
+        
         if phase == .moved {
             let last = lastMoveTime[touchId] ?? 0
             guard now - last >= moveThrottleInterval else { return nil }
             lastMoveTime[touchId] = now
         }
 
-        // ── Classify touch type ────────────────────────────────────────────
-        let locationInWindow = touch.location(in: nil) // window-space ≡ screen-space for full-screen windows
+        // TODO: Processor heavy - move to caller!!!
+        let topView = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }?.rootViewController?.view
+        
+        guard
+            let windowScene = UIScreen.main.coordinateSpace as? UIWindowScene,
+            let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }),
+            let rootView = keyWindow.rootViewController?.view
+        else {
+            return nil
+        }
+        let locationInWindow = touch.preciseLocation(in: rootView)
+
         let touchType: GeneralTouchSample.TouchType
         switch phase {
         case .began:
@@ -142,8 +155,10 @@ public import UIKit
         }
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
-        let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil), inViewHeight: screen.bounds.height)
-        let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius)
+        guard
+            let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil), inViewHeight: screen.bounds.height)
+        else { return nil }
+        let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
 
         // ── Clean up completed touches ─────────────────────────────────────
         if phase == .ended || phase == .cancelled {
