@@ -151,21 +151,19 @@ public import UIKit
             lastMoveTime.removeValue(forKey: touchId)
             lastPosition.removeValue(forKey: touchId)
         }
-        
-        let convertedCoordinates = touchProcessor.convert(point: locationInWindow, inViewHeight: screen.bounds.height)
-        
+                
         DebugProvider.shared.xPoint = touch.location(in: nil).x
         DebugProvider.shared.yPoint = touch.location(in: nil).y
-        DebugProvider.shared.xMm = convertedCoordinates.mmX
-        DebugProvider.shared.yMm = convertedCoordinates.mmY
+        DebugProvider.shared.xMm = xMm
+        DebugProvider.shared.yMm = yMm
         DebugProvider.shared.radiusMm = radiusMm
 
         return GeneralTouchSample(
             touchId:     touchId,
             touchType:   touchType,
             touchObject: nil,   // Key classification is set by the keyboard layer, not here.
-            xMm:         convertedCoordinates.mmX,
-            yMm:         convertedCoordinates.mmY,
+            xMm:         xMm,
+            yMm:         yMm,
             radiusMm:    radiusMm,
             size:        radiusMm * 2,  // major-axis diameter in mm
             velocityX:   0,

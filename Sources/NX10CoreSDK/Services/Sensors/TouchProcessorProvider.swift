@@ -31,13 +31,13 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
         // 1. Flip the Y coordinate to establish a bottom-left origin (0,0)
         let invertedY = viewHeight - point.y
         
-        // 2. Scale up to native pixels
+        // 2. Scale UIKit points up to native physical pixels
         let pxX = Double(point.x * nativeScale)
         let pxY = Double(invertedY * nativeScale)
         
-        // 3. Convert pixels to mm: (Pixels / PPI) * 25.4
-        let mmX = (pxX / Double(dpi())) * 25.4
-        let mmY = (pxY / Double(dpi())) * 25.4
+        // 3. Convert physical pixels to mm: (Pixels / PPI) * 25.4
+        let mmX = (pxX / PPI()) * 25.4
+        let mmY = (pxY / PPI()) * 25.4
         
         return (mmX, mmY)
     }
@@ -50,17 +50,23 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
         return radiusPoints * mmPerPoint()
     }
     
-    private func dpi() -> Double {
+    /// Returns the physical Pixels Per Inch (PPI) for the device.
+    private func PPI() -> Double {
         guard
             let deviceModelToDpiMap = deviceModelToDpiMap,
-            let dpi = deviceModelToDpiMap[deviceModel]
-        else { return 6.1/326 }
-        return dpi
+            let ppi = deviceModelToDpiMap[deviceModel]
+        else {
+            // Fallback to a standard iPhone Retina screen pixel density (approx 460 PPI)
+            // instead of the broken mathematical fraction (6.1/326)
+            return 460.0
+        }
+        return ppi
     }
     
     private func mmPerPoint() -> Double {
-        let dpi = self.dpi()
+        let ppi = self.PPI()
         let scale = Double(nativeScale)
-        return (scale / dpi) * 25.4
+        // (Scale / PPI) safely calculates Points Per Inch, then converts to millimeters
+        return (scale / ppi) * 25.4
     }
 }
