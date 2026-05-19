@@ -14,12 +14,14 @@ public struct NX10CoreConfig {
     public let appGroup: String
     public let errorTrackingEnabled: Bool
     public let startSession: Bool
+    public let enableDebug: Bool
     
-    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, startSession: Bool) {
+    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, startSession: Bool, enableDebug: Bool = false) {
         self.apiKey = apiKey
         self.appGroup = appGroup
         self.errorTrackingEnabled = errorTrackingEnabled
         self.startSession = startSession
+        self.enableDebug = enableDebug
     }
 }
 
@@ -39,7 +41,8 @@ public protocol NX10CoreProtocol: AnyObject {
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool
+        shouldStartSession: Bool,
+        enableDebug: Bool
     ) async throws -> Bool
     func startSession() async throws -> Bool
 }
@@ -168,8 +171,12 @@ extension NX10Core {
         apiKey: String,
         appGroupdID: String,
         errorTrackingEnabled: Bool,
-        shouldStartSession: Bool
+        shouldStartSession: Bool,
+        enableDebug: Bool
     ) async throws -> Bool {
+        
+        isDebug = enableDebug
+        
         guard
             sessionData == nil
         else {
