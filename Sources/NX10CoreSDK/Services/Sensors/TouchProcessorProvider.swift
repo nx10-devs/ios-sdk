@@ -16,7 +16,7 @@ public protocol TouchProcessorProviding {
     func convert(point: CGPoint, inViewHeight viewHeight: CGFloat) -> (mmX: Double, mmY: Double)?
     func setDeviceModelToDPIMap(_ deviceModelToDpiMap: [String: Double])
     func radiusToMm(_ radiusPoints: Double) -> Double?
-    init()
+    init(errorProvider: ErrorProviding)
 }
 
 @MainActor
@@ -24,8 +24,11 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
     private(set) var nativeScale: CGFloat = UIScreen.main.nativeScale
     private var deviceModelToDpiMap: [String: Double]?
     private let deviceModel = UIDevice.modelIdentifier
+    private let errorProvider: ErrorProviding
     
-    public init() {}
+    public init(errorProvider: ErrorProviding) {
+        self.errorProvider = errorProvider
+    }
     
     public func convert(point: CGPoint, inViewHeight viewHeight: CGFloat) -> (mmX: Double, mmY: Double)? {
         // 1. Flip the Y coordinate to establish a bottom-left origin (0,0)
@@ -67,6 +70,7 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
         else {
             // Fallback to a standard iPhone Retina screen pixel density (approx 460 PPI)
             // instead of the broken mathematical fraction (6.1/326)
+            errorProvider.sendError(NSError.error(for: .missingDeviceMap, userInfo: ["device" : deviceModel]))
             return nil
         }
         return ppi

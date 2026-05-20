@@ -91,7 +91,7 @@ public final class NX10Core: NX10CoreProtocol {
         let configLoader = ConfigProvider()
         let errorProvider = ErrorProvider(configLoader: configLoader)
         let appService = AppInfoProvider()
-        let touchProcessor = TouchProcessorProvider()
+        let touchProcessor = TouchProcessorProvider(errorProvider: errorProvider)
         let appLifecycleService = LifecyleProvider()
         
         let endpointProvider = EndpointProvider(configLoader: configLoader)

@@ -137,6 +137,13 @@ public final class TelemetryProvider: TelemetryProviding {
         else { return }
         
         let resolvedSize = size > 0 ? size : radiusMm * 2
+        
+        if isDebug {
+            DebugProvider.shared.xMm = xMm
+            DebugProvider.shared.yMm = yMm
+            DebugProvider.shared.xPoint = point.x
+            DebugProvider.shared.yPoint = point.y
+        }
 
         let sample = GeneralTouchSample(
             touchId:     touchId,

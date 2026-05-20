@@ -98,8 +98,12 @@ public import UIKit
             touchId = newId
 
         case .moved, .stationary, .ended, .cancelled:
-            guard let existingId = touchIdMap[objectId] else { return nil }
-            touchId = existingId
+            if
+                let existingId = touchIdMap[objectId] {
+                touchId = existingId
+            } else {
+                touchId = UUID().uuidString
+            }
 
         default:
             return nil
@@ -119,13 +123,11 @@ public import UIKit
             .first { $0.isKeyWindow }?.rootViewController?.view
         
         guard
-            let windowScene = UIScreen.main.coordinateSpace as? UIWindowScene,
-            let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }),
-            let rootView = keyWindow.rootViewController?.view
+            let topView
         else {
             return nil
         }
-        let locationInWindow = touch.preciseLocation(in: rootView)
+        let locationInWindow = touch.preciseLocation(in: topView)
 
         let touchType: GeneralTouchSample.TouchType
         switch phase {

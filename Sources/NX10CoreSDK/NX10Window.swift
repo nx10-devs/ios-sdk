@@ -38,37 +38,14 @@ import Foundation
 /// origin by ``CoordinateConverter``.  Touch sampling is throttled to 30 Hz for
 /// "move" phases and stationary detection uses a 3-point movement threshold.
 public final class NX10Window: UIWindow {
-
-    // MARK: - State
-
-    private let touchTracker: GeneralTouchTracker
-    private let touchProcessor: TouchProcessorProviding
-
-    /// Called on the main thread for every ``GeneralTouchSample`` that passes the
-    /// 30 Hz throttle.  Set by ``attach(to:)``.
-    private var onTouch: ((GeneralTouchSample) -> Void)?
-    
-    public init(touchTracker: GeneralTouchTracker, touchProcessor: TouchProcessorProviding, windowScene: UIWindowScene) {
-        self.touchTracker = touchTracker
-        self.touchProcessor = touchProcessor
-        
-        super.init(windowScene: windowScene)
-    }
+    private let nx10Core = NX10Core.shared
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Attachment
-
-    /// Connect this window to the SDK's telemetry service so that touch samples
-    /// are automatically forwarded.  Call this after `NX10Core.shared.configure(...)`.
-    ///
-    /// - Parameter telemetryService: The service to receive general touch events.
-    public func attach(to telemetryService: TelemetryProviding) {
-        onTouch = { [weak telemetryService] sample in
-            telemetryService?.processGeneralTouch(sample)
-        }
+    public override init(windowScene: UIWindowScene) {
+        super.init(windowScene: windowScene)
     }
 
     // MARK: - UIWindow override
@@ -83,8 +60,9 @@ public final class NX10Window: UIWindow {
         Task(name: "capture-task", priority: .background) {
             let screen = self.screen
             for touch in allTouches {
-                if let sample = touchTracker.process(touch: touch, screen: screen) {
-                    onTouch?(sample)
+                
+                if let processedTouch = nx10Core.touchTracker.process(touch: touch, screen: screen) {
+                    nx10Core.telemetryProvider.processGeneralTouch(processedTouch)
                 }
             }
         }
