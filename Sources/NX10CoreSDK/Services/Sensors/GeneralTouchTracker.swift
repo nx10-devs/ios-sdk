@@ -100,14 +100,19 @@ public final class GeneralTouchTracker {
          - windowHeight should equal screenHeight.
          - offset becomes 0.
          */
-        let windowTopY = screenHeight - windowHeight
-
+        
+        var screenPoint: CGPoint
         let windowPoint = touch.location(in: window)
-
-        let screenPoint = CGPoint(
-            x: windowPoint.x,
-            y: windowTopY + windowPoint.y
-        )
+        
+        if windowHeight < screenHeight {
+            let windowTopY = screenHeight - windowHeight
+            screenPoint = CGPoint(
+                x: windowPoint.x,
+                y: windowTopY + windowPoint.y
+            )
+        } else {
+            screenPoint = windowPoint
+        }
         
         guard
             let (xMm, yMm) = touchProcessor.convert(
