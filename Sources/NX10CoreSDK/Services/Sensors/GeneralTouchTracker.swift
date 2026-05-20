@@ -87,7 +87,7 @@ public import UIKit
         let objectId = ObjectIdentifier(touch)
         let phase    = touch.phase
         let now      = Date().timeIntervalSince1970
-
+        
         // ── Resolve / assign touch ID ──────────────────────────────────────
         let touchId: String
         switch phase {
@@ -96,7 +96,7 @@ public import UIKit
             touchIdMap[objectId] = newId
             lastPosition[newId]  = touch.location(in: nil)
             touchId = newId
-
+            
         case .moved, .stationary, .ended, .cancelled:
             if
                 let existingId = touchIdMap[objectId] {
@@ -104,23 +104,24 @@ public import UIKit
             } else {
                 touchId = UUID().uuidString
             }
-
+            
         default:
             return nil
         }
-
         
         if phase == .moved {
             let last = lastMoveTime[touchId] ?? 0
             guard now - last >= moveThrottleInterval else { return nil }
             lastMoveTime[touchId] = now
         }
-
-        // TODO: Processor heavy - move to caller!!!
-        let screenView =  UIView(frame: .init(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
-
-        let locationInWindow = touch.preciseLocation(in: screenView)
-
+        
+        guard
+            let window = touch.window else {
+            return nil
+        }
+        
+        let locationInWindow = touch.location(in: window)
+        
         let touchType: GeneralTouchSample.TouchType
         switch phase {
         case .began:
@@ -150,7 +151,7 @@ public import UIKit
 
         // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
         guard
-            let (xMm, yMm) = touchProcessor.convert(point: touch.location(in: nil), inViewHeight: screen.bounds.height)
+            let (xMm, yMm) = touchProcessor.convert(touch: touch, for: screen.bounds.height)
         else { return nil }
         let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
 

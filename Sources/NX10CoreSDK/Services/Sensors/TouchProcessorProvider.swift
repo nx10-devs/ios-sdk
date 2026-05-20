@@ -14,6 +14,7 @@ public protocol TouchProcessorProviding {
     ///   - point: The touch location point.
     ///   - viewHeight: The total height of the reference view tracking the touches (e.g., `self.view.bounds.height`).
     func convert(point: CGPoint, inViewHeight viewHeight: CGFloat) -> (mmX: Double, mmY: Double)?
+    func convert(touch: UITouch, for height: CGFloat) -> (mmX: Double, mmY: Double)?
     func setDeviceModelToDPIMap(_ deviceModelToDpiMap: [String: Double])
     func radiusToMm(_ radiusPoints: Double) -> Double?
     init(errorProvider: ErrorProviding)
@@ -28,6 +29,11 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
     
     public init(errorProvider: ErrorProviding) {
         self.errorProvider = errorProvider
+    }
+    
+    public func convert(touch: UITouch, for height: CGFloat) -> (mmX: Double, mmY: Double)? {
+        let touchPoint = touch.location(in: touch.window)
+        return convert(point: touchPoint, inViewHeight: height)
     }
     
     public func convert(point: CGPoint, inViewHeight viewHeight: CGFloat) -> (mmX: Double, mmY: Double)? {

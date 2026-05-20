@@ -122,43 +122,43 @@ public final class TelemetryProvider: TelemetryProviding {
         telemetryCollector.appendGeneralTouch(sample)
     }
 
-    public func appendKeyboardTouch(touchId: String,
-                                    touchType: GeneralTouchSample.TouchType,
-                                    touchObject: GeneralTouchSample.TouchObject,
-                                    point: CGPoint,
-                                    radiusPoints: CGFloat,
-                                    size: Double,
-                                    velocityPoints: CGVector,
-                                    screen: UIScreen) {
-        
-        guard
-            let (xMm, yMm) = touchProcessor.convert(point: point, inViewHeight: screen.bounds.height),
-            let radiusMm = touchProcessor.radiusToMm(radiusPoints)
-        else { return }
-        
-        let resolvedSize = size > 0 ? size : radiusMm * 2
-        
-        if isDebug {
-            DebugProvider.shared.xMm = xMm
-            DebugProvider.shared.yMm = yMm
-            DebugProvider.shared.xPoint = point.x
-            DebugProvider.shared.yPoint = point.y
-        }
-
-        let sample = GeneralTouchSample(
-            touchId:     touchId,
-            touchType:   touchType,
-            touchObject: touchObject,
-            xMm:         xMm,
-            yMm:         yMm,
-            radiusMm:    radiusMm,
-            size:        resolvedSize,
-            velocityX:   Double(velocityPoints.dx),
-            velocityY:   Double(velocityPoints.dy),
-            timestampMs: nowMs()
-        )
-        telemetryCollector.appendGeneralTouch(sample)
-    }
+//    public func appendKeyboardTouch(touchId: String,
+//                                    touchType: GeneralTouchSample.TouchType,
+//                                    touchObject: GeneralTouchSample.TouchObject,
+//                                    point: CGPoint,
+//                                    radiusPoints: CGFloat,
+//                                    size: Double,
+//                                    velocityPoints: CGVector,
+//                                    screen: UIScreen) {
+//        
+//        guard
+//            let (xMm, yMm) = touchProcessor.convert(point: point, inViewHeight: screen.bounds.height),
+//            let radiusMm = touchProcessor.radiusToMm(radiusPoints)
+//        else { return }
+//        
+//        let resolvedSize = size > 0 ? size : radiusMm * 2
+//        
+//        if isDebug {
+//            DebugProvider.shared.xMm = xMm
+//            DebugProvider.shared.yMm = yMm
+//            DebugProvider.shared.xPoint = point.x
+//            DebugProvider.shared.yPoint = point.y
+//        }
+//
+//        let sample = GeneralTouchSample(
+//            touchId:     touchId,
+//            touchType:   touchType,
+//            touchObject: touchObject,
+//            xMm:         xMm,
+//            yMm:         yMm,
+//            radiusMm:    radiusMm,
+//            size:        resolvedSize,
+//            velocityX:   Double(velocityPoints.dx),
+//            velocityY:   Double(velocityPoints.dy),
+//            timestampMs: nowMs()
+//        )
+//        telemetryCollector.appendGeneralTouch(sample)
+//    }
 
     // MARK: - Keyboard state ("kb-state" V2 events)
 
