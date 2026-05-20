@@ -117,17 +117,9 @@ public import UIKit
         }
 
         // TODO: Processor heavy - move to caller!!!
-        let topView = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first { $0.isKeyWindow }?.rootViewController?.view
-        
-        guard
-            let topView
-        else {
-            return nil
-        }
-        let locationInWindow = touch.preciseLocation(in: topView)
+        let screenView =  UIView(frame: .init(x: 0.0, y: 0.0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
+
+        let locationInWindow = touch.preciseLocation(in: screenView)
 
         let touchType: GeneralTouchSample.TouchType
         switch phase {
