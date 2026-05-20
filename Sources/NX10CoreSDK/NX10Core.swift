@@ -26,16 +26,19 @@ public struct NX10CoreConfig {
 }
 
 @MainActor
-public protocol NX10CoreProtocol: AnyObject {
+public protocol NX10CoreProviding: AnyObject {
+    // MARK: Static singleton
+    static var shared: NX10CoreProviding { get }
+
     var errorProvider: ErrorProviding { get }
     var telemetryProvider: TelemetryProvider { get }
     var attributesProvider: AttributesProviding { get }
     var saaqService: SaaQServiceProtocol { get }
     var touchProcessor: TouchProcessorProviding { get }
     var brainJuiceProvider: BrainJuiceProviding { get }
-    static var shared: NX10CoreProtocol { get }
     var touchTracker: GeneralTouchTracker { get }
     var networkservice: Networking { get }
+    var activityProvider: ActivityProviding { get }
     
     func configure(
         apiKey: String,
@@ -47,9 +50,9 @@ public protocol NX10CoreProtocol: AnyObject {
     func startSession() async throws -> Bool
 }
 
-public final class NX10Core: NX10CoreProtocol {
+public final class NX10Core: NX10CoreProviding {
     
-    public static var shared: NX10CoreProtocol = NX10Core()
+    public static var shared: NX10CoreProviding = NX10Core()
     
     // MARK: Public properties
     public let errorProvider: ErrorProviding
@@ -60,6 +63,7 @@ public final class NX10Core: NX10CoreProtocol {
     public let touchTracker: GeneralTouchTracker
     public let networkservice: Networking
     public let attributesProvider: AttributesProviding
+    public let activityProvider: ActivityProviding
     
     // NEW: Add TextInputObserverService
 //    let textInputObserverService: TextInputObserving
@@ -139,6 +143,7 @@ public final class NX10Core: NX10CoreProtocol {
         )
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
+        let activityProvider = ActivityProvider(networking: networkService, errorProvider: errorProvider)
         
         // NEW: Initialize TextInputObserverService
 //        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
@@ -162,6 +167,7 @@ public final class NX10Core: NX10CoreProtocol {
         self.brainJuiceProvider = brainJuiceProvider
         self.touchProcessor = touchProcessor
         self.touchTracker = touchTracker
+        self.activityProvider = activityProvider
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
@@ -250,6 +256,10 @@ extension NX10Core {
         
         if let deviceModelToDpiMap = deviceConfig.device?.deviceModelToDpiMap {
             touchProcessor.setDeviceModelToDPIMap(deviceModelToDpiMap)
+        }
+        
+        if let activity = deviceConfig.activity {
+            activityProvider.setActivity(activity)
         }
         
         Task {

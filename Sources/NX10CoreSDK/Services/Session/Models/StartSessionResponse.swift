@@ -37,5 +37,6 @@ public struct Endpoint: Decodable, Hashable {
         case analytics
         case attributes
         case brainJuice = "brain-juice"
+        case activity
     }
 }
