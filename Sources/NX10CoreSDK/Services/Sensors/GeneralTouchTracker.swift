@@ -2,193 +2,221 @@
 //  GeneralTouchTracker.swift
 //  NX10CoreSDK
 //
-//  Processes UITouch objects from the app's UIWindow into GeneralTouchSample
-//  values ready for the Telemetry V2 "touch" event.
-//
-//  Responsibilities:
-//  • Assigns a stable UUID touch-ID per gesture (down → move* → up/cancelled).
-//  • Throttles "move" emissions to ≤30 Hz (one sample per ~33 ms per touch ID).
-//  • Detects "stationary" touches (finger down but < 3 pt movement threshold).
-//  • Converts UIKit points (top-left origin) to mm (bottom-left origin) via
-//    CoordinateConverter, using the touch's associated UIScreen for accuracy.
+//  Processes UITouch objects into GeneralTouchSample values ready for
+//  the Telemetry V2 "touch" event.
 //
 
 import Foundation
 import CoreGraphics
 public import UIKit
 
-/// Tracks app-level screen touches and converts them to ``GeneralTouchSample`` values.
-///
-/// Create one instance per ``NX10Window`` and call ``process(_:screen:)`` from
-/// inside `UIWindow.sendEvent(_:)`.  All calls must be made on the main thread.
+@MainActor
+public final class GeneralTouchTracker {
 
-@MainActor public final class GeneralTouchTracker {
-    
+    // MARK: - Configuration
+
     private var sensor: DeviceConfig.Sensor? {
         didSet {
-            guard
-                let touchSampleHz = sensor?.touchSampleHz
-            else {
-                return
-            }
+            guard let touchSampleHz = sensor?.touchSampleHz else { return }
             moveThrottleInterval = 1.0 / Double(touchSampleHz)
         }
     }
 
-    // MARK: - Configuration
-
-    /// Minimum interval between emitted "move" samples per touch ID (≈30 Hz).
+    /// Minimum interval between emitted "move" samples per touch ID.
     private var moveThrottleInterval: TimeInterval?
 
-    /// Movement below this threshold (in UIKit points) is classified as "stationary".
+    /// Movement below this threshold, in UIKit points, is classified as stationary.
     private let stationaryThresholdPt: CGFloat = 3.0
 
-    // MARK: - State (main-thread only)
+    // MARK: - State
 
-    /// Maps each active `UITouch` object-identity to its stable gesture UUID.
-    private var touchIdMap:    [ObjectIdentifier: String]   = [:]
-    /// Epoch-second timestamp of the last emitted "move" sample, keyed by touch ID.
-    private var lastMoveTime:  [String: TimeInterval]       = [:]
-    /// Last known UIKit position of each active touch, keyed by touch ID.
-    private var lastPosition:  [String: CGPoint]            = [:]
-    
+    private var touchIdMap: [ObjectIdentifier: String] = [:]
+    private var lastMoveTime: [String: TimeInterval] = [:]
+    private var lastPosition: [String: CGPoint] = [:]
+
     private let touchProcessor: TouchProcessorProviding
 
     // MARK: - Init
 
     public init(touchProcessor: TouchProcessorProviding) {
         self.touchProcessor = touchProcessor
-        
+
         let maximumHz = DeviceHzUtility.shared.maximumHz
-        let hz = 1.0/Double(maximumHz)
-        
-        moveThrottleInterval = hz
+        moveThrottleInterval = 1.0 / Double(maximumHz)
     }
-    
+
     func setSensorData(_ data: DeviceConfig.Sensor) {
-        self.sensor = data
+        sensor = data
     }
 
     // MARK: - Public API
 
-    /// Process a single `UITouch` from a `UIEvent` and return a ``GeneralTouchSample``
-    /// if one should be emitted (respecting the 30 Hz throttle and stationarity rules),
-    /// or `nil` if the sample should be dropped.
-    ///
-    /// - Parameters:
-    ///   - touch:  The `UITouch` extracted from `UIEvent.allTouches`.
-    ///   - screen: The screen the touch occurred on; used for DPI/mm conversion.
-    public func process(touch: UITouch, screen: UIScreen = .main) -> GeneralTouchSample? {
-        
-        guard
-            let moveThrottleInterval
-        else { return nil }
-        
+    public func process(
+        touch: UITouch,
+        screen: UIScreen = .main
+    ) -> GeneralTouchSample? {
+
+        guard let moveThrottleInterval else { return nil }
+        guard let window = touch.window else { return nil }
+
         let objectId = ObjectIdentifier(touch)
-        let phase    = touch.phase
-        let now      = Date().timeIntervalSince1970
-        
-        // ── Resolve / assign touch ID ──────────────────────────────────────
-        let touchId: String
-        switch phase {
-        case .began:
-            let newId = UUID().uuidString
-            touchIdMap[objectId] = newId
-            lastPosition[newId]  = touch.location(in: nil)
-            touchId = newId
-            
-        case .moved, .stationary, .ended, .cancelled:
-            if
-                let existingId = touchIdMap[objectId] {
-                touchId = existingId
-            } else {
-                touchId = UUID().uuidString
-            }
-            
-        default:
-            return nil
-        }
-        
+        let phase = touch.phase
+        let now = Date().timeIntervalSince1970
+
+        let locationInWindow = touch.location(in: window)
+
+        let touchId = resolveTouchId(
+            for: objectId,
+            phase: phase,
+            initialPosition: locationInWindow
+        )
+
+        guard let touchId else { return nil }
+
         if phase == .moved {
             let last = lastMoveTime[touchId] ?? 0
             guard now - last >= moveThrottleInterval else { return nil }
             lastMoveTime[touchId] = now
         }
-        
-        guard let window = touch.window else {
 
-            return nil
+        let touchType = resolveTouchType(
+            phase: phase,
+            touchId: touchId,
+            currentPosition: locationInWindow
+        )
 
-        }
-
-        let locationInWindow = touch.location(in: window)
         let screenHeight = screen.bounds.height
-        let keyboardHeight = window.bounds.height
-        let keyboardOffset = screenHeight - keyboardHeight
-        
-        let touchType: GeneralTouchSample.TouchType
-        switch phase {
-        case .began:
-            touchType = .down
+        let windowHeight = window.bounds.height
 
-        case .moved:
-            let prev = lastPosition[touchId] ?? locationInWindow
-            let dx   = abs(locationInWindow.x - prev.x)
-            let dy   = abs(locationInWindow.y - prev.y)
-            touchType = (dx < stationaryThresholdPt && dy < stationaryThresholdPt)
-                ? .stationary
-                : .move
-            lastPosition[touchId] = locationInWindow
+        /*
+         Keyboard extension case:
+         - windowHeight is the hosted keyboard window height.
+         - screenHeight is the full device screen height.
+         - The keyboard visually sits at the bottom of the screen.
+         - Therefore, project the keyboard-window Y into full-screen Y by adding:
+             screenHeight - windowHeight
 
-        case .stationary:
-            touchType = .stationary
+         App case:
+         - windowHeight should equal screenHeight.
+         - offset becomes 0.
+         */
+        let yOffsetToScreen = screenHeight - windowHeight
+        let yInScreen = locationInWindow.y + yOffsetToScreen
 
-        case .ended:
-            touchType = .up
-
-        case .cancelled:
-            touchType = .cancelled
-
-        default:
-            touchType = .up
-        }
-
-        let yInScreen = locationInWindow.y + keyboardOffset
         guard
             let (xMm, yMm) = touchProcessor.convert(
-            point: CGPoint(x: locationInWindow.x, y: yInScreen),
-            inViewHeight: screenHeight
-        ) else {
-
+                point: CGPoint(
+                    x: locationInWindow.x,
+                    y: yInScreen
+                ),
+                inViewHeight: screenHeight
+            )
+        else {
             return nil
-
         }
-        let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
 
-        // ── Clean up completed touches ─────────────────────────────────────
+        let radiusMm = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
+
         if phase == .ended || phase == .cancelled {
-            touchIdMap.removeValue(forKey: objectId)
-            lastMoveTime.removeValue(forKey: touchId)
-            lastPosition.removeValue(forKey: touchId)
+            cleanUpTouch(objectId: objectId, touchId: touchId)
         }
-                
-        DebugProvider.shared.xPoint = touch.location(in: nil).x
-        DebugProvider.shared.yPoint = touch.location(in: nil).y
+
+        DebugProvider.shared.xPoint = locationInWindow.x
+        DebugProvider.shared.yPoint = yInScreen
         DebugProvider.shared.xMm = xMm
         DebugProvider.shared.yMm = yMm
         DebugProvider.shared.radiusMm = radiusMm
 
         return GeneralTouchSample(
-            touchId:     touchId,
-            touchType:   touchType,
-            touchObject: nil,   // Key classification is set by the keyboard layer, not here.
-            xMm:         xMm,
-            yMm:         yMm,
-            radiusMm:    radiusMm,
-            size:        radiusMm * 2,  // major-axis diameter in mm
-            velocityX:   0,
-            velocityY:   0,
+            touchId: touchId,
+            touchType: touchType,
+            touchObject: nil,
+            xMm: xMm,
+            yMm: yMm,
+            radiusMm: radiusMm,
+            size: radiusMm * 2,
+            velocityX: 0,
+            velocityY: 0,
             timestampMs: Int64(now * 1000)
         )
+    }
+
+    // MARK: - Touch ID
+
+    private func resolveTouchId(
+        for objectId: ObjectIdentifier,
+        phase: UITouch.Phase,
+        initialPosition: CGPoint
+    ) -> String? {
+
+        switch phase {
+        case .began:
+            let newId = UUID().uuidString
+            touchIdMap[objectId] = newId
+            lastPosition[newId] = initialPosition
+            return newId
+
+        case .moved, .stationary, .ended, .cancelled:
+            if let existingId = touchIdMap[objectId] {
+                return existingId
+            }
+
+            let newId = UUID().uuidString
+            touchIdMap[objectId] = newId
+            lastPosition[newId] = initialPosition
+            return newId
+
+        default:
+            return nil
+        }
+    }
+
+    // MARK: - Touch Type
+
+    private func resolveTouchType(
+        phase: UITouch.Phase,
+        touchId: String,
+        currentPosition: CGPoint
+    ) -> GeneralTouchSample.TouchType {
+
+        switch phase {
+        case .began:
+            return .down
+
+        case .moved:
+            let previousPosition = lastPosition[touchId] ?? currentPosition
+
+            let dx = abs(currentPosition.x - previousPosition.x)
+            let dy = abs(currentPosition.y - previousPosition.y)
+
+            lastPosition[touchId] = currentPosition
+
+            return dx < stationaryThresholdPt && dy < stationaryThresholdPt
+                ? .stationary
+                : .move
+
+        case .stationary:
+            return .stationary
+
+        case .ended:
+            return .up
+
+        case .cancelled:
+            return .cancelled
+
+        default:
+            return .cancelled
+        }
+    }
+
+    // MARK: - Cleanup
+
+    private func cleanUpTouch(
+        objectId: ObjectIdentifier,
+        touchId: String
+    ) {
+        touchIdMap.removeValue(forKey: objectId)
+        lastMoveTime.removeValue(forKey: touchId)
+        lastPosition.removeValue(forKey: touchId)
     }
 }
