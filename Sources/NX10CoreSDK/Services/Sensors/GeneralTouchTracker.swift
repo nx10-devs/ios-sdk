@@ -115,12 +115,16 @@ public import UIKit
             lastMoveTime[touchId] = now
         }
         
-        guard
-            let window = touch.window else {
+        guard let window = touch.window else {
+
             return nil
+
         }
-        
+
         let locationInWindow = touch.location(in: window)
+        let screenHeight = screen.bounds.height
+        let keyboardHeight = window.bounds.height
+        let keyboardOffset = screenHeight - keyboardHeight
         
         let touchType: GeneralTouchSample.TouchType
         switch phase {
@@ -149,10 +153,16 @@ public import UIKit
             touchType = .up
         }
 
-        // ── Coordinate conversion: UIKit points → mm, bottom-left origin ──
+        let yInScreen = locationInWindow.y + keyboardOffset
         guard
-            let (xMm, yMm) = touchProcessor.convert(touch: touch, for: screen.bounds.height)
-        else { return nil }
+            let (xMm, yMm) = touchProcessor.convert(
+            point: CGPoint(x: locationInWindow.x, y: yInScreen),
+            inViewHeight: screenHeight
+        ) else {
+
+            return nil
+
+        }
         let radiusMm   = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
 
         // ── Clean up completed touches ─────────────────────────────────────
