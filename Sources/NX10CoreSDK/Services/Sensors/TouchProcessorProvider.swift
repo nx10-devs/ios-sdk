@@ -1,4 +1,3 @@
-//
 //  TouchProcessor.swift
 //  NX10CoreSDK
 //
@@ -32,39 +31,44 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
     }
     
     public func convert(touch: UITouch, for height: CGFloat) -> (mmX: Double, mmY: Double)? {
-        let touchPoint = touch.location(in: touch.window)
-        return convert(point: touchPoint, inViewHeight: height)
+        return convert(point: touch.location(in: touch.window), inViewHeight: height)
     }
     
     public func convert(point: CGPoint, inViewHeight viewHeight: CGFloat) -> (mmX: Double, mmY: Double)? {
-        // 1. Flip the Y coordinate to establish a bottom-left origin (0,0)
         let invertedY = viewHeight - point.y
+        return convertPointsToMm(x: point.x, y: invertedY)
+    }
+
+    private func convertPointsToMm(x: CGFloat, y: CGFloat) -> (mmX: Double, mmY: Double)? {
+        // 1. Fetch hardware PPI using your custom PPI lookup helper
+        guard let ppi = PPI() else { return nil }
         
-        // 2. Scale UIKit points up to native physical pixels
-        let pxX = Double(point.x * nativeScale)
-        let pxY = Double(invertedY * nativeScale)
+        // 2. Fetch the native scale factor of the screen
+        let scale = Double(UIScreen.main.nativeScale)
         
-        // 3. Convert physical pixels to mm: (Pixels / PPI) * 25.4
-        guard
-            let ppi = PPI()
-        else {
-            return nil
+        // 3. Compute points per physical inch and millimeter
+        let pointsPerInch = ppi / scale
+        let pointsPerMillimeter = pointsPerInch / 25.4
+        
+        // 4. Convert logical coordinates to true millimeters
+        let mmX = Double(x) / pointsPerMillimeter
+        let mmY = Double(y) / pointsPerMillimeter
+        
+        print("LOG: True mm output: ",y, mmY)
+        
+        if mmY <= 37 {
+            print("LOG: CATCH", mmY)
         }
-        
-        let mmX = (pxX / ppi) * 25.4
-        let mmY = (pxY / ppi) * 25.4
-        
         return (mmX, mmY)
     }
+
     
     public func setDeviceModelToDPIMap(_ deviceModelToDpiMap: [String: Double]) {
         self.deviceModelToDpiMap = deviceModelToDpiMap
     }
     
     public func radiusToMm(_ radiusPoints: Double) -> Double? {
-        guard
-            let mmPerPoint = mmPerPoint()
-        else { return nil }
+        guard let mmPerPoint = mmPerPoint() else { return nil }
         return radiusPoints * mmPerPoint
     }
     
@@ -74,8 +78,6 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
             let deviceModelToDpiMap = deviceModelToDpiMap,
             let ppi = deviceModelToDpiMap[deviceModel]
         else {
-            // Fallback to a standard iPhone Retina screen pixel density (approx 460 PPI)
-            // instead of the broken mathematical fraction (6.1/326)
             errorProvider.sendError(NSError.error(for: .missingDeviceMap, userInfo: ["device" : deviceModel]))
             return nil
         }
@@ -83,13 +85,8 @@ final public class TouchProcessorProvider: TouchProcessorProviding {
     }
     
     private func mmPerPoint() -> Double? {
-        guard
-            let ppi = PPI()
-        else {
-            return nil
-        }
+        guard let ppi = PPI() else { return nil }
         let scale = Double(nativeScale)
-        // (Scale / PPI) safely calculates Points Per Inch, then converts to millimeters
         return (scale / ppi) * 25.4
     }
 }

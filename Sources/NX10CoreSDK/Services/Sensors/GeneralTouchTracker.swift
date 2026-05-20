@@ -12,119 +12,158 @@ public import UIKit
 
 @MainActor
 public final class GeneralTouchTracker {
-
+    
     // MARK: - Configuration
-
+    
     private var sensor: DeviceConfig.Sensor? {
         didSet {
             guard let touchSampleHz = sensor?.touchSampleHz else { return }
-            moveThrottleInterval = 1.0 / Double(touchSampleHz)
+            synchronized {
+                self.moveThrottleInterval = 1.0 / Double(touchSampleHz)
+            }
         }
     }
-
+    
     /// Minimum interval between emitted "move" samples per touch ID.
     private var moveThrottleInterval: TimeInterval?
-
+    
     /// Movement below this threshold, in UIKit points, is classified as stationary.
     private let stationaryThresholdPt: CGFloat = 3.0
-
-    // MARK: - State
-
+    
+    // MARK: - Synchronous State & Locks
+    
     private var touchIdMap: [ObjectIdentifier: String] = [:]
     private var lastMoveTime: [String: TimeInterval] = [:]
     private var lastPosition: [String: CGPoint] = [:]
-
+    private var lastGlobalMoveTime: TimeInterval = 0.0
+    
+    // Low-level POSIX Mutex Lock. Works across ALL iOS versions with zero external imports.
+    private var mutexLock = pthread_mutex_t()
+    
     private let touchProcessor: TouchProcessorProviding
-
+    
     // MARK: - Init
-
+    
     public init(touchProcessor: TouchProcessorProviding) {
         self.touchProcessor = touchProcessor
-
+        
+        // Initialize the POSIX lock safely
+        pthread_mutex_init(&mutexLock, nil)
+        
         let maximumHz = DeviceHzUtility.shared.maximumHz
-        moveThrottleInterval = 1.0 / Double(maximumHz)
+        synchronized {
+            self.moveThrottleInterval = 1.0 / Double(maximumHz)
+        }
     }
-
+    
+    deinit {
+        // Destroy the mutex when the tracker memory releases
+        pthread_mutex_destroy(&mutexLock)
+    }
+    
     func setSensorData(_ data: DeviceConfig.Sensor) {
         sensor = data
     }
-
+    
+    // MARK: - Helper Lock Block
+    
+    /// Helper to cleanly execute reader/writer logic under a synchronous scope lock
+    @inline(__always)
+    private func synchronized<T>(_ closure: () -> T) -> T {
+        pthread_mutex_lock(&mutexLock)
+        defer { pthread_mutex_unlock(&mutexLock) }
+        return closure()
+    }
+    
     // MARK: - Public API
-
+    
     public func process(
         touch: UITouch,
         screen: UIScreen = .main
     ) -> GeneralTouchSample? {
-
-        guard let moveThrottleInterval else { return nil }
-        guard let window = touch.window else { return nil }
-
+        
+        // 1. Thread-Safe Reader Check: Drops overlapping noise instantly
+        let shouldThrottle = synchronized { () -> Bool in
+            guard let interval = self.moveThrottleInterval else { return true }
+            if touch.phase == .moved {
+                return (touch.timestamp - self.lastGlobalMoveTime < interval)
+            }
+            return false
+        }
+        
+        guard !shouldThrottle, let moveThrottleInterval = synchronized({ self.moveThrottleInterval }) else {
+            return nil
+        }
+        
         let objectId = ObjectIdentifier(touch)
         let phase = touch.phase
-        let now = Date().timeIntervalSince1970
-
-        let locationInWindow = touch.location(in: window)
-
+        let currentHardwareTimestamp = touch.timestamp
+        let trackingEpochMs = Date().timeIntervalSince1970
+        
+        guard
+            let window = touch.window,
+            let view = window.rootViewController?.view
+        else {
+            return nil
+        }
+        
+        let layer = view.layer
+        let windowPoint = touch.location(in: view.window)
+        let screenHeight = screen.bounds.height
+        let viewHeight = view.bounds.height
+        var yInScreen = windowPoint.y
+        
+        if viewHeight < screenHeight {
+            yInScreen = windowPoint.y + layer.position.y - 63.5
+        }
+        
         let touchId = resolveTouchId(
             for: objectId,
             phase: phase,
-            initialPosition: locationInWindow
+            initialPosition: windowPoint
         )
-
+        
         guard let touchId else { return nil }
-
+        
+        // 2. Thread-Safe Writer Block: Update the timestamps inside the lock
         if phase == .moved {
-            let last = lastMoveTime[touchId] ?? 0
-            guard now - last >= moveThrottleInterval else { return nil }
-            lastMoveTime[touchId] = now
+            synchronized {
+                self.lastMoveTime[touchId] = currentHardwareTimestamp
+                self.lastGlobalMoveTime = currentHardwareTimestamp
+            }
         }
-
+        
         let touchType = resolveTouchType(
             phase: phase,
             touchId: touchId,
-            currentPosition: locationInWindow
+            currentPosition: windowPoint
         )
-
-        guard let window = touch.window else {
-            return nil
-        }
-
-        let windowPoint = touch.location(in: window)
-        var screenPoint: CGPoint = windowPoint
-        
-        let screenHeight = screen.bounds.height
-        let windowHeight = window.bounds.height
-
-        if windowHeight < screenHeight {
-            let windowPoint = touch.location(in: window)
-            let screenOffsetY = screenHeight - windowPoint.y
-            screenPoint = CGPoint(
-                x: windowPoint.x,
-                y: windowPoint.y + screenOffsetY
-            )
-        }
         
         guard
             let (xMm, yMm) = touchProcessor.convert(
-                point: screenPoint,
+                point: CGPoint(
+                    x: windowPoint.x,
+                    y: yInScreen
+                ),
                 inViewHeight: screenHeight
             )
         else {
             return nil
         }
-
+        
         let radiusMm = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
-
+        
         if phase == .ended || phase == .cancelled {
             cleanUpTouch(objectId: objectId, touchId: touchId)
         }
-
-        DebugProvider.shared.xPoint = locationInWindow.x
-        DebugProvider.shared.yPoint = windowPoint.y
+        
+        DebugProvider.shared.xPoint = windowPoint.x
+        DebugProvider.shared.yPoint = yInScreen
         DebugProvider.shared.xMm = xMm
+        print("LOG: Validated Throttled Metric Output: ", yMm)
         DebugProvider.shared.yMm = yMm
         DebugProvider.shared.radiusMm = radiusMm
-
+        
         return GeneralTouchSample(
             touchId: touchId,
             touchType: touchType,
@@ -135,86 +174,92 @@ public final class GeneralTouchTracker {
             size: radiusMm * 2,
             velocityX: 0,
             velocityY: 0,
-            timestampMs: Int64(now * 1000)
+            timestampMs: Int64(trackingEpochMs * 1000)
         )
     }
-
+    
     // MARK: - Touch ID
-
+    
     private func resolveTouchId(
         for objectId: ObjectIdentifier,
         phase: UITouch.Phase,
         initialPosition: CGPoint
     ) -> String? {
-
-        switch phase {
-        case .began:
-            let newId = UUID().uuidString
-            touchIdMap[objectId] = newId
-            lastPosition[newId] = initialPosition
-            return newId
-
-        case .moved, .stationary, .ended, .cancelled:
-            if let existingId = touchIdMap[objectId] {
-                return existingId
+        
+        return synchronized {
+            switch phase {
+            case .began:
+                let newId = UUID().uuidString
+                self.touchIdMap[objectId] = newId
+                self.lastPosition[newId] = initialPosition
+                return newId
+                
+            case .moved, .stationary, .ended, .cancelled:
+                if let existingId = self.touchIdMap[objectId] {
+                    return existingId
+                }
+                
+                let newId = UUID().uuidString
+                self.touchIdMap[objectId] = newId
+                self.lastPosition[newId] = initialPosition
+                return newId
+                
+            default:
+                return nil
             }
-
-            let newId = UUID().uuidString
-            touchIdMap[objectId] = newId
-            lastPosition[newId] = initialPosition
-            return newId
-
-        default:
-            return nil
         }
     }
-
+    
     // MARK: - Touch Type
-
+    
     private func resolveTouchType(
         phase: UITouch.Phase,
         touchId: String,
         currentPosition: CGPoint
     ) -> GeneralTouchSample.TouchType {
-
-        switch phase {
-        case .began:
-            return .down
-
-        case .moved:
-            let previousPosition = lastPosition[touchId] ?? currentPosition
-
-            let dx = abs(currentPosition.x - previousPosition.x)
-            let dy = abs(currentPosition.y - previousPosition.y)
-
-            lastPosition[touchId] = currentPosition
-
-            return dx < stationaryThresholdPt && dy < stationaryThresholdPt
+        
+        return synchronized {
+            switch phase {
+            case .began:
+                return .down
+                
+            case .moved:
+                let previousPosition = self.lastPosition[touchId] ?? currentPosition
+                
+                let dx = abs(currentPosition.x - previousPosition.x)
+                let dy = abs(currentPosition.y - previousPosition.y)
+                
+                self.lastPosition[touchId] = currentPosition
+                
+                return dx < stationaryThresholdPt && dy < stationaryThresholdPt
                 ? .stationary
                 : .move
-
-        case .stationary:
-            return .stationary
-
-        case .ended:
-            return .up
-
-        case .cancelled:
-            return .cancelled
-
-        default:
-            return .cancelled
+                
+            case .stationary:
+                return .stationary
+                
+            case .ended:
+                return .up
+                
+            case .cancelled:
+                return .cancelled
+                
+            default:
+                return .cancelled
+            }
         }
     }
-
+    
     // MARK: - Cleanup
-
+    
     private func cleanUpTouch(
         objectId: ObjectIdentifier,
         touchId: String
     ) {
-        touchIdMap.removeValue(forKey: objectId)
-        lastMoveTime.removeValue(forKey: touchId)
-        lastPosition.removeValue(forKey: touchId)
+        synchronized {
+            self.touchIdMap.removeValue(forKey: objectId)
+            self.lastMoveTime.removeValue(forKey: touchId)
+            self.lastPosition.removeValue(forKey: touchId)
+        }
     }
 }
