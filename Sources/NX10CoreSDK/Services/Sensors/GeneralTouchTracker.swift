@@ -85,33 +85,23 @@ public final class GeneralTouchTracker {
             currentPosition: locationInWindow
         )
 
+        guard let window = touch.window else {
+            return nil
+        }
+
+        let windowPoint = touch.location(in: window)
+        var screenPoint: CGPoint = windowPoint
+        
         let screenHeight = screen.bounds.height
         let windowHeight = window.bounds.height
 
-        /*
-         Keyboard extension case:
-         - windowHeight is the hosted keyboard window height.
-         - screenHeight is the full device screen height.
-         - The keyboard visually sits at the bottom of the screen.
-         - Therefore, project the keyboard-window Y into full-screen Y by adding:
-             screenHeight - windowHeight
-
-         App case:
-         - windowHeight should equal screenHeight.
-         - offset becomes 0.
-         */
-        
-        var screenPoint: CGPoint
-        let windowPoint = touch.location(in: window)
-        
         if windowHeight < screenHeight {
-            let windowTopY = screenHeight - windowHeight
+            let windowPoint = touch.location(in: window)
+            let screenOffsetY = screenHeight - windowPoint.y
             screenPoint = CGPoint(
                 x: windowPoint.x,
-                y: windowTopY + windowPoint.y
+                y: windowPoint.y + screenOffsetY
             )
-        } else {
-            screenPoint = windowPoint
         }
         
         guard
