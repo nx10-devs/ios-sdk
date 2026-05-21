@@ -114,7 +114,7 @@ public final class GeneralTouchTracker {
         var yInScreen = windowPoint.y
         
         if viewHeight < screenHeight {
-            yInScreen = windowPoint.y + layer.position.y - 63.5
+            yInScreen = screenHeight - (viewHeight + (layer.position.y / (layer.position.y < 200 ? 2.22 : 4.1) ) - windowPoint.y)
         }
         
         let touchId = resolveTouchId(
