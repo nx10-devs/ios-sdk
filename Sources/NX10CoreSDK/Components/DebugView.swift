@@ -10,16 +10,28 @@ import SwiftUI
 public struct NX10DebugView: View {
     
     @StateObject var debugProvider: DebugProvider = .shared
+    @Binding var showDebugView: Bool
     
-    public init() {}
+    public init(showDebugView: Binding<Bool>) {
+        self._showDebugView = showDebugView
+    }
     
     public var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 12) {
                 // MARK: - Coordinates Section
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Coordinates")
-                        .font(.headline)
+                    HStack {
+                        Text("Coordinates")
+                            .font(.headline)
+                        Spacer()
+                        Button {
+                            showDebugView = false
+                        } label: {
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.black)
+                        }
+                    }
                     
                     Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                         GridRow {
@@ -53,11 +65,13 @@ public struct NX10DebugView: View {
                             Text("Gyro:")
                             Text("x: \(debugProvider.gyro.x, format: .number.precision(.fractionLength(2)))")
                             Text("y: \(debugProvider.gyro.y, format: .number.precision(.fractionLength(2)))")
+                            Text("z: \(debugProvider.gyro.z, format: .number.precision(.fractionLength(2)))")
                         }
                         GridRow {
                             Text("Acc:")
                             Text("x: \(debugProvider.acc.x, format: .number.precision(.fractionLength(2)))")
                             Text("y: \(debugProvider.acc.y, format: .number.precision(.fractionLength(2)))")
+                            Text("z: \(debugProvider.acc.z, format: .number.precision(.fractionLength(2)))") 
                         }
                     }
                 }
@@ -75,9 +89,15 @@ public struct NX10DebugView: View {
         .background(.gray.opacity(0.6))
         .border(.white)
         .ignoresSafeArea()
+        .onAppear {
+            debugProvider.startUIThrottler()
+        }
+        .onDisappear {
+            debugProvider.stop()
+        }
     }
 }
 
 #Preview(traits: .portrait) {
-    NX10DebugView()
+    NX10DebugView(showDebugView: .constant(true))
 }

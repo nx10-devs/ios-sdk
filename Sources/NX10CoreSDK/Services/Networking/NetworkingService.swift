@@ -82,7 +82,9 @@ public final class NetworkService: Networking {
             guard
                 let httpResponse = response as? HTTPURLResponse
             else {
-                print("LOG: failed to send analytics \(payload)")
+                if isDebug {
+                    print("LOG: failed to send analytics \(payload)")
+                }
                 throw APIError.badRequest
             }
             
@@ -101,14 +103,19 @@ public final class NetworkService: Networking {
             
             return decoded
         } catch {
-            print(error.localizedDescription)
+            if isDebug {
+                print(error.localizedDescription)
+            }
+            throw error
         }
         
         return nil
     }
     
     public func GET<R: Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R? {
-        print("LOG ------------------------------ \(endpoint.rawValue)")
+        if isDebug {
+            print("LOG ------------------------------ \(endpoint.rawValue)")
+        }
         let url = try endpointProvider.url(for: endpoint)
         
         if isDebug {
@@ -144,8 +151,10 @@ public final class NetworkService: Networking {
             let decoded: R = try decoder.decode(R.self, from: data)
             return decoded
         } catch {
-            print(error.localizedDescription)
-            return nil
+            if isDebug {
+                print(error.localizedDescription)
+            }
+            throw error
         }
     }
 }

@@ -157,13 +157,8 @@ public final class GeneralTouchTracker {
             cleanUpTouch(objectId: objectId, touchId: touchId)
         }
         
-        DebugProvider.shared.xPoint = windowPoint.x
-        DebugProvider.shared.yPoint = yInScreen
-        DebugProvider.shared.xMm = xMm
-        print("LOG: Validated Throttled Metric Output: ", yMm)
-        DebugProvider.shared.yMm = yMm
-        DebugProvider.shared.radiusMm = radiusMm
-        
+        DebugProvider.shared.update(mmX: xMm, mmY: yMm, radiusMm: radiusMm, xPoint: windowPoint.x, yPoint: yInScreen)
+
         return GeneralTouchSample(
             touchId: touchId,
             touchType: touchType,

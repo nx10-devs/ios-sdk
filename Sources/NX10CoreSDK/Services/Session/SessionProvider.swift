@@ -89,11 +89,16 @@ public final class SessionProvider: SessionProviding {
             networking.setToken(result.data.token)
             
             print("LOG: Session start established for UUID \(applicationInfoProvider.deviceID) version \(applicationInfoProvider.appVersionNumber)")
+            
             return result.data
             
         } catch {
-            print("LOG: Failed to start session")
-            print(error.localizedDescription)
+            if isDebug {
+                print("LOG: Failed to start session")
+                print(error.localizedDescription)
+            }
+            
+            throw error
         }
         
         return nil

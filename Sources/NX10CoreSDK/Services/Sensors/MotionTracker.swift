@@ -35,7 +35,9 @@ public final class MotionTracker {
     }
     
     public func setSensorData(_ data: DeviceConfig.Sensor?) {
-        print("LOG: Sensor resoultions set")
+        if isDebug {
+            print("LOG: Sensor resoultions set")
+        }
         self.sensor = data
     }
 
@@ -44,7 +46,9 @@ public final class MotionTracker {
         accel: @escaping (MotionSample) -> Void
     ) {
         if motionManager.isGyroAvailable {
-            print("LOG: Started gyro tracking")
+            if isDebug {
+                print("LOG: Started gyro tracking")
+            }
 
             motionManager.gyroUpdateInterval = gyrUpdateInterval ?? 30
             motionManager.startGyroUpdates(to: .main) { data, _ in
@@ -56,7 +60,7 @@ public final class MotionTracker {
                     z: data.rotationRate.z
                  )
                 if isDebug {
-                    DebugProvider.shared.gyro = gyroData
+                    DebugProvider.shared.updateGyro(gyro: gyroData)
                 }
                 guard
                     self.gyrUpdateInterval != nil
@@ -65,12 +69,16 @@ public final class MotionTracker {
                 gyro(gyroData)
             }
         } else {
-            print("LOG: Gyro failed to start")
+            if isDebug {
+                print("LOG: Gyro failed to start")
+            }
             errorProvider.sendError(NSError(domain: "Gyro not available", code: -1))
         }
 
         if motionManager.isAccelerometerAvailable {
-            print("LOG: Started accelerometer tracking")
+            if isDebug {
+                print("LOG: Started accelerometer tracking")
+            }
             motionManager.accelerometerUpdateInterval = accUpdateInterval ?? 30
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
 
@@ -84,7 +92,7 @@ public final class MotionTracker {
                 )
                 
                 if isDebug {
-                    DebugProvider.shared.acc = accData
+                    DebugProvider.shared.updateAcc(acc: accData)
                 }
                 
                 guard
@@ -94,13 +102,17 @@ public final class MotionTracker {
                 accel(accData)
             }
         } else {
-            print("LOG: accelerometer failed to start")
+            if isDebug {
+                print("LOG: accelerometer failed to start")   
+            }
             errorProvider.sendError(NSError(domain: "Accelerometer not available", code: -1))
         }
     }
 
     func stop() {
-        print("LOG: Stopping motion tracking")
+        if isDebug {
+            print("LOG: Stopping motion tracking")
+        }
         motionManager.stopGyroUpdates()
         motionManager.stopAccelerometerUpdates()
     }

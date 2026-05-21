@@ -76,7 +76,10 @@ public final class SaaQService: SaaQServiceProtocol {
                         let _: GenericResponse? = try await networkService.POST(answerTwo, for: .saaqTriggered)
                     }
                 } catch {
-                    print(error.localizedDescription)
+                    if isDebug {
+                        print(error.localizedDescription)
+                    }
+                    throw error
                 }
             }
             

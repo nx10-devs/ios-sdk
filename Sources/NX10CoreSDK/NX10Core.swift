@@ -205,8 +205,9 @@ extension NX10Core {
                 return sessionStarted
             }
         }
-        
-        print("LOG: isConfigured is \(shouldStartSession)")
+        if isDebug {
+            print("LOG: isConfigured is \(shouldStartSession)")
+        }
         
         return shouldStartSession ? false : true
     }
