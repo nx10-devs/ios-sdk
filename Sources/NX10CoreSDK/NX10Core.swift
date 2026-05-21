@@ -132,8 +132,7 @@ public final class NX10Core: NX10CoreProviding {
         let attributesProvider = AttributesProvider(
             networkService: networkService,
             errorProvider: errorProvider,
-            appService: appService,
-            appLifecycleService: appLifecycleService
+            appService: appService
         )
         let sessionProvider = SessionProvider(
             endpointsProvider: endpointProvider,

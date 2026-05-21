@@ -16,7 +16,7 @@ public protocol AttributesProviding: AnyObject {
     func didChangeKeyboardLanguage() async
     func appDidChangeState(_ state: AttributesProvider.AppState) async
     
-    init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding, appLifecycleService: LifecycleProviding)
+    init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding)
 }
 
 public class AttributesProvider: AttributesProviding {
@@ -24,13 +24,11 @@ public class AttributesProvider: AttributesProviding {
     private let networkService: Networking
     private let errorProvider: ErrorProviding
     private let appService:  AppInfoProviding
-    private let appLifecycleService: LifecycleProviding
     
-    required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding, appLifecycleService: LifecycleProviding) {
+    required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding) {
         self.networkService = networkService
         self.errorProvider = errorProvider
         self.appService = appService
-        self.appLifecycleService = appLifecycleService
     }
     
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
@@ -69,27 +67,6 @@ public class AttributesProvider: AttributesProviding {
                 let _: GenericResponse? = try await networkService.POST(state, for: .attributes)
             } catch {
                 errorProvider.sendError(error)
-            }
-        }
-    }
-    
-    private func beginObservingAppSate() {
-        appLifecycleService.observeStateChanges { [weak self] state in
-            var data: AppState.AppStates = .foreground
-            switch state {
-            case .background:
-                data = .background
-            case .foreground:
-                data = .foreground
-            }
-            
-            let appState = AppState(timestamp: Date().iso8601, state: data)
-            Task {
-                do {
-                    let _: GenericResponse? = try await self?.networkService.POST(appState, for: .attributes)
-                } catch {
-                    self?.errorProvider.sendError(error)
-                }
             }
         }
     }
