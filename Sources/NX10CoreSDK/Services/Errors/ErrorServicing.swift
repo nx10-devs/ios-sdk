@@ -17,7 +17,7 @@ public protocol ErrorProviding: AnyObject {
 }
 
 public final class ErrorProvider: ErrorProviding {
-    private var didStartSentry = false
+    private var didStartErrorReporting = false
     private let configLoader: ConfigProvider
     
     private var enableErrorTracking: Bool = false
@@ -43,11 +43,9 @@ public final class ErrorProvider: ErrorProviding {
     @MainActor private func initialiseIfNeeded() {
         guard
             enableErrorTracking,
-            didStartSentry == false
+            didStartErrorReporting == false
         else { return }
         
-        guard let dsn = configLoader.string(for: .sentryDNS) else { return }
-        
-        didStartSentry = true
+        didStartErrorReporting = true
     }
 }

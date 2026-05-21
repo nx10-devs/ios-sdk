@@ -42,7 +42,7 @@ public final class SessionProvider: SessionProviding {
                 if isDebug {
                     fatalError("missing API key")
                 }
-                throw NSError(domain: "failed-to-start-session-missing-api-key", code: -0003, userInfo: nil)
+                throw NSError.error(for: .missingAPIKey)
             }
             
             let payload = StartSessionRequestPayload(

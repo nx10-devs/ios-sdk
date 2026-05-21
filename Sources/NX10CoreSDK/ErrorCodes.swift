@@ -10,6 +10,7 @@ import Foundation
 extension NSError {
     public enum ErrorCodes: Int, CaseIterable {
         case missingDeviceMap = -0005
+        case missingAPIKey = -0003
         
         var code: Int {
             return rawValue
@@ -20,6 +21,8 @@ extension NSError {
             switch self {
             case .missingDeviceMap:
                 string = "missing-evice-map"
+            case .missingAPIKey:
+                string = "missing-api-key"
             }
             
             return "nx10-core-sdk-\(string)-error"

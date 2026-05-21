@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ActivityProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 20/05/2026.

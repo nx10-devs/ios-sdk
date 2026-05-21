@@ -27,7 +27,6 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     
     
     public func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceStatusResponse? {
-        
         guard
             let brainJuiceConfig = self.brainJuiceConfig
         else {
