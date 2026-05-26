@@ -21,7 +21,16 @@ extension BrainJuice {
     public struct BrainJuiceHistoryEntry: Codable {
         public let date: String
         public let index: Double?
-        public let subIndices: BrainJuiceSubIndices
+        public let confience: Double?
+        public let confidenceTop: Double?
+        public let confidenceBottom: Double?
+        public let subIndices: BrainJuiceSubIndices?
+        public let subIndicesConfidence: BrainJuiceSubIndicesConfidence?
+    }
+    
+    public struct BrainJuiceSubIndicesConfidence: Codable {
+        public let cognitiveIndex: Double?
+        public let physicalIndex: Double?
     }
     
     public struct BrainJuiceRealTime: Codable {
