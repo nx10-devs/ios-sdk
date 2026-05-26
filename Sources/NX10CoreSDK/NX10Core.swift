@@ -26,33 +26,33 @@ public struct NX10CoreConfig {
 }
 
 @MainActor
-public protocol NX10CoreProviding: AnyObject {
-    // MARK: Static singleton
-    static var shared: NX10CoreProviding { get }
+//public protocol NX10CoreProviding {
+//    // MARK: Static singleton
+//    static var shared: NX10CoreProviding { get }
+//
+//    var errorProvider: ErrorProviding { get }
+//    var telemetryProvider: TelemetryProvider { get }
+//    var attributesProvider: AttributesProviding { get }
+//    var saaqService: SaaQServiceProtocol { get }
+//    var touchProcessor: TouchProcessorProviding { get }
+//    var brainJuiceProvider: BrainJuiceProviding { get }
+//    var touchTracker: GeneralTouchTracker { get }
+//    var networkservice: Networking { get }
+//    var activityProvider: ActivityProviding { get }
+//    
+//    func configure(
+//        apiKey: String,
+//        appGroupdID: String,
+//        errorTrackingEnabled: Bool,
+//        shouldStartSession: Bool,
+//        enableDebug: Bool
+//    ) async throws -> Bool
+//    func startSession() async throws -> Bool
+//}
 
-    var errorProvider: ErrorProviding { get }
-    var telemetryProvider: TelemetryProvider { get }
-    var attributesProvider: AttributesProviding { get }
-    var saaqService: SaaQServiceProtocol { get }
-    var touchProcessor: TouchProcessorProviding { get }
-    var brainJuiceProvider: BrainJuiceProviding { get }
-    var touchTracker: GeneralTouchTracker { get }
-    var networkservice: Networking { get }
-    var activityProvider: ActivityProviding { get }
+public final class NX10Core: ObservableObject {
     
-    func configure(
-        apiKey: String,
-        appGroupdID: String,
-        errorTrackingEnabled: Bool,
-        shouldStartSession: Bool,
-        enableDebug: Bool
-    ) async throws -> Bool
-    func startSession() async throws -> Bool
-}
-
-public final class NX10Core: NX10CoreProviding {
-    
-    public static var shared: NX10CoreProviding = NX10Core()
+    public static var shared = NX10Core()
     
     // MARK: Public properties
     public let errorProvider: ErrorProviding
@@ -181,6 +181,7 @@ extension NX10Core {
     ) async throws -> Bool {
         
         isDebug = enableDebug
+        var sessionStarted = false
         
         guard
             sessionData == nil
@@ -194,22 +195,19 @@ extension NX10Core {
         errorProvider.setTrackingEnabled(errorTrackingEnabled)
         
         if shouldStartSession {
-            Task(name: "telemetry-task", priority: .utility) {
-                let sessionStarted = try await startSession()
-                if sessionStarted {
-                    isStartingSession = false
-                    // NEW: Start observing text input after session starts
-//                    textInputObserverService.startObserving()
-                }
-                    
-                return sessionStarted
+             sessionStarted = try await startSession()
+            if sessionStarted {
+                isStartingSession = false
+                // NEW: Start observing text input after session starts
+                //                    textInputObserverService.startObserving()
             }
         }
+        
         if isDebug {
             print("LOG: isConfigured is \(shouldStartSession)")
         }
         
-        return shouldStartSession ? false : true
+        return sessionStarted 
     }
     
     public func startSession() async throws -> Bool {

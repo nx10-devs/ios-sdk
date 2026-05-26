@@ -41,10 +41,4 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     public func setBrainJuiceConfig(_ brainJuiceConfig: DeviceConfig.BrainJuiceConfig) {
         self.brainJuiceConfig = brainJuiceConfig
     }
-    
-    private func fetchBrainJuiceData(_ data: BrainJuice.BrainJuiceWeights) async throws -> BrainJuice.BrainJuiceStatusResponse? {
-        let brResponse: BrainJuice.BrainJuiceStatusResponse? = try await networking.POST(data, for: .brainJuice)
-        
-        return brResponse
-    }
 }

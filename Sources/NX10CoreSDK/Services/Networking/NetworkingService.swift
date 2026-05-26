@@ -42,7 +42,9 @@ public final class NetworkService: Networking {
     }
     
     public func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R? {
-        print("LOG: Sending payload \(payload) for url \(url)")
+        if isDebug {
+            print("LOG: Sending payload \(payload) for url \(url)")
+        }
         
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.withoutEscapingSlashes] // optional
@@ -53,6 +55,9 @@ public final class NetworkService: Networking {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             if let token {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                if isDebug {
+                    print("LOG: ", token)
+                }
             }
             
             if let payload  {
