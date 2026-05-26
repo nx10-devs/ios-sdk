@@ -33,7 +33,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.badRequest
         }
         
-        let brResponse: BrainJuice.BrainJuiceResponse? = try await networking.POST(brainJuiceConfig.weights, for: .brainJuice)
+        let brResponse: BrainJuice.BrainJuiceResponse? = try await networking.POST(brainJuiceConfig, for: .brainJuice)
         
         return brResponse
     }

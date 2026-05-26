@@ -25,6 +25,21 @@ public struct DeviceConfig: Decodable {
     // MARK: - BrainJuice Config
     public struct BrainJuiceConfig: Codable {
         public let weights: [Weight]?
+        public let targetSamples: TargetSamples
+        
+        public struct TargetSamples: Codable {
+            public let metricsAcc: Int
+            public let metricsGyro: Int
+            public let metricsTouch: Int
+            public let metricsKb: Int
+            
+            enum CodingKeys: String, CodingKey {
+                case metricsAcc = "metrics_acc"
+                case metricsGyro = "metrics_gyro"
+                case metricsTouch = "metrics_touch"
+                case metricsKb = "metrics_kb"
+            }
+        }
     }
 
     public struct Weight: Codable {
