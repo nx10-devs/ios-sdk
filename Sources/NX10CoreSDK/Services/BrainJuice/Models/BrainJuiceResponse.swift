@@ -1,5 +1,5 @@
 //
-//  BrainJuiceStatusResponse.swift
+//  BrainJuiceResponse.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 05/05/2026.
@@ -8,7 +8,7 @@
 import Foundation
 
 extension BrainJuice {
-    public struct BrainJuiceStatusResponse: Codable {
+    public struct BrainJuiceResponse: Codable {
         public let status: String
         public let data: BrainJuiceStatusData
     }

@@ -10,7 +10,6 @@ import Foundation
 public struct BrainJuice {}
 
 public extension BrainJuice {
-    
     struct BrainJuiceConfigResponse: Decodable {
         public let status: String
         public let data: BrainJuiceData

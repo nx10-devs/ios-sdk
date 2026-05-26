@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 public protocol BrainJuiceProviding {
-    func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceStatusResponse?
+    func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceResponse?
     func setBrainJuiceConfig(_ brainJuiceConfig: DeviceConfig.BrainJuiceConfig)
 }
 
@@ -26,14 +26,14 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     
     
     
-    public func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceStatusResponse? {
+    public func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceResponse? {
         guard
             let brainJuiceConfig = self.brainJuiceConfig
         else {
             throw APIError.badRequest
         }
         
-        let brResponse: BrainJuice.BrainJuiceStatusResponse? = try await networking.POST(brainJuiceConfig.weights, for: .brainJuice)
+        let brResponse: BrainJuice.BrainJuiceResponse? = try await networking.POST(brainJuiceConfig.weights, for: .brainJuice)
         
         return brResponse
     }
