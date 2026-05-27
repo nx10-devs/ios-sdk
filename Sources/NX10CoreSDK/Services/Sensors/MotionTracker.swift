@@ -45,20 +45,30 @@ public final class MotionTracker {
         gyro: @escaping (MotionSample) -> Void,
         accel: @escaping (MotionSample) -> Void
     ) {
-        if motionManager.isGyroAvailable {
+        // Use device motion to access the bias-corrected gyroscope sensor
+        if motionManager.isDeviceMotionAvailable {
             if isDebug {
-                print("LOG: Started gyro tracking")
+                print("LOG: Started bias-corrected gyro tracking via Device Motion")
             }
 
-            motionManager.gyroUpdateInterval = gyrUpdateInterval ?? 30
-            motionManager.startGyroUpdates(to: .main) { data, _ in
+            motionManager.deviceMotionUpdateInterval = gyrUpdateInterval ?? 30
+            motionManager.startDeviceMotionUpdates(to: .main) { data, _ in
                 guard let data else { return }
+                
+                // CMDeviceMotion.rotationRate provides bias-corrected angular velocity (rad/s)
+                let rotationRate = data.rotationRate
+                let scale = 100000.0
+                
+                let processedX = (rotationRate.x * scale).rounded(.toNearestOrAwayFromZero) / scale
+                let processedY = (rotationRate.y * scale).rounded(.toNearestOrAwayFromZero) / scale
+                let processedZ = (rotationRate.z * scale).rounded(.toNearestOrAwayFromZero) / scale
+                
                 let gyroData = MotionSample(
                     timestampMs: Self.nowMs(),
-                    x: data.rotationRate.x,
-                    y: data.rotationRate.y,
-                    z: data.rotationRate.z
-                 )
+                    x: processedX,
+                    y: processedY,
+                    z: processedZ
+                )
                 if isDebug {
                     DebugProvider.shared.updateGyro(gyro: gyroData)
                 }
@@ -70,9 +80,9 @@ public final class MotionTracker {
             }
         } else {
             if isDebug {
-                print("LOG: Gyro failed to start")
+                print("LOG: Device Motion (bias-corrected Gyro) failed to start")
             }
-            errorProvider.sendError(NSError(domain: "Gyro not available", code: -1))
+            errorProvider.sendError(NSError(domain: "Device motion not available", code: -1))
         }
 
         if motionManager.isAccelerometerAvailable {
@@ -84,11 +94,26 @@ public final class MotionTracker {
 
                 guard let data else { return }
                 
+                // 1. Raw acceleration is sampled from CMAccelerometerData (contains gravity)
+                // 2. Invert x, y, z by taking negative values (-data.acceleration)
+                // 3. Multiply by gravity (9.80665) to convert to m/s2
+                // 4. Round to 5 decimal places using .toNearestOrAwayFromZero
+                let gToMs2 = 9.80665
+                let scale = 100000.0
+                
+                let rawX = -data.acceleration.x * gToMs2
+                let rawY = -data.acceleration.y * gToMs2
+                let rawZ = -data.acceleration.z * gToMs2
+                
+                let processedX = (rawX * scale).rounded(.toNearestOrAwayFromZero) / scale
+                let processedY = (rawY * scale).rounded(.toNearestOrAwayFromZero) / scale
+                let processedZ = (rawZ * scale).rounded(.toNearestOrAwayFromZero) / scale
+                
                 let accData = MotionSample(
                     timestampMs: Self.nowMs(),
-                    x: data.acceleration.x,
-                    y: data.acceleration.y,
-                    z: data.acceleration.z
+                    x: processedX,
+                    y: processedY,
+                    z: processedZ
                 )
                 
                 if isDebug {
@@ -113,7 +138,7 @@ public final class MotionTracker {
         if isDebug {
             print("LOG: Stopping motion tracking")
         }
-        motionManager.stopGyroUpdates()
+        motionManager.stopDeviceMotionUpdates()
         motionManager.stopAccelerometerUpdates()
     }
 

@@ -27,7 +27,7 @@ final public class ActivityProvider: ActivityProviding {
     }
     
     public func getActivity() async throws-> Activity.Action? {
-        let response: Activity.Action? =  try await networking.POST(activity, for: .activity)
+        let response: Activity.Action? =  try await networking.POST(activity?.thresholds, for: .activity)
         return response
     }
     
