@@ -157,7 +157,7 @@ public final class GeneralTouchTracker {
             cleanUpTouch(objectId: objectId, touchId: touchId)
         }
         
-        DebugProvider.shared.update(mmX: xMm, mmY: yMm, radiusMm: radiusMm, xPoint: windowPoint.x, yPoint: yInScreen)
+        DebugProvider.shared.update(mmX: xMm, mmY: yMm, radiusMm: radiusMm, majorRadius: touch.majorRadius, xPoint: windowPoint.x, yPoint: yInScreen)
 
         return GeneralTouchSample(
             touchId: touchId,

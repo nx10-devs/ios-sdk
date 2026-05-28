@@ -60,6 +60,8 @@ public struct NX10DebugView: View {
                             Text("Radius:")
                             Text("\(debugProvider.radiusMm, format: .number.precision(.fractionLength(2))) mm")
                                 .gridCellColumns(2) // Spans across the remaining space
+                            Text("\(debugProvider.majorRadius, format: .number.precision(.fractionLength(2))) mm")
+                                .gridCellColumns(2) // Spans across the remaining space
                         }
                         GridRow {
                             Text("Gyro:")

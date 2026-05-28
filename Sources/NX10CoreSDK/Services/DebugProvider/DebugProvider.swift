@@ -6,6 +6,7 @@ import Observation
 public final class DebugProvider: ObservableObject, Sendable {
     @Published public var xMm: Double = 0.0
     @Published public var yMm: Double = 0.0
+    @Published public var majorRadius: CGFloat = 0.0
     @Published public var radiusMm: Double = 0.0
     @Published public var xPoint: CGFloat = 0.0
     @Published public var yPoint: CGFloat = 0.0
@@ -25,10 +26,11 @@ public final class DebugProvider: ObservableObject, Sendable {
         startUIThrottler()
     }
     
-    public func update(mmX: Double, mmY: Double, radiusMm: Double, xPoint: CGFloat, yPoint: CGFloat) {
+    public func update(mmX: Double, mmY: Double, radiusMm: Double, majorRadius: CGFloat, xPoint: CGFloat, yPoint: CGFloat) {
         self.xMm = mmX
         self.yMm = mmY
         self.radiusMm = radiusMm
+        self.majorRadius = majorRadius
         self.xPoint = xPoint
         self.yPoint = yPoint
     }
