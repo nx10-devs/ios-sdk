@@ -57,12 +57,13 @@ public final class MotionTracker {
                 
                 // CMDeviceMotion.rotationRate provides bias-corrected angular velocity (rad/s)
                 let rotationRate = data.rotationRate
-                let scale = 100000.0
-                
+                let scale = 100000.0 // Scale factor for 5 decimal places (10^5)
+
+                // Round to 5 decimal places using .toNearestOrAwayFromZero
                 let processedX = (rotationRate.x * scale).rounded(.toNearestOrAwayFromZero) / scale
                 let processedY = (rotationRate.y * scale).rounded(.toNearestOrAwayFromZero) / scale
                 let processedZ = (rotationRate.z * scale).rounded(.toNearestOrAwayFromZero) / scale
-                
+
                 let gyroData = MotionSample(
                     timestampMs: Self.nowMs(),
                     x: processedX,
@@ -99,16 +100,17 @@ public final class MotionTracker {
                 // 3. Multiply by gravity (9.80665) to convert to m/s2
                 // 4. Round to 5 decimal places using .toNearestOrAwayFromZero
                 let gToMs2 = 9.80665
-                let scale = 100000.0
-                
+                let scale = 100000.0 // Scale factor for 5 decimal places (10^5)
+
                 let rawX = -data.acceleration.x * gToMs2
                 let rawY = -data.acceleration.y * gToMs2
                 let rawZ = -data.acceleration.z * gToMs2
-                
+
+                // Round to 5 decimal places using .toNearestOrAwayFromZero
                 let processedX = (rawX * scale).rounded(.toNearestOrAwayFromZero) / scale
                 let processedY = (rawY * scale).rounded(.toNearestOrAwayFromZero) / scale
                 let processedZ = (rawZ * scale).rounded(.toNearestOrAwayFromZero) / scale
-                
+
                 let accData = MotionSample(
                     timestampMs: Self.nowMs(),
                     x: processedX,

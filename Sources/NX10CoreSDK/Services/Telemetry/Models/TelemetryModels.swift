@@ -57,7 +57,7 @@ public struct MotionSample: Codable {
 // Covers BOTH app-level touches (e.g. via ``NX10Window`` / ``GeneralTouchTracker``)
 // AND keyboard-extension touches. The legacy "touch-kb" event has been removed;
 // keyboard touches are emitted as "touch" events with a populated ``touchObject``
-// and optional pressure / size / velocity carried over from the old schema.
+// and optional pressure / velocity carried over from the old schema.
 //
 // `radiusMm` is derived from `UITouch.majorRadius`, iOS's equivalent of Android's
 // `MotionEvent.getTouchMajor()` — both report the major axis of the contact
@@ -93,8 +93,6 @@ public struct GeneralTouchSample: Codable {
     public let yMm:         Double
     /// Touch contact radius in millimetres (major axis of the contact ellipse).
     public let radiusMm:    Double
-    /// Touch size in millimetres (major axis, same units as radius × 2; 0 when unavailable).
-    public let size:        Double
     /// Velocity components in UIKit points / second (0 when unavailable).
     public let velocityX:   Double
     public let velocityY:   Double
@@ -106,7 +104,6 @@ public struct GeneralTouchSample: Codable {
                 xMm: Double,
                 yMm: Double,
                 radiusMm: Double,
-                size: Double = 0,
                 velocityX: Double = 0,
                 velocityY: Double = 0,
                 timestampMs: Int64) {
@@ -116,7 +113,6 @@ public struct GeneralTouchSample: Codable {
         self.xMm         = xMm
         self.yMm         = yMm
         self.radiusMm    = radiusMm
-        self.size        = size
         self.velocityX   = velocityX
         self.velocityY   = velocityY
         self.timestampMs = timestampMs
@@ -129,7 +125,6 @@ public struct GeneralTouchSample: Codable {
         case xMm
         case yMm
         case radiusMm = "touchRadiusMm"
-        case size
         case velocityX
         case velocityY
         case timestampMs

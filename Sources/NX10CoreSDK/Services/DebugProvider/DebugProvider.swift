@@ -15,6 +15,8 @@ public final class DebugProvider: ObservableObject, Sendable {
     @Published public private(set) var gyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     @Published public private(set) var acc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     
+    @Published public var nativeScale = UIScreen.main.nativeScale
+    
     // 2. Temporary storage for the fast-streaming background sensor data
     private var latestGyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     private var latestAcc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)

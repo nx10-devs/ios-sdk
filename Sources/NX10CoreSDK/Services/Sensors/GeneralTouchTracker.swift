@@ -139,17 +139,13 @@ public final class GeneralTouchTracker {
             currentPosition: windowPoint
         )
         
-        guard
-            let (xMm, yMm) = touchProcessor.convert(
-                point: CGPoint(
-                    x: windowPoint.x,
-                    y: yInScreen
-                ),
-                inViewHeight: screenHeight
-            )
-        else {
-            return nil
-        }
+        let (xMm, yMm) = touchProcessor.convert(
+            point: CGPoint(
+                x: windowPoint.x,
+                y: yInScreen
+            ),
+            inViewHeight: screenHeight
+        )
         
         let radiusMm = touchProcessor.radiusToMm(touch.majorRadius) ?? 0.0
         
@@ -157,16 +153,23 @@ public final class GeneralTouchTracker {
             cleanUpTouch(objectId: objectId, touchId: touchId)
         }
         
-        DebugProvider.shared.update(mmX: xMm, mmY: yMm, radiusMm: radiusMm, majorRadius: touch.majorRadius, xPoint: windowPoint.x, yPoint: yInScreen)
 
+        let roundedXmm = xMm.roundedUp(toPlaces: 3)
+        let roundedYMm = yMm.roundedUp(toPlaces: 3)
+        let roundedRadiusMm = radiusMm.roundedUp(toPlaces: 3)
+
+        DebugProvider.shared.update(mmX: roundedXmm, mmY: roundedYMm, radiusMm: roundedRadiusMm, majorRadius: touch.majorRadius, xPoint: windowPoint.x, yPoint: yInScreen)
+
+        if isDebug {
+            print(roundedXmm, roundedYMm, roundedRadiusMm)
+        }
         return GeneralTouchSample(
             touchId: touchId,
             touchType: touchType,
             touchObject: nil,
-            xMm: xMm,
-            yMm: yMm,
-            radiusMm: radiusMm,
-            size: radiusMm * 2,
+            xMm: roundedXmm,
+            yMm: roundedYMm,
+            radiusMm: roundedRadiusMm,
             velocityX: 0,
             velocityY: 0,
             timestampMs: Int64(trackingEpochMs * 1000)
