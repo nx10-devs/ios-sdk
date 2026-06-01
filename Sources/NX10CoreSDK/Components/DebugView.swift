@@ -11,7 +11,7 @@ public struct NX10DebugView: View {
     
     @StateObject var debugProvider: DebugProvider = .shared
     @Binding var showDebugView: Bool
-    @State private var showDetailed = true
+    @State private var showDetailed = false
     
     public init(showDebugView: Binding<Bool>) {
         self._showDebugView = showDebugView
