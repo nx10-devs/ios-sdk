@@ -7,4 +7,4 @@
 
 import Foundation
 
-nonisolated(unsafe) public var isDebug: Bool = true
+nonisolated(unsafe) var isDebug: Bool = true
