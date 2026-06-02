@@ -37,14 +37,14 @@ import Foundation
 /// All coordinates are automatically converted to millimetres with a bottom-left
 /// origin by ``CoordinateConverter``.  Touch sampling is throttled to 30 Hz for
 /// "move" phases and stationary detection uses a 3-point movement threshold.
-public final class NX10Window: UIWindow {
+final class NX10Window: UIWindow {
     private let nx10Core = NX10Core.shared
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override init(windowScene: UIWindowScene) {
+    override init(windowScene: UIWindowScene) {
         super.init(windowScene: windowScene)
     }
 

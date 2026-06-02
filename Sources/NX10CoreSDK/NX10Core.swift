@@ -26,30 +26,6 @@ public struct NX10CoreConfig {
 }
 
 @MainActor
-//public protocol NX10CoreProviding {
-//    // MARK: Static singleton
-//    static var shared: NX10CoreProviding { get }
-//
-//    var errorProvider: ErrorProviding { get }
-//    var telemetryProvider: TelemetryProvider { get }
-//    var attributesProvider: AttributesProviding { get }
-//    var saaqService: SaaQServiceProtocol { get }
-//    var touchProcessor: TouchProcessorProviding { get }
-//    var brainJuiceProvider: BrainJuiceProviding { get }
-//    var touchTracker: GeneralTouchTracker { get }
-//    var networkservice: Networking { get }
-//    var activityProvider: ActivityProviding { get }
-//    
-//    func configure(
-//        apiKey: String,
-//        appGroupdID: String,
-//        errorTrackingEnabled: Bool,
-//        shouldStartSession: Bool,
-//        enableDebug: Bool
-//    ) async throws -> Bool
-//    func startSession() async throws -> Bool
-//}
-
 public final class NX10Core: ObservableObject {
     
     public static var shared = NX10Core()
@@ -64,9 +40,6 @@ public final class NX10Core: ObservableObject {
     public let networkservice: Networking
     public let attributesProvider: AttributesProviding
     public let activityProvider: ActivityProviding
-    
-    // NEW: Add TextInputObserverService
-//    let textInputObserverService: TextInputObserving
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -141,10 +114,7 @@ public final class NX10Core: ObservableObject {
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         let activityProvider = ActivityProvider(networking: networkService, errorProvider: errorProvider)
-        
-        // NEW: Initialize TextInputObserverService
-//        let textInputObserverService = TextInputObserverService(telemetryService: telemetryService)
-
+    
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.telemetryProvider = telemetryProvider
@@ -198,8 +168,6 @@ extension NX10Core {
              sessionStarted = try await startSession()
             if sessionStarted {
                 isStartingSession = false
-                // NEW: Start observing text input after session starts
-                //                    textInputObserverService.startObserving()
             }
         }
         
@@ -225,9 +193,6 @@ extension NX10Core {
           
             isStartingSession = false
             self.sessionData = sessionData
-            
-            // NEW: Start observing text input after successful session start
-//            textInputObserverService.startObserving()
         } else {
             if isDebug {
                 fatalError("failed to start session")
