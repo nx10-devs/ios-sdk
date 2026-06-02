@@ -10,21 +10,12 @@ import UIKit
 import JWTDecode
 
 public protocol EndpointProviding {
-    var startSessionURL: URL? { get }
     var endpoints: [Endpoint]? { get set }
     func url(for endpointType: Endpoint.EndpointType) throws -> URL
-    
-    init(configLoader: ConfigProvider)
 }
 
 public final class EndpointProvider: EndpointProviding {
     public var endpoints: [Endpoint]?
-    public var startSessionURL: URL?
-    private var configLoader: ConfigProvider
-    
-    public init(configLoader: ConfigProvider) {
-        self.configLoader = configLoader
-    }
     
     public func url(for endpointType: Endpoint.EndpointType) throws -> URL {
         guard

@@ -23,9 +23,6 @@ let package = Package(
             name: "NX10CoreSDK",
             dependencies: [
                 .product(name: "JWTDecode", package: "JWTDecode.swift"),
-            ],
-            resources: [
-                .process("Assets/NX10CoreConfig.plist")
             ]
         ),
         .testTarget(

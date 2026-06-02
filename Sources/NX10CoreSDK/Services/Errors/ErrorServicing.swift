@@ -13,17 +13,14 @@ public protocol ErrorProviding: AnyObject {
     func sendSDKError(_ error: ErrorType)
     func sendMessage(_ message: String)
     func setTrackingEnabled(_ enabled: Bool)
-    init(configLoader: ConfigProvider)
 }
 
 public final class ErrorProvider: ErrorProviding {
     private var didStartErrorReporting = false
-    private let configLoader: ConfigProvider
     
     private var enableErrorTracking: Bool = false
     
-    public init(configLoader: ConfigProvider) {
-        self.configLoader = configLoader
+    public init() {
         initialiseIfNeeded()
     }
     

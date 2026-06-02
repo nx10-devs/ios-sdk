@@ -13,26 +13,28 @@ public protocol SessionProviding {
     var isReady: Bool { get }
     var apiKey: String? { get }
     var token: String? { get }
+    
+    func setAPIKey(_ key: String)
     func startSession() async throws -> SessionData?
 }
 
 public final class SessionProvider: SessionProviding {
     public private(set) var isReady: Bool = false
-    public var token: String?
+    public var token: String? = nil
     
-    private(set) public var apiKey: String?
+    private(set) public var apiKey: String? = nil
     private var endpointsProvider: EndpointProviding
-    private let configLoader: ConfigProvider
     private let networking: Networking
     private let applicationInfoProvider: AppInfoProviding
     
-    init(endpointsProvider: EndpointProviding, configLoader: ConfigProvider, networking: Networking, applicationInfoProvider: AppInfoProviding) {
+    init(endpointsProvider: EndpointProviding, networking: Networking, applicationInfoProvider: AppInfoProviding) {
         self.endpointsProvider = endpointsProvider
-        self.configLoader = configLoader
         self.networking = networking
         self.applicationInfoProvider = applicationInfoProvider
-        
-        self.apiKey = configLoader.string(for: .nx10APIKey)
+    }
+    
+    public func setAPIKey(_ key: String) {
+        self.apiKey = key
     }
     
     public func startSession() async throws -> SessionData? {
@@ -65,14 +67,15 @@ public final class SessionProvider: SessionProviding {
             )
             
             guard
-                let endpoint = configLoader.string(for: .startSession),
-                let url = URL(string: endpoint)
+                let url = isDebug ? NX10URL.debug.url : NX10URL.release.url
             else {
                 if isDebug {
                     fatalError("start session url missing")
                 }
                 throw APIError.malformedURL
             }
+            
+            print(url)
             
             let result: StartSessionAPIResponse? = try await networking.execute(
                 payload,
@@ -102,5 +105,21 @@ public final class SessionProvider: SessionProviding {
         }
         
         return nil
+    }
+}
+
+extension SessionProvider {
+    enum NX10URL {
+        case release
+        case debug
+        
+        var url: URL? {
+            switch self {
+            case .release:
+                return URL(string: "https://control-plane.affectstack.com/routes/sessions/start")
+            case .debug:
+                return URL(string: "https://control-plane.affectstack-stage.com/routes/sessions/start")
+            }
+        }
     }
 }

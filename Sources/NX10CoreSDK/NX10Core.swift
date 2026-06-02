@@ -92,13 +92,12 @@ public final class NX10Core: ObservableObject {
         // MARK: - Core Services
         
         // MARK: Agnostic services
-        let configLoader = ConfigProvider()
-        let errorProvider = ErrorProvider(configLoader: configLoader)
+        let errorProvider = ErrorProvider()
         let appService = AppInfoProvider()
         let touchProcessor = TouchProcessorProvider(errorProvider: errorProvider)
         let appLifecycleService = LifecyleProvider()
         
-        let endpointProvider = EndpointProvider(configLoader: configLoader)
+        let endpointProvider = EndpointProvider()
         let networkService = NetworkService(endpointProvider: endpointProvider)
         let analyticsService = AnalyticsProvider(networkService: networkService)
 
@@ -136,7 +135,6 @@ public final class NX10Core: ObservableObject {
         )
         let sessionProvider = SessionProvider(
             endpointsProvider: endpointProvider,
-            configLoader: configLoader,
             networking: networkService,
             applicationInfoProvider: appService
         )
@@ -179,6 +177,8 @@ extension NX10Core {
         shouldStartSession: Bool,
         enableDebug: Bool
     ) async throws -> Bool {
+        
+        sessionProvider.setAPIKey(apiKey)
         
         isDebug = enableDebug
         var sessionStarted = false

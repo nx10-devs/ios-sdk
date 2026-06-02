@@ -37,7 +37,7 @@ public final class NetworkService: Networking {
     public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         let url = try endpointProvider.url(for: endpoint)
-        
+        print(url)
         return try await self.execute(payload, for: url)
     }
     
