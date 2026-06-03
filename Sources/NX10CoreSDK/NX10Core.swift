@@ -37,7 +37,6 @@ public final class NX10Core: ObservableObject {
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
     public let touchTracker: GeneralTouchTracker
-    public let networkservice: Networking
     public let attributesProvider: AttributesProviding
     public let activityProvider: ActivityProviding
 
@@ -48,6 +47,7 @@ public final class NX10Core: ObservableObject {
     let appLifecycleService: LifecycleProviding
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
+    let networkservice: Networking
 
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
@@ -178,6 +178,10 @@ extension NX10Core {
         return sessionStarted 
     }
     
+    public func setToken(_ token: String) {
+        networkservice.setToken(token)
+    }
+    
     public func startSession() async throws -> Bool {
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
@@ -204,7 +208,7 @@ extension NX10Core {
     
     fileprivate func setSessionDataDependencies(with sessionData: SessionData) {
         guard
-            let deviceConfig = sessionData.deviceConfig
+            let deviceConfig = sessionData.typedDeviceConfig
         else {
             return
         }

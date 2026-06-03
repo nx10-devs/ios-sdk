@@ -10,14 +10,14 @@ import Foundation
 @MainActor
 public protocol BrainJuiceProviding {
     func fetchBrainJuiceData() async throws -> BrainJuice.BrainJuiceResponse?
-    func setBrainJuiceConfig(_ brainJuiceConfig: DeviceConfig.BrainJuiceConfig)
+    func setBrainJuiceConfig(_ brainJuiceConfig: JSONValue)
 }
 
 public final class BrainJuiceProvider: BrainJuiceProviding {
     
     private let networking: Networking
     private let errorProvider: ErrorProviding
-    private var brainJuiceConfig: DeviceConfig.BrainJuiceConfig?
+    private var brainJuiceConfig: JSONValue?
     
     init(networking: Networking, errorProvider: ErrorProviding) {
         self.networking = networking
@@ -38,7 +38,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
         return brResponse
     }
     
-    public func setBrainJuiceConfig(_ brainJuiceConfig: DeviceConfig.BrainJuiceConfig) {
+    public func setBrainJuiceConfig(_ brainJuiceConfig: JSONValue) {
         self.brainJuiceConfig = brainJuiceConfig
     }
 }

@@ -22,7 +22,7 @@ open class NX10MESceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     
         // 1. Initialize your custom telemetry-intercepting window
-        let customWindow = NX10Window(windowScene: windowScene)
+        let customWindow = TouchEventInterceptor(windowScene: windowScene)
         
         // 2. Build the single source of truth view hierarchy on-demand
         // rootContentView is now of type AnyView, which conforms to View.

@@ -8,11 +8,17 @@
 import Foundation
 
 public struct DeviceConfig: Decodable {
-    
+
+    // Fully typed — SDK reads subfields from these.
     public let sensor: Sensor?
-    public let brainjuice: BrainJuiceConfig? // NEW: Add brainjuice config
     public let device: Device?
-    public let activity: Activity.Data?
+
+    // Raw passthrough — sent to their respective endpoints as-is.
+    // Stored as JSONValue so schema changes on the backend are non-breaking.
+    public let brainjuice: JSONValue?
+    public let activity: JSONValue?
+
+    // Unknown keys (e.g. future endpoint configs) are silently ignored.
 
     public struct Sensor: Decodable {
         public let touchSampleHz: Int?
@@ -22,36 +28,9 @@ public struct DeviceConfig: Decodable {
         public let acquisitionWindowSize: Int?
     }
 
-    // MARK: - BrainJuice Config
-    public struct BrainJuiceConfig: Codable {
-        public let weights: [Weight]?
-        public let targetSamples: TargetSamples
-        
-        public struct TargetSamples: Codable {
-            public let metricsAcc: Int
-            public let metricsGyro: Int
-            public let metricsTouch: Int
-            public let metricsKb: Int
-            
-            enum CodingKeys: String, CodingKey {
-                case metricsAcc = "metrics_acc"
-                case metricsGyro = "metrics_gyro"
-                case metricsTouch = "metrics_touch"
-                case metricsKb = "metrics_kb"
-            }
-        }
-    }
-
-    public struct Weight: Codable {
-        public let featureName: String
-        public let weight: Double
-        public let direction: Int
-        public let children: [Weight]?
-    }
-
     public struct Device: Decodable {
         public let deviceModelToDpiMap: [String: Double]
-        
+
         enum CodingKeys: String, CodingKey {
             case deviceModelToDpiMap
         }

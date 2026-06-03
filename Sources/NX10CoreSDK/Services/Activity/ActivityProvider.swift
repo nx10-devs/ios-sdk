@@ -10,14 +10,14 @@ import Foundation
 @MainActor
 public protocol ActivityProviding {
     func getActivity() async throws-> Activity.Action?
-    func setActivity(_ activity: Activity.Data)
+    func setActivity(_ activity: JSONValue)
     
     init(networking: Networking, errorProvider: ErrorProviding)
 }
 
 final public class ActivityProvider: ActivityProviding {
     
-    private var activity: Activity.Data? = nil
+    private var activity: JSONValue? = nil
     private let networking: Networking
     private let errorProvider: ErrorProviding
     
@@ -27,11 +27,11 @@ final public class ActivityProvider: ActivityProviding {
     }
     
     public func getActivity() async throws-> Activity.Action? {
-        let response: Activity.Action? =  try await networking.POST(activity?.thresholds, for: .activity)
+        let response: Activity.Action? = try await networking.POST(activity, for: .activity)
         return response
     }
     
-    public func setActivity(_ activity: Activity.Data) {
+    public func setActivity(_ activity: JSONValue) {
         self.activity = activity
     }
 }

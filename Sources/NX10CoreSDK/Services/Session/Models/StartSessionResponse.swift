@@ -16,8 +16,14 @@ public struct StartSessionAPIResponse: Decodable {
 // MARK: - Data Container
 public struct SessionData: Decodable {
     public let token: String
-    public let deviceConfig: DeviceConfig?
+    /// Raw lossless JSON — pass this back to the API as-is to avoid 400s from schema drift.
+    public let deviceConfig: JSONValue?
     public let endpoints: [Endpoint]
+
+    /// Typed accessor for the known fields consumed by the SDK.
+    public var typedDeviceConfig: DeviceConfig? {
+        try? deviceConfig?.decode(DeviceConfig.self)
+    }
 }
 
 // MARK: - Endpoint Details
