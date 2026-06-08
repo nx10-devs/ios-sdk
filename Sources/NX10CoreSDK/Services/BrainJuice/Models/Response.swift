@@ -8,7 +8,7 @@
 import Foundation
 
 extension BrainJuice {
-    public struct BrainJuiceResponse: Codable {
+    public struct Response: Codable {
         public let status: String
         public let data: StatusData
     }
@@ -31,8 +31,8 @@ extension BrainJuice {
         public let confience: Double?
         public let confidenceTop: Double?
         public let confidenceBottom: Double?
-        public let subIndices: BrainJuiceSubIndices?
-        public let subIndicesConfidence: BrainJuiceSubIndicesConfidence?
+        public let subIndices: SubIndices?
+        public let subIndicesConfidence: SubIndicesConfidence?
         
         enum CodingKeys: String, CodingKey {
             case date
@@ -47,12 +47,12 @@ extension BrainJuice {
         }
     }
     
-    public struct BrainJuiceSubIndicesConfidence: Codable {
+    public struct SubIndicesConfidence: Codable {
         public let cognitiveIndex: Double?
         public let physicalIndex: Double?
     }
     
-    public struct BrainJuiceSubIndices: Codable {
+    public struct SubIndices: Codable {
         public let motorStability: Double?
         // Add other sub-indices here as needed in the future
         public init(motorStability: Double? = nil) {
