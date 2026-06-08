@@ -10,11 +10,11 @@ import SwiftUI
 public struct NX10DebugView: View {
     
     @StateObject var debugProvider: DebugProvider = .shared
-    @Binding var showDebugView: Bool
+    @Binding var showDevView: Bool
     @State private var showDetailed = false
     
-    public init(showDebugView: Binding<Bool>) {
-        self._showDebugView = showDebugView
+    public init(showDevView: Binding<Bool>) {
+        self._showDevView = showDevView
     }
     
     public var body: some View {
@@ -27,7 +27,7 @@ public struct NX10DebugView: View {
                             .font(.headline)
                         Spacer()
                         Button {
-                            showDebugView = false
+                            showDevView = false
                         } label: {
                             Image(systemName: "xmark")
                                 .foregroundStyle(.black)
@@ -128,5 +128,5 @@ public struct NX10DebugView: View {
 }
 
 #Preview(traits: .portrait) {
-    NX10DebugView(showDebugView: .constant(true))
+    NX10DebugView(showDevView: .constant(true))
 }

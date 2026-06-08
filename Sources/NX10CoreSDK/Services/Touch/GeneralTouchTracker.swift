@@ -153,7 +153,6 @@ public final class GeneralTouchTracker {
             cleanUpTouch(objectId: objectId, touchId: touchId)
         }
         
-
         let roundedXmm = xMm.roundedUp(toPlaces: 3)
         let roundedYMm = yMm.roundedUp(toPlaces: 3)
         let roundedRadiusMm = radiusMm.roundedUp(toPlaces: 3)
