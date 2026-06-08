@@ -102,6 +102,7 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
             } catch {
                 // TODO: Implement retry logic with backoff
                 // TODO: Queue failed payloads for offline handling
+                session.reset()
             }
         }
     }
