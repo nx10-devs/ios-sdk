@@ -88,7 +88,7 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
         Task(name: "telemetry-upload", priority: .utility) {
             do {
                 // POST and handle SaaQ trigger response
-                let saaqTrigger: SaaQResponse? = try await uploader.POST(payload, for: .telemetry)
+                let saaqTrigger: SaaQResponse? = try await uploader.POST(payload, for: .telemetry, for: nil)
                 
                 // Publish trigger event if received
                 if let trigger = saaqTrigger {

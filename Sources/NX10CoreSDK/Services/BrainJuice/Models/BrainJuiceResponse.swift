@@ -10,33 +10,46 @@ import Foundation
 extension BrainJuice {
     public struct BrainJuiceResponse: Codable {
         public let status: String
-        public let data: BrainJuiceStatusData
+        public let data: StatusData
     }
     
-    public struct BrainJuiceStatusData: Codable {
-        public let history: [BrainJuiceHistoryEntry]
-        public let realTime: BrainJuiceRealTime
+    public struct StatusData: Codable {
+        public let history: [HistoryEntry]
+        public let realTime: HistoryEntry?
+        public let metadata: MetaData?
     }
     
-    public struct BrainJuiceHistoryEntry: Codable {
+    public struct MetaData: Codable {
+        public let baselinesLastUpdated: String
+    }
+    
+    public struct HistoryEntry: Codable {
         public let date: String
         public let index: Double?
+        public let fidelity: Int?
+        public let fidelityClassification: String?
         public let confience: Double?
         public let confidenceTop: Double?
         public let confidenceBottom: Double?
         public let subIndices: BrainJuiceSubIndices?
         public let subIndicesConfidence: BrainJuiceSubIndicesConfidence?
+        
+        enum CodingKeys: String, CodingKey {
+            case date
+            case index
+            case fidelity
+            case fidelityClassification = "fidelity_classification"
+            case confience
+            case confidenceTop
+            case confidenceBottom
+            case subIndices
+            case subIndicesConfidence
+        }
     }
     
     public struct BrainJuiceSubIndicesConfidence: Codable {
         public let cognitiveIndex: Double?
         public let physicalIndex: Double?
-    }
-    
-    public struct BrainJuiceRealTime: Codable {
-        public let index: Double?
-        public let subIndices: BrainJuiceSubIndices
-        public let timestamp: String?
     }
     
     public struct BrainJuiceSubIndices: Codable {

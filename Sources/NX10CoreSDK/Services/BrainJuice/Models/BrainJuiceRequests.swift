@@ -66,4 +66,12 @@ public extension BrainJuice {
         public let weight: Double
         public let direction: Int
     }
+    
+    public struct RefreshBrainJuice: Codable {
+        public let source: String
+        
+        enum CodingKeys: String, CodingKey {
+            case source = "id_source"
+        }
+    }
 }

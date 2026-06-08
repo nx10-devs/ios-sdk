@@ -12,7 +12,7 @@ import JWTDecode
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R?
+    func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
     func GET<R:Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R?
     func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R?
 }
@@ -34,9 +34,12 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType) async throws -> R? {
+    public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
-        let url = try endpointProvider.url(for: endpoint)
+        var url = try endpointProvider.url(for: endpoint)
+        if let route {
+            url = url.appendingPathComponent(route)
+        }
         print(url)
         return try await self.execute(payload, for: url)
     }

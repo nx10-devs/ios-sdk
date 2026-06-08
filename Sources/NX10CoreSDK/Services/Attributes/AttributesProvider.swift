@@ -34,7 +34,7 @@ public class AttributesProvider: AttributesProviding {
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
         Task(name: "analytics-task", priority: .utility) {
             do {
-                let _: GenericResponse? = try await networkService.POST(deviceLog, for: .attributes)
+                let _: GenericResponse? = try await networkService.POST(deviceLog, for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -54,7 +54,7 @@ public class AttributesProvider: AttributesProviding {
             let keyboardLanguage = appService.keyboardLanguage
             let data = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
-                let _: GenericResponse? = try await networkService.POST(data, for: .attributes)
+                let _: GenericResponse? = try await networkService.POST(data, for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -64,7 +64,7 @@ public class AttributesProvider: AttributesProviding {
     public func appDidChangeState(_ state: AppState) async {
         Task(name: "attributes-task", priority: .utility) {
             do {
-                let _: GenericResponse? = try await networkService.POST(state, for: .attributes)
+                let _: GenericResponse? = try await networkService.POST(state, for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }

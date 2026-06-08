@@ -48,7 +48,8 @@ public final class NX10Core: ObservableObject {
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
     let networkservice: Networking
-
+    
+    private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
     private var sessionData: SessionData? = nil {
@@ -227,6 +228,10 @@ extension NX10Core {
         
         if let activity = deviceConfig.activity {
             activityProvider.setActivity(activity)
+        }
+        
+        if let decodedtoken = NX10Token.createToken(from: sessionData.token) {
+            brainJuiceProvider.setDecodedToken(decodedtoken)
         }
         
         Task {

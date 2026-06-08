@@ -32,7 +32,7 @@ public class AnalyticsProvider: AnalyticsProviding {
         
         Task {
             do {
-                let _: EmptyResponse? = try await networkService.POST(payload, for: .analytics)
+                let _: EmptyResponse? = try await networkService.POST(payload, for: .analytics, for: nil)
             } catch {
                 
                 print(error.localizedDescription)
