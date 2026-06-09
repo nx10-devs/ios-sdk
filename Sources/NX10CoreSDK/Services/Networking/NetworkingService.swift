@@ -112,7 +112,7 @@ public final class NetworkService: Networking {
             return decoded
         } catch {
             if isDebug {
-                print(error.localizedDescription)
+                print(error)
             }
             throw error
         }
