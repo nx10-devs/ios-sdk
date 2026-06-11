@@ -30,7 +30,7 @@ public extension String {
     enum DateFormat: String {
         case yyyMMddHmmss = "yyyy-MM-dd h:mm:ss a"
         case MMddHHmmss = "MM-dd h:mm:ss a"
-        case ddMMyyHHmm = "dd/MM/yy hh:mm"
+        case ddMMyyHHmm = "dd/MM/yy h:mma"
         case yyyyMMdd = "yyyy-MM-dd"
         case hmm = "h:mm a"
     }
