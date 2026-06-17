@@ -47,7 +47,7 @@ extension BrainJuice {
         public let subIndicesConfidenceBottom: SubIndices?
         
         enum CodingKeys: String, CodingKey {
-            case timeStart
+            case timeStart = "time_start"
             case index
             case confidenceClassification = "confidence_classification"
             case confidence
@@ -61,12 +61,12 @@ extension BrainJuice {
     }
     
     public struct SubIndices: Codable {
-        public let cognitiveLoad: Double?
-        public let motorControl: Double?
+        public let motorStability: Double?
+        public let behaviourRestlessness: Double?
         
         enum CodingKeys: String, CodingKey {
-            case cognitiveLoad = "cognitive_load"
-            case motorControl = "motor_control"
+            case motorStability = "cognitive_load"
+            case behaviourRestlessness = "motor_control"
         }
     }
 }
