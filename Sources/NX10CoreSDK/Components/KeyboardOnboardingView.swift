@@ -28,7 +28,7 @@ public struct KeyboardOnboardingView: View {
     
     public init(
         iconImage: UIImage? = nil,
-        title: String = "Welcome to NX10",
+        title: String = "Welcome to nx10",
         pages: [String],
         currentPage: Int = 0,
         onPageIndicatorTapped: ((Int) -> Void)? = nil
@@ -113,7 +113,7 @@ private struct PageIndicatorDot: View {
 
 #Preview {
     KeyboardOnboardingView(
-        title: "Welcome to NX10",
+        title: "Welcome to nx10",
         pages: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", "Stuff"],
         currentPage: 0,
         onPageIndicatorTapped: { page in

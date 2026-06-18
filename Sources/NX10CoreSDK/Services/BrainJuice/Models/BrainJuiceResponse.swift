@@ -19,12 +19,14 @@ extension BrainJuice {
         public let metadata: MetaData?
         public let confidenceClassification: String?
         public let index: Double?
-        
+        public let resilienceClassification: String?
+
         enum CodingKeys: String, CodingKey {
             case history
             case realTime
             case metadata
             case confidenceClassification = "confidence_classification"
+            case resilienceClassification = "resilience_classification"
             case index
         }
     }

@@ -31,6 +31,7 @@ public extension String {
         case yyyMMddHmmss = "yyyy-MM-dd h:mm:ss a"
         case MMddHHmmss = "MM-dd h:mm:ss a"
         case ddMMyyHHmm = "dd/MM/yy h:mma"
+        case ddMMyyHHmmss = "dd/MM/yy h:mmssa"
         case yyyyMMdd = "yyyy-MM-dd"
         case hmm = "h:mm a"
     }
