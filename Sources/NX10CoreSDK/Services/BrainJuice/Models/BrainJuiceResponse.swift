@@ -48,6 +48,30 @@ extension BrainJuice {
         public let subIndicesConfidenceTop: SubIndices?
         public let subIndicesConfidenceBottom: SubIndices?
         
+        public init(
+            timeStart: String?,
+            index: Int?,
+            confidenceClassification: String?,
+            confidence: Double?,
+            confidenceTop: Int?,
+            confidenceBottom: Int?,
+            subIndices: SubIndices?,
+            subIndicesConfidence: SubIndices?,
+            subIndicesConfidenceTop: SubIndices?,
+            subIndicesConfidenceBottom: SubIndices?
+        ) {
+            self.timeStart = timeStart
+            self.index = index
+            self.confidenceClassification = confidenceClassification
+            self.confidence = confidence
+            self.confidenceTop = confidenceTop
+            self.confidenceBottom = confidenceBottom
+            self.subIndices = subIndices
+            self.subIndicesConfidence = subIndicesConfidence
+            self.subIndicesConfidenceTop = subIndicesConfidenceTop
+            self.subIndicesConfidenceBottom = subIndicesConfidenceBottom
+        }
+        
         enum CodingKeys: String, CodingKey {
             case timeStart = "time_start"
             case index
