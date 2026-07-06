@@ -36,11 +36,13 @@ public extension Activity {
     public struct ActionData: Decodable {
 
         public let timestamp: String?
-        public let device: Device
+        public let device: Device?
+        public let user: User?
 
-        public init(timestamp: String?, device: Device) {
+        public init(timestamp: String?, device: Device, user: User?) {
             self.timestamp = timestamp
             self.device = device
+            self.user = user
         }
     }
     
@@ -49,6 +51,16 @@ public extension Activity {
         
         public init(kineticState: String) {
             self.kineticState = kineticState
+        }
+    }
+    
+    public struct User: Decodable {
+        public let position: String?
+        public let motion: String?
+        
+        public init(position: String?, motion: String?) {
+            self.position = position
+            self.motion = motion
         }
     }
 }
