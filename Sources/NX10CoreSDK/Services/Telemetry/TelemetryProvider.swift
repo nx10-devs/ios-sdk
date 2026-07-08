@@ -23,6 +23,7 @@ public final class TelemetryProvider: TelemetryProviding {
     private let standardisedTapPoint = TouchCoordinateProvider()
     private var sessionStarted = false
     private var screenObservers: [NSObjectProtocol] = []
+    private var window: Int? = nil
 
     // MARK: - Initialization
     public init(
@@ -79,17 +80,12 @@ public final class TelemetryProvider: TelemetryProviding {
     
     public func shouldStartTelemetry(with window: Int) async throws -> Bool {
 
-        startTelemetryEventLoop(with: window)
+        self.window = window
+        
+        startTelemetryEventLoop()
         startTrackingMotion()
         
         return true
-    }
-    
-    public func startTelemetryEventLoop(with window: Int) {
-        scheduler.start(interval: TimeInterval(window)) { [weak self] in
-            Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
-        }
-        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
     }
     
     public func stopTelemetry() {
@@ -99,13 +95,17 @@ public final class TelemetryProvider: TelemetryProviding {
         analyticsService.sendAnalytics(.init(eventName: .telemetryEnded))
     }
     
-    public func startTrackingMotion() {
+    public func startTelemetry() {
+        guard let window else { return }
+        startTelemetryEventLoop()
         motionSensor.start(
             gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
             accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) }
         )
+        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
+
     }
-    
+
     // MARK: - Input Handling
 
     public func keyPressed(_ key: String) {
@@ -121,6 +121,23 @@ public final class TelemetryProvider: TelemetryProviding {
     public func processGeneralTouch(_ sample: GeneralTouchSample) {
         telemetryCollector.appendGeneralTouch(sample)
     }
+    
+    // MARK: Private methods
+    private func startTelemetryEventLoop() {
+        guard let window else { return }
+        scheduler.start(interval: TimeInterval(window)) { [weak self] in
+            Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
+        }
+        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
+    }
+    
+    private func startTrackingMotion() {
+        motionSensor.start(
+            gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
+            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) }
+        )
+    }
+    
 
 //    public func appendKeyboardTouch(touchId: String,
 //                                    touchType: GeneralTouchSample.TouchType,
