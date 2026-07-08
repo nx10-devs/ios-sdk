@@ -14,10 +14,9 @@ public import UIKit
 public protocol TelemetryProviding: AnyObject {
     // Lifecycle
     func shouldStartTelemetry(with window: Int) async throws -> Bool
-    func startTelemetryEventLoop(with window: Int)
     func stopTelemetry()
-    func startTrackingMotion()
-
+    func startTelemetry()
+    
     // Key logical input (for the "kb" summary — hold / flight / press counts)
     func keyPressed(_ key: String)
     func keyReleased(_ key: String)
