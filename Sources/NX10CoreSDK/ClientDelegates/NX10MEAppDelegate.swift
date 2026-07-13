@@ -15,8 +15,8 @@ open class NX10MEAppDelegate: NSObject, UIApplicationDelegate {
     }
     
     open func application(_ application: UIApplication,
-                     configurationForConnecting connectingSceneSession: UISceneSession,
-                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+                          configurationForConnecting connectingSceneSession: UISceneSession,
+                          options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
         sceneConfig.delegateClass = getClientDelegate()
         return sceneConfig
