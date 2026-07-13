@@ -26,41 +26,24 @@ public extension Activity {
     public struct Action: Decodable {
         public let status: String
         public let data: ActionData
-
-        public init(status: String, data: ActionData) {
-            self.status = status
-            self.data = data
-        }
-    }
-    
-    public struct ActionData: Decodable {
-
-        public let timestamp: String?
-        public let device: Device?
-        public let user: User?
-
-        public init(timestamp: String?, device: Device, user: User?) {
-            self.timestamp = timestamp
-            self.device = device
-            self.user = user
-        }
-    }
-    
-    public struct Device: Decodable {
-        public let kineticState: String
         
-        public init(kineticState: String) {
-            self.kineticState = kineticState
-        }
-    }
-    
-    public struct User: Decodable {
-        public let position: String?
-        public let motion: String?
         
-        public init(position: String?, motion: String?) {
-            self.position = position
-            self.motion = motion
+        public struct ActionData: Decodable {
+
+            public let timestamp: String?
+            public let device: Device?
+            public let user: User?
+        }
+        
+        public struct Device: Decodable {
+            public let kineticState: String
+            public let orientation: String
+        }
+        
+        public struct User: Decodable {
+            public let position: String?
+            public let motion: String?
+            public let restingState: String?
         }
     }
 }

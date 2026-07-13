@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 public protocol ErrorProviding: AnyObject {
     func sendError(_ error: Error)
-    func sendSDKError(_ error: ErrorType)
     func sendMessage(_ message: String)
     func setTrackingEnabled(_ enabled: Bool)
 }
@@ -25,9 +24,6 @@ public final class ErrorProvider: ErrorProviding {
     }
     
     public func sendError(_ error: Error) {
-    }
-    
-    public func sendSDKError(_ error: ErrorType) {
     }
     
     public func sendMessage(_ message: String) {

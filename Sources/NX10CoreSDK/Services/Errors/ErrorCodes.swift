@@ -12,6 +12,7 @@ extension NSError {
         case missingDeviceMap = -0001
         case missingAPIKey = -0002
         case jwtTokenMissing = -0003
+        case failedToStartSession = -0004
         
         var code: Int {
             return rawValue
@@ -26,6 +27,8 @@ extension NSError {
                 string = "missing-api-key"
             case .jwtTokenMissing:
                 string = "jwt-token-missing"
+            case .failedToStartSession:
+                string = "failed-to-start-session"
             }
             
             return "nx10-core-sdk-\(string)-error"

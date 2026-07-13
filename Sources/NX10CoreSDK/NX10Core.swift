@@ -202,7 +202,7 @@ extension NX10Core {
             if isDebug {
                 fatalError("failed to start session")
             }
-            errorProvider.sendSDKError(.sessionFailed)
+            errorProvider.sendError(NSError.error(for: .failedToStartSession))
         }
         return sessionData != nil
     }

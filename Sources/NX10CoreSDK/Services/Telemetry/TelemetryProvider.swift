@@ -97,6 +97,7 @@ public final class TelemetryProvider: TelemetryProviding {
     
     public func startTelemetry() {
         guard let window else { return }
+        print("starting telemetry")
         startTelemetryEventLoop()
         motionSensor.start(
             gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
