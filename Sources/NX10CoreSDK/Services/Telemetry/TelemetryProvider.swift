@@ -101,10 +101,10 @@ public final class TelemetryProvider: TelemetryProviding {
         startTelemetryEventLoop()
         motionSensor.start(
             gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
-            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) }
+            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) },
+            magnetCallback: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
         )
         analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
-
     }
 
     // MARK: - Input Handling
@@ -135,7 +135,8 @@ public final class TelemetryProvider: TelemetryProviding {
     private func startTrackingMotion() {
         motionSensor.start(
             gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
-            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) }
+            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) },
+            magnetCallback: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
         )
     }
     

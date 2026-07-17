@@ -63,12 +63,12 @@ public struct MotionSample: Codable {
 // `MotionEvent.getTouchMajor()` — both report the major axis of the contact
 // ellipse. See `CoordinateConverter.radiusToMm(_:on:)` for the conversion.
 public struct GeneralTouchSample: Codable {
-
+    
     /// Touch event sub-types for the "touch" V2 event.
     public enum TouchType: String, Codable {
         case down, move, up, stationary, cancelled
     }
-
+    
     /// Key/object classification for a touch (keyboard touches only).
     public enum TouchObject: String, Codable {
         case submit
@@ -81,7 +81,7 @@ public struct GeneralTouchSample: Codable {
         case emoji
         case utility
     }
-
+    
     /// Stable UUID string identifying this gesture (constant for down → move* → up).
     public let touchId:     String
     public let touchType:   TouchType
@@ -97,7 +97,7 @@ public struct GeneralTouchSample: Codable {
     public let velocityX:   Double
     public let velocityY:   Double
     public let timestampMs: Int64
-
+    
     public init(touchId: String,
                 touchType: TouchType,
                 touchObject: TouchObject?,
@@ -186,41 +186,49 @@ public enum TextCorrectionType: String {
 // MARK: - Telemetry Envelope
 
 public struct TelemetryEnvelope: Codable {
-    public init(deviceName: String, deviceToken: String, deviceType: DeviceTypePayload,
-                appVersion: String, appBuild: String,
-                keyboard: [KeyboardMetricsSummary]? = nil,
-                gyroscope: [MotionSample]? = nil,
-                accelerometer: [MotionSample]? = nil,
-                generalTouch: [GeneralTouchSample]? = nil,
-                kbStateEvents: [KbStateSample]? = nil,
-                textDelEvents: [TextDelSample]? = nil,
-                textCorEvents: [TextCorSample]? = nil,
-                screenEvents: [ScreenEventSample]? = nil) {
-        self.deviceName    = deviceName
-        self.deviceToken   = deviceToken
-        self.deviceType    = deviceType
-        self.appVersion    = appVersion
-        self.appBuild      = appBuild
-        self.keyboard      = keyboard
-        self.gyroscope     = gyroscope
-        self.accelerometer = accelerometer
-        self.generalTouch  = generalTouch
-        self.kbStateEvents = kbStateEvents
-        self.textDelEvents = textDelEvents
-        self.textCorEvents = textCorEvents
-        self.screenEvents  = screenEvents
-    }
+    public init(
+        deviceName: String,
+        deviceToken: String,
+        deviceType: DeviceTypePayload,
+        
+        appVersion: String,
+        appBuild: String,
+        keyboard: [KeyboardMetricsSummary]? = nil,
+        gyroscope: [MotionSample]? = nil,
+        accelerometer: [MotionSample]? = nil,
+        magnetometer: [MotionSample]? = nil,
+        generalTouch: [GeneralTouchSample]? = nil,
+        kbStateEvents: [KbStateSample]? = nil,
+        textDelEvents: [TextDelSample]? = nil,
+        textCorEvents: [TextCorSample]? = nil,
+        screenEvents: [ScreenEventSample]? = nil) {
+            self.deviceName    = deviceName
+            self.deviceToken   = deviceToken
+            self.deviceType    = deviceType
+            self.appVersion    = appVersion
+            self.appBuild      = appBuild
+            self.keyboard      = keyboard
+            self.gyroscope     = gyroscope
+            self.accelerometer = accelerometer
+            self.magnetometer = magnetometer
+            self.generalTouch  = generalTouch
+            self.kbStateEvents = kbStateEvents
+            self.textDelEvents = textDelEvents
+            self.textCorEvents = textCorEvents
+            self.screenEvents  = screenEvents
+        }
     
     public let deviceName: String
     public let deviceToken: String
     public let deviceType: DeviceTypePayload
     public let appVersion: String
     public let appBuild: String
-
+    
     // Data slices
     public let keyboard: [KeyboardMetricsSummary]?
     public let gyroscope: [MotionSample]?
     public let accelerometer: [MotionSample]?
+    public let magnetometer: [MotionSample]?
     /// Unified touch samples — both keyboard and app-level — as "touch" V2 events.
     public let generalTouch:  [GeneralTouchSample]?
     public let kbStateEvents: [KbStateSample]?

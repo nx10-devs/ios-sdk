@@ -26,6 +26,8 @@ public struct DeviceConfig: Decodable {
         public let accelerometerSampleHz: Int?
         public let keyboardTouchSampleHz: String?
         public let acquisitionWindowSize: Int?
+        public let magnetometerSampleHz: Int?
+        public let screenBrightnessDelta: Int?
     }
 
     public struct Device: Decodable {

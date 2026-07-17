@@ -14,14 +14,21 @@ public final class MotionTracker {
     private let errorProvider: ErrorProviding
     private var accUpdateInterval: TimeInterval?
     private var gyrUpdateInterval: TimeInterval?
+    private var magnetometerUpdateInterval: TimeInterval?
     private var sensor: DeviceConfig.Sensor? {
         didSet {
-            guard
-                let accelerometerSampleHz = sensor?.accelerometerSampleHz,
-                let gyroscopeSampleHz = sensor?.gyroscopeSampleHz
-            else { return }
-            accUpdateInterval = (1.0 / Double(accelerometerSampleHz))
-            gyrUpdateInterval = (1.0 / Double(gyroscopeSampleHz))
+            if
+                let accelerometerSampleHz = sensor?.accelerometerSampleHz {
+                accUpdateInterval = (1.0 / Double(accelerometerSampleHz))
+            }
+            
+            if let gyroscopeSampleHz = sensor?.gyroscopeSampleHz {
+                gyrUpdateInterval = (1.0 / Double(gyroscopeSampleHz))
+            }
+            
+            if let magnetometerSampleHz = sensor?.magnetometerSampleHz {
+                magnetometerUpdateInterval = (1.0 / Double(magnetometerSampleHz))
+            }
         }
     }
     
@@ -32,6 +39,7 @@ public final class MotionTracker {
         
         gyrUpdateInterval = hz
         accUpdateInterval = hz
+        magnetometerUpdateInterval = hz
     }
     
     public func setSensorData(_ data: DeviceConfig.Sensor?) {
@@ -43,15 +51,16 @@ public final class MotionTracker {
 
     @MainActor func start(
         gyro: @escaping (MotionSample) -> Void,
-        accel: @escaping (MotionSample) -> Void
+        accel: @escaping (MotionSample) -> Void,
+        magnet: @escaping (MotionSample) -> Void
     ) {
         // Use device motion to access the bias-corrected gyroscope sensor
         if motionManager.isDeviceMotionAvailable {
             if isDebug {
                 print("LOG: Started bias-corrected gyro tracking via Device Motion")
             }
-
-            motionManager.deviceMotionUpdateInterval = gyrUpdateInterval ?? 30
+            
+            motionManager.deviceMotionUpdateInterval = gyrUpdateInterval ?? 30.0
             motionManager.startDeviceMotionUpdates(to: .main) { data, _ in
                 guard let data else { return }
                 
@@ -90,7 +99,14 @@ public final class MotionTracker {
             if isDebug {
                 print("LOG: Started accelerometer tracking")
             }
-            motionManager.accelerometerUpdateInterval = accUpdateInterval ?? 30
+            
+            guard
+                let accUpdateInterval = accUpdateInterval
+            else {
+                return
+            }
+            
+            motionManager.accelerometerUpdateInterval = accUpdateInterval
             motionManager.startAccelerometerUpdates(to: .main) { data, _ in
 
                 guard let data else { return }
@@ -134,6 +150,54 @@ public final class MotionTracker {
             }
             errorProvider.sendError(NSError(domain: "Accelerometer not available", code: -1))
         }
+        
+        if motionManager.isMagnetometerAvailable {
+            if isDebug {
+                print("Magnetic field started")
+            }
+            
+            motionManager.magnetometerUpdateInterval = magnetometerUpdateInterval ?? 30.0
+            motionManager.startMagnetometerUpdates(to: .main) { data, error in
+                guard let data = data else { return }
+                
+                // 1. Calculate timestampOffsetMs (offset from bts in milliseconds)
+                // CMMagnetometerData.timestamp is in seconds (system uptime).
+                // We convert to milliseconds, find the offset from your base timestamp (bts),
+                // and round to 3 decimal places.
+                let bts: Double = Double(Self.nowMs())
+                let rawTimestampMs = data.timestamp * 1000.0
+                let offset = rawTimestampMs - bts
+                let timestampOffsetMs = (offset * 1000.0).rounded() / 1000.0
+                
+                // 2. Extract magnetic field vector (in µT)
+                let rawField = data.magneticField
+                
+                // 3. Round axes to 1 decimal place
+                // Note: iOS native CoreMotion axes perfectly match your requested layout:
+                // +X is right, +Y is up/top of phone, +Z points straight out of screen (towards sky when flat).
+                let xRounded = (rawField.x * 10.0).rounded() / 10.0
+                let yRounded = (rawField.y * 10.0).rounded() / 10.0
+                let zRounded = (rawField.z * 10.0).rounded() / 10.0
+                
+                // 4. Map to your data structure
+                let magnetData = MotionSample(
+                    timestampMs: Self.nowMs(),
+                    x: xRounded,
+                    y: yRounded,
+                    z: zRounded
+                )
+//                
+//                if isDebug {
+//                    // Updated to reference the magnetometer debug provider
+//                    DebugProvider.shared.updateMagnetometer(magnetometer: magnetData)
+//                }
+                guard
+                    self.magnetometerUpdateInterval != nil
+                else { return }
+                // Callback to your handler
+                magnet(magnetData)
+            }
+        }
     }
 
     func stop() {
@@ -142,6 +206,7 @@ public final class MotionTracker {
         }
         motionManager.stopDeviceMotionUpdates()
         motionManager.stopAccelerometerUpdates()
+        motionManager.stopMagnetometerUpdates()
     }
 
     private static func nowMs() -> Int64 {

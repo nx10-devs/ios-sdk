@@ -14,7 +14,7 @@ public final class TelemetrySession {
     // MARK: - Sensor buffers
     public private(set) var gyro: [MotionSample] = []
     public private(set) var accel: [MotionSample] = []
-
+    public private(set) var magnet: [MotionSample] = []
     /// Unified touch samples ("touch" V2 events) — keyboard + app-level.
     public private(set) var generalTouches: [GeneralTouchSample] = []
     /// Keyboard visibility transitions ("kb-state" events)
@@ -41,6 +41,7 @@ public final class TelemetrySession {
     // MARK: - Append APIs
     public func appendGyro(_ sample: MotionSample) { gyro.append(sample) }
     public func appendAccel(_ sample: MotionSample) { accel.append(sample) }
+    public func appendMagnet(_ sample: MotionSample) { magnet.append(sample) }
 
     public func appendGeneralTouch(_ sample: GeneralTouchSample) {
         generalTouches.append(sample)

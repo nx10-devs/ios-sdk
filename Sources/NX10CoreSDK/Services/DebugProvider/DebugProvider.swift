@@ -14,13 +14,13 @@ public final class DebugProvider: ObservableObject, Sendable {
     // 1. These drive your UI and only change every 2 seconds
     @Published public private(set) var gyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     @Published public private(set) var acc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    
+    @Published public private(set) var mag: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     @Published public var nativeScale = UIScreen.main.nativeScale
     
     // 2. Temporary storage for the fast-streaming background sensor data
     private var latestGyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     private var latestAcc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    
+    private var latestMag: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     private var throttlingTimer: Timer?
     public static let shared = DebugProvider()
     
@@ -46,6 +46,10 @@ public final class DebugProvider: ObservableObject, Sendable {
         self.latestAcc = acc
     }
     
+    public func updateMag(mag: MotionSample) {
+        self.latestMag = mag
+    }
+    
     // 4. Flush the latest saved samples to the UI exactly every 2 seconds
     public func startUIThrottler() {
         throttlingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
@@ -54,6 +58,7 @@ public final class DebugProvider: ObservableObject, Sendable {
             // Push to the @Published properties to trigger UI refresh
             self.gyro = self.latestGyro
             self.acc = self.latestAcc
+            self.mag = self.latestMag
         }
     }
     

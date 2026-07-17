@@ -13,7 +13,8 @@ import CoreGraphics
 public protocol MotionSensorProvider: AnyObject {
     func start(
         gyroCallback: @escaping (MotionSample) -> Void,
-        accelCallback: @escaping (MotionSample) -> Void
+        accelCallback: @escaping (MotionSample) -> Void,
+        magnetCallback: @escaping (MotionSample) -> Void
     )
     func stop()
 }
@@ -28,9 +29,10 @@ public final class CoreMotionSensorProvider: MotionSensorProvider {
     
     @MainActor public func start(
         gyroCallback: @escaping (MotionSample) -> Void,
-        accelCallback: @escaping (MotionSample) -> Void
+        accelCallback: @escaping (MotionSample) -> Void,
+        magnetCallback: @escaping (MotionSample) -> Void
     ) {
-        motionTracker.start(gyro: gyroCallback, accel: accelCallback)
+        motionTracker.start(gyro: gyroCallback, accel: accelCallback, magnet: magnetCallback)
     }
     
     public func stop() {
@@ -47,8 +49,9 @@ public final class MockMotionSensorProvider: MotionSensorProvider {
     
     public func start(
         gyroCallback: @escaping (MotionSample) -> Void,
-        accelCallback: @escaping (MotionSample) -> Void
-    ) {
+        accelCallback: @escaping (MotionSample) -> Void,
+        magnetCallback: @escaping (MotionSample) -> Void
+    )  {
         isStarted = true
     }
     

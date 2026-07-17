@@ -109,6 +109,7 @@ final class MockTelemetryCollector: TelemetryCollectorComprehensive {
     
     func appendAccel(_ sample: MotionSample) {}
     func appendTouch(_ sample: TouchSample) {}
+    func appendMag(_ sample: MotionSample) {}
     func flushIfNeeded() { flushCalled = true }
     func attemptUploadAndFlushNow() { flushCalled = true }
     func startTimer() {}

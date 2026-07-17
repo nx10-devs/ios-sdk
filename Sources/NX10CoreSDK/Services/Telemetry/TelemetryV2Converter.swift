@@ -30,6 +30,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             (env.gyroscope?.map(\.timestampMs) ?? []) +
             (env.accelerometer?.map(\.timestampMs) ?? []) +
             (env.generalTouch?.map(\.timestampMs) ?? []) +
+            (env.magnetometer?.map(\.timestampMs) ?? []) +
             (env.kbStateEvents?.map(\.timestampMs) ?? []) +
             (env.textDelEvents?.map(\.timestampMs) ?? []) +
             (env.textCorEvents?.map(\.timestampMs) ?? []) +
@@ -51,6 +52,13 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             for g in gyro {
                 let off = offsetMs(baseMs: baseMs, eventMs: g.timestampMs)
                 events.append(.gyro(offsetMs: off, x: g.x, y: g.y, z: g.z))
+            }
+        }
+        
+        if let mag = env.magnetometer {
+            for m in mag {
+                let off = offsetMs(baseMs: baseMs, eventMs: m.timestampMs)
+                events.append(.mag(offsetMs: off, x: m.x, y: m.y, z: m.z))
             }
         }
 
@@ -141,6 +149,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             case .touch(let o, _, _, _, _, _, _): return o
             case .gyro(let o, _, _, _):                 return o
             case .acc(let o, _, _, _):                  return o
+            case .mag(let o, _, _, _):                 return o
             case .kbState(let o, _):                    return o
             case .textDel(let o, _):                    return o
             case .textCor(let o, _):                    return o

@@ -6,6 +6,7 @@ public struct TelemetryV2Snapshot {
     public let keyboardSummary: KeyboardSummary?
     public let gyroscopeData: [[String: Any]]
     public let accelerometerData: [[String: Any]]
+    public let magnetometerData: [[String: Any]]
     public let touchKbEvents: [TouchKBEvent]
     public let touchEvents: [TouchEvent]
 
@@ -14,12 +15,14 @@ public struct TelemetryV2Snapshot {
                 keyboardSummary: KeyboardSummary?,
                 gyroscopeData: [[String: Any]],
                 accelerometerData: [[String: Any]],
+                magnetometerData: [[String: Any]],
                 touchKbEvents: [TouchKBEvent],
                 touchEvents: [TouchEvent]) {
         self.baseEpochMs = baseEpochMs
         self.endEpochMs = endEpochMs
         self.keyboardSummary = keyboardSummary
         self.gyroscopeData = gyroscopeData
+        self.magnetometerData = magnetometerData
         self.accelerometerData = accelerometerData
         self.touchKbEvents = touchKbEvents
         self.touchEvents = touchEvents
@@ -30,12 +33,14 @@ public struct TelemetryV2Snapshot {
         metrics: KeyboardMetricsSummary?,
         gyroscope: [MotionSample]?,
         accelerometer: [MotionSample]?,
+        magnetoMeter: [MotionSample]?,
         touchKb: [TouchKBEvent] = [],
         generalTouch: [TouchEvent] = []
     ) -> TelemetryV2Snapshot {
         let endMsCandidates: [Int64] =
             (gyroscope?.map { $0.timestampMs } ?? []) +
             (accelerometer?.map { $0.timestampMs } ?? []) +
+            (magnetoMeter?.map { $0.timestampMs } ?? []) +
             (touchKb.map { $0.timestampMs }) +
             (generalTouch.map { $0.timestampMs })
         let endMs = endMsCandidates.max() ?? windowBaseEpochMs
@@ -64,6 +69,13 @@ public struct TelemetryV2Snapshot {
             "y": $0.y,
             "z": $0.z
         ] }
+        
+        let magDicts: [[String: Any]] = (magnetoMeter ?? []).map { [
+            "timestamp": $0.timestampMs,
+            "x": $0.x,
+            "y": $0.y,
+            "z": $0.z
+        ]}
 
         return TelemetryV2Snapshot(
             baseEpochMs: windowBaseEpochMs,
@@ -71,6 +83,7 @@ public struct TelemetryV2Snapshot {
             keyboardSummary: summary,
             gyroscopeData: gyroDicts,
             accelerometerData: accDicts,
+            magnetometerData: magDicts,
             touchKbEvents: touchKb,
             touchEvents: generalTouch
         )
