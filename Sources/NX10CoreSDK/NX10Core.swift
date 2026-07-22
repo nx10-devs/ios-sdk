@@ -76,8 +76,8 @@ public final class NX10Core: ObservableObject {
         let analyticsService = AnalyticsProvider(networkService: networkService)
 
         // MARK: - Sensor Providers 
-        let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
-
+        let motionTracker = MotionTracker(errorProvider: errorProvider)
+        
         // MARK: - Scheduler & Event Publisher
         let scheduler: TelemetryScheduler = DefaultTelemetryScheduler()
         let eventPublisher: TelemetryEventPublisher = DefaultTelemetryEventPublisher()
@@ -93,7 +93,7 @@ public final class NX10Core: ObservableObject {
         // MARK: - Telemetry Service (Protocol-based initialization)
         let telemetryProvider = TelemetryProvider(
             telemetryCollector: telemetryCollector,
-            motionSensor: motionSensor,
+            motionSensor: motionTracker,
             scheduler: scheduler,
             eventPublisher: eventPublisher,
             analyticsService: analyticsService,
@@ -131,7 +131,7 @@ public final class NX10Core: ObservableObject {
         self.sessionProvider = sessionProvider
         
         // Keep original references for backward compatibility
-        self.motionTracker = MotionTracker(errorProvider: errorProvider)
+        self.motionTracker = motionTracker
         self.brainJuiceProvider = brainJuiceProvider
         self.touchProcessor = touchProcessor
         self.touchTracker = touchTracker

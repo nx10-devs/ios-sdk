@@ -14,7 +14,7 @@ public final class TelemetryProvider: TelemetryProviding {
     
     // MARK: - Dependencies (Protocol-based, not concrete)
     private let telemetryCollector: TelemetryCollectorComprehensive
-    private let motionSensor: MotionSensorProvider
+    private let motionSensor: MotionTracker
     private let scheduler: TelemetryScheduler
     private let eventPublisher: TelemetryEventPublisher
     private let analyticsService: AnalyticsProviding
@@ -28,7 +28,7 @@ public final class TelemetryProvider: TelemetryProviding {
     // MARK: - Initialization
     public init(
         telemetryCollector: TelemetryCollectorComprehensive,
-        motionSensor: MotionSensorProvider,
+        motionSensor: MotionTracker,
         scheduler: TelemetryScheduler,
         eventPublisher: TelemetryEventPublisher,
         analyticsService: AnalyticsProviding,
@@ -100,9 +100,9 @@ public final class TelemetryProvider: TelemetryProviding {
         print("starting telemetry")
         startTelemetryEventLoop()
         motionSensor.start(
-            gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
-            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) },
-            magnetCallback: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
+            gyro: { [weak self] in self?.telemetryCollector.appendGyro($0) },
+            accel: { [weak self] in self?.telemetryCollector.appendAccel($0) },
+            magnet: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
         )
         analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
     }
@@ -134,9 +134,9 @@ public final class TelemetryProvider: TelemetryProviding {
     
     private func startTrackingMotion() {
         motionSensor.start(
-            gyroCallback: { [weak self] in self?.telemetryCollector.appendGyro($0) },
-            accelCallback: { [weak self] in self?.telemetryCollector.appendAccel($0) },
-            magnetCallback: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
+            gyro: { [weak self] in self?.telemetryCollector.appendGyro($0) },
+            accel: { [weak self] in self?.telemetryCollector.appendAccel($0) },
+            magnet: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
         )
     }
     

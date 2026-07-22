@@ -51,6 +51,30 @@ public enum TelemetryV2Event: Codable {
         var c = encoder.unkeyedContainer()
 
         switch self {
+        case let .gyro(o, x, y, z):
+            try c.encode("gyro")
+            try c.encode(o)
+            try c.encode(x)
+            try c.encode(y)
+            try c.encode(z)
+            
+        case let .acc(o, x, y, z):
+            try c.encode("acc")
+            try c.encode(o)
+            try c.encode(x)
+            try c.encode(y)
+            try c.encode(z)
+            
+            // MARK: Versioned
+        case let .mag(o, x, y, z):
+            try c.encode("mag")
+            try c.encode("1")
+            try c.encode(o)
+            try c.encode(x)
+            try c.encode(y)
+            try c.encode(z)
+            
+            // MARK: Keyboard
         case let .touch(o, id, type, obj, x, y, r):
             // ["touch", "2", offsetMs, touchId, touchType, touchObject|null,
             //  xMm, yMm, touchRadiusMm]  — 9 items per API spec
@@ -64,30 +88,9 @@ public enum TelemetryV2Event: Codable {
             try c.encode(y)
             try c.encode(r)
 
-        case let .gyro(o, x, y, z):
-            try c.encode("gyro")
-            try c.encode(o)
-            try c.encode(x)
-            try c.encode(y)
-            try c.encode(z)
-            
-        case let .mag(o, v, x, y, z):
-            try c.encode("mag")
-            try c.encode(v)
-            try c.encode(o)
-            try c.encode(x)
-            try c.encode(y)
-            try c.encode(z)
-            
-        case let .acc(o, x, y, z):
-            try c.encode("acc")
-            try c.encode(o)
-            try c.encode(x)
-            try c.encode(y)
-            try c.encode(z)
-
         case let .kb(kp, erased, hold, wpm, bs, flights):
             try c.encode("kb")
+            try c.encode("2")
             try c.encode(kp)
             try c.encode(erased)
             try c.encode(hold)

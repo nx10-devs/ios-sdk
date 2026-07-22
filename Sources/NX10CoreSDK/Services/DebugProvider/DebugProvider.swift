@@ -12,15 +12,15 @@ public final class DebugProvider: ObservableObject, Sendable {
     @Published public var yPoint: CGFloat = 0.0
     
     // 1. These drive your UI and only change every 2 seconds
-    @Published public private(set) var gyro: MotionSample = .init(version: nil, timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    @Published public private(set) var acc: MotionSample = .init(version: nil, timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    @Published public private(set) var mag: MotionSample = .init(version: "1", timestampMs: 0,x: 0.0, y: 0.0, z: 0.0)
+    @Published public private(set) var gyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
+    @Published public private(set) var acc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
+    @Published public private(set) var mag: MotionSample = .init(timestampMs: 0,x: 0.0, y: 0.0, z: 0.0)
     @Published public var nativeScale = UIScreen.main.nativeScale
     
     // 2. Temporary storage for the fast-streaming background sensor data
-    private var latestGyro: MotionSample = .init(version: nil, timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    private var latestAcc: MotionSample = .init(version: nil, timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
-    private var latestMag: MotionSample = .init(version: "1", timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
+    private var latestGyro: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
+    private var latestAcc: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
+    private var latestMag: MotionSample = .init(timestampMs: 0, x: 0.0, y: 0.0, z: 0.0)
     private var throttlingTimer: Timer?
     public static let shared = DebugProvider()
     

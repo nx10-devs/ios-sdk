@@ -39,9 +39,8 @@ public struct KeyboardMetricsSummary: Codable {
 }
 
 public struct MotionSample: Codable {
-    public init(version: String?, timestampMs: Double, x: Double, y: Double, z: Double) {
+    public init(timestampMs: Double, x: Double, y: Double, z: Double) {
         self.timestampMs = timestampMs
-        self.version = version
         self.x = x
         self.y = y
         self.z = z
