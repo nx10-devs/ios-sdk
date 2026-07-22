@@ -171,7 +171,7 @@ public final class GeneralTouchTracker {
             radiusMm: roundedRadiusMm,
             velocityX: 0,
             velocityY: 0,
-            timestampMs: Int64(trackingEpochMs * 1000)
+            timestampMs: trackingEpochMs * 1000.0
         )
     }
     

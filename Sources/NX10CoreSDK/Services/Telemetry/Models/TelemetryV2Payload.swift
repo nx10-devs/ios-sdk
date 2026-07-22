@@ -27,25 +27,25 @@ public enum TelemetryV2Event: Codable {
     /// Unified touch event — merges the former "touch-kb" and "touch" events.
     /// Coordinates in mm, bottom-left origin. Pressure / size / velocity carry over
     /// from the old "touch-kb" schema and may be 0 when unavailable.
-    case touch(offsetMs: Int,
+    case touch(offsetMs: Double,
                touchId: String,
                touchType: String,
                touchObject: String?,
                xMm: Double,
                yMm: Double,
                radiusMm: Double)
-    case gyro(offsetMs: Int, x: Double, y: Double, z: Double)
-    case acc(offsetMs: Int, x: Double, y: Double, z: Double)
-    case mag(offsetMs: Int, x: Double, y: Double, z: Double)
+    case gyro(offsetMs: Double, x: Double, y: Double, z: Double)
+    case acc(offsetMs: Double, x: Double, y: Double, z: Double)
+    case mag(offsetMs: Double, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
     /// Keyboard shown / hidden.  V2 spec event "kb-state".
-    case kbState(offsetMs: Int, state: String)
+    case kbState(offsetMs: Double, state: String)
     /// Characters erased by a single backspace touch.  V2 spec event "text-del".
-    case textDel(offsetMs: Int, erasedLength: Int)
+    case textDel(offsetMs: Double, erasedLength: Int)
     /// Text correction (autocorrect / suggest / undo).  V2 spec event "text-cor".
-    case textCor(offsetMs: Int, correction: String)
+    case textCor(offsetMs: Double, correction: String)
     /// Screen locked or unlocked.  V2 spec event "screen".
-    case screen(offsetMs: Int, event: String)
+    case screen(offsetMs: Double, event: String)
 
     public func encode(to encoder: Encoder) throws {
         var c = encoder.unkeyedContainer()
@@ -132,7 +132,7 @@ public enum TelemetryV2Event: Codable {
 
 // MARK: - Minimal typed inputs for touch
 public struct TouchKBEvent {
-    public let timestampMs: Int64
+    public let timestampMs: Double
     public let touchType: String   // "down" | "move" | "up"
     public let x: Double
     public let y: Double
@@ -141,7 +141,7 @@ public struct TouchKBEvent {
     public let vx: Double          // velocity component
     public let vy: Double
     
-    public init(timestampMs: Int64, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double) {
+    public init(timestampMs: Double, touchType: String, x: Double, y: Double, pressure: Double, size: Double, vx: Double, vy: Double) {
         self.timestampMs = timestampMs
         self.touchType = touchType
         self.x = x
@@ -154,13 +154,13 @@ public struct TouchKBEvent {
 }
 
 public struct TouchEvent {
-    public let timestampMs: Int64
+    public let timestampMs: Double
     public let x: Double
     public let y: Double
     public let vx: Double
     public let vy: Double
     
-    public init(timestampMs: Int64, x: Double, y: Double, vx: Double, vy: Double) {
+    public init(timestampMs: Double, x: Double, y: Double, vx: Double, vy: Double) {
         self.timestampMs = timestampMs
         self.x = x
         self.y = y

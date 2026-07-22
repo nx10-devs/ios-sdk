@@ -31,10 +31,10 @@ public final class TelemetrySession {
     private var backspaceCount: Int = 0
     private var erasedTextLength: Int = 0
 
-    private var keyDownTimestamps: [String: Int64] = [:]
-    private var holdTimesMs: [Int64] = []
-    private var flightTimesMs: [Int64] = []
-    private var lastKeyUpMs: Int64?
+    private var keyDownTimestamps: [String: Double] = [:]
+    private var holdTimesMs: [Double] = []
+    private var flightTimesMs: [Double] = []
+    private var lastKeyUpMs: Double?
 
     public init() {}
 
@@ -88,12 +88,12 @@ public final class TelemetrySession {
 
     // MARK: - Summary & lifecycle
     public func keyboardMetricsSummary() -> KeyboardMetricsSummary {
-        let avgHold: Int64
+        let avgHold: Double
         if holdTimesMs.isEmpty {
             avgHold = 0
         } else {
             let total = holdTimesMs.reduce(0, +)
-            avgHold = total / Int64(holdTimesMs.count)
+            avgHold = total / Double(holdTimesMs.count)
         }
         return KeyboardMetricsSummary(
             typingSpeedWpm: 0, // Not computed here
@@ -135,7 +135,7 @@ public final class TelemetrySession {
     }
 
     // MARK: - Helpers
-    private static func nowMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
+    private static func nowMs() -> Double {
+        Date().timeIntervalSince1970 * 1000.0
     }
 }

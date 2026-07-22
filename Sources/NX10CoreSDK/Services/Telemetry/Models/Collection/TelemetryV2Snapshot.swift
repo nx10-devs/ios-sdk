@@ -1,8 +1,8 @@
 import Foundation
 
 public struct TelemetryV2Snapshot {
-    public let baseEpochMs: Int64
-    public let endEpochMs: Int64
+    public let baseEpochMs: Double
+    public let endEpochMs: Double
     public let keyboardSummary: KeyboardSummary?
     public let gyroscopeData: [[String: Any]]
     public let accelerometerData: [[String: Any]]
@@ -10,8 +10,8 @@ public struct TelemetryV2Snapshot {
     public let touchKbEvents: [TouchKBEvent]
     public let touchEvents: [TouchEvent]
 
-    public init(baseEpochMs: Int64,
-                endEpochMs: Int64,
+    public init(baseEpochMs: Double,
+                endEpochMs: Double,
                 keyboardSummary: KeyboardSummary?,
                 gyroscopeData: [[String: Any]],
                 accelerometerData: [[String: Any]],
@@ -29,7 +29,7 @@ public struct TelemetryV2Snapshot {
     }
 
     public static func from(
-        windowBaseEpochMs: Int64,
+        windowBaseEpochMs: Double,
         metrics: KeyboardMetricsSummary?,
         gyroscope: [MotionSample]?,
         accelerometer: [MotionSample]?,
@@ -37,7 +37,7 @@ public struct TelemetryV2Snapshot {
         touchKb: [TouchKBEvent] = [],
         generalTouch: [TouchEvent] = []
     ) -> TelemetryV2Snapshot {
-        let endMsCandidates: [Int64] =
+        let endMsCandidates: [Double] =
             (gyroscope?.map { $0.timestampMs } ?? []) +
             (accelerometer?.map { $0.timestampMs } ?? []) +
             (magnetoMeter?.map { $0.timestampMs } ?? []) +
