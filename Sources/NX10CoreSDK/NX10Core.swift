@@ -233,7 +233,7 @@ extension NX10Core {
         if let decodedtoken = NX10Token.createToken(from: sessionData.token) {
             brainJuiceProvider.setDecodedToken(decodedtoken)
         }
-        
+         
         Task {
             print("LOG: shouldStartTelemetry")
             if let acquisitionWindowSize = deviceConfig.sensor?.acquisitionWindowSize {

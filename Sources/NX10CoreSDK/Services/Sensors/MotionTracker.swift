@@ -74,6 +74,7 @@ public final class MotionTracker {
                 let processedZ = (rotationRate.z * scale).rounded(.toNearestOrAwayFromZero) / scale
 
                 let gyroData = MotionSample(
+                    version: nil,
                     timestampMs: Self.nowMs(),
                     x: processedX,
                     y: processedY,
@@ -128,6 +129,7 @@ public final class MotionTracker {
                 let processedZ = (rawZ * scale).rounded(.toNearestOrAwayFromZero) / scale
 
                 let accData = MotionSample(
+                    version: nil,
                     timestampMs: Self.nowMs(),
                     x: processedX,
                     y: processedY,
@@ -181,6 +183,7 @@ public final class MotionTracker {
                 
                 // 4. Map to your data structure
                 let magnetData = MotionSample(
+                    version: "1",
                     timestampMs: Self.nowMs(),
                     x: xRounded,
                     y: yRounded,

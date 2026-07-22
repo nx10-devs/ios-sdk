@@ -27,11 +27,11 @@ public struct DeviceConfig: Decodable {
         public let keyboardTouchSampleHz: String?
         public let acquisitionWindowSize: Int?
         public let magnetometerSampleHz: Int?
-        public let screenBrightnessDelta: Int?
+        public let screenBrightnessDelta: Double?
     }
 
     public struct Device: Decodable {
-        public let deviceModelToDpiMap: [String: Double]
+        public let deviceModelToDpiMap: [String: Double]?
 
         enum CodingKeys: String, CodingKey {
             case deviceModelToDpiMap

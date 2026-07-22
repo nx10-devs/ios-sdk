@@ -39,14 +39,16 @@ public struct KeyboardMetricsSummary: Codable {
 }
 
 public struct MotionSample: Codable {
-    public init(timestampMs: Int64, x: Double, y: Double, z: Double) {
+    public init(version: String?, timestampMs: Int64, x: Double, y: Double, z: Double) {
         self.timestampMs = timestampMs
+        self.version = version
         self.x = x
         self.y = y
         self.z = z
     }
     
     public let timestampMs: Int64
+    public let version: String?
     public let x: Double
     public let y: Double
     public let z: Double
