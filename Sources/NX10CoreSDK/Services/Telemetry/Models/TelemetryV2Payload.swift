@@ -36,7 +36,7 @@ public enum TelemetryV2Event: Codable {
                radiusMm: Double)
     case gyro(offsetMs: Double, x: Double, y: Double, z: Double)
     case acc(offsetMs: Double, x: Double, y: Double, z: Double)
-    case mag(offsetMs: Double, version: String, x: Double, y: Double, z: Double)
+    case mag(offsetMs: Double, x: Double, y: Double, z: Double)
     case kb(totalKeyPresses: Int, erasedTextLength: Int, averageHoldTimeMs: Int, typingSpeedWpm: Int, backspaceCount: Int, flightTimesMs: [Int])
     /// Keyboard shown / hidden.  V2 spec event "kb-state".
     case kbState(offsetMs: Double, state: String)

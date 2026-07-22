@@ -47,7 +47,6 @@ public struct MotionSample: Codable {
     }
     
     public let timestampMs: Double
-    public let version: String?
     public let x: Double
     public let y: Double
     public let z: Double
