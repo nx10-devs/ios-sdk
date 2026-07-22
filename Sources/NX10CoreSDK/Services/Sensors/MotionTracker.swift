@@ -25,17 +25,14 @@ public final class MotionTracker {
             if
                 let accelerometerSampleHz = sensor.accelerometerSampleHz {
                 accUpdateInterval = (1.0 / Double(accelerometerSampleHz))
-                print("Acc rate", accUpdateInterval)
             }
 
             if let gyroscopeSampleHz = sensor.gyroscopeSampleHz {
                 gyrUpdateInterval = (1.0 / Double(gyroscopeSampleHz))
-                print("gyr rate and thread", gyrUpdateInterval, Thread.current)
             }
 
             if let magnetometerSampleHz = sensor.magnetometerSampleHz {
                 magnetometerUpdateInterval = (1.0 / Double(magnetometerSampleHz))
-                print("mag rate", magnetometerUpdateInterval)
             }
         }
     }
@@ -64,7 +61,6 @@ public final class MotionTracker {
                 guard
                     self?.gyrUpdateInterval != nil
                 else {
-
                     if isDebug {
                         print("LOG: Failed to start gyro - sample rate is null")
                     }
@@ -72,10 +68,6 @@ public final class MotionTracker {
                 }
 
                 guard let data else { return }
-                
-                if isDebug {
-                    print("LOG: Started bias-corrected gyro tracking via Device Motion")
-                }
 
                 // CMDeviceMotion.rotationRate provides bias-corrected angular velocity (rad/s)
                 let rotationRate = data.rotationRate
@@ -124,11 +116,6 @@ public final class MotionTracker {
                 }
 
                 guard let data else { return }
-
-                if isDebug {
-                    print("LOG: Started accelerometer tracking")
-                }
-
                 // 1. Raw acceleration is sampled from CMAccelerometerData (contains gravity)
                 // 2. Invert x, y, z by taking negative values (-data.acceleration)
                 // 3. Multiply by gravity (9.80665) to convert to m/s2
@@ -180,9 +167,6 @@ public final class MotionTracker {
                     return
                 }
                 guard let data = data else { return }
-                if isDebug {
-                    print("Magnetic field started")
-                }
 
                 // 1. Calculate timestampOffsetMs (offset from bts in milliseconds)
                 // CMMagnetometerData.timestamp is in seconds (system uptime).
