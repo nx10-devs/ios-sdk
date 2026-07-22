@@ -26,7 +26,7 @@ protocol TelemetryV2Capturing: AnyObject {
 /// - call `flush(...)` when you want to send (e.g. on timer, `viewWillDisappear`, `textWillChange`, etc.)
 public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
     private let errorProvider: ErrorProviding
-    private var baseEpochMs: Int64?
+    private var baseEpochMs: Double?
     
     public init(errorProvider: ErrorProviding) {
         self.errorProvider = errorProvider
@@ -34,7 +34,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
 
     /// Start a new capture window.
     public func start() {
-        baseEpochMs = Int64(Date().timeIntervalSince1970 * 1000)
+        baseEpochMs = Date().timeIntervalSince1970 * 1000.0
     }
 
     /// Build a V2 payload for the current window and upload it.
@@ -53,7 +53,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
         if baseEpochMs == nil { start() }
         guard let base = baseEpochMs else { return }
 
-        let endMs = Int64(Date().timeIntervalSince1970 * 1000)
+        let endMs = Date().timeIntervalSince1970 * 1000.0
 
         // Map your app model -> the builder's summary model.
         let summary = KeyboardSummary(

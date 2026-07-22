@@ -162,26 +162,17 @@ public final class MotionTracker {
             motionManager.startMagnetometerUpdates(to: .main) { data, error in
                 guard let data = data else { return }
                 
-                // 1. Calculate timestampOffsetMs (offset from bts in milliseconds)
-                // CMMagnetometerData.timestamp is in seconds (system uptime).
-                // We convert to milliseconds, find the offset from your base timestamp (bts),
-                // and round to 3 decimal places.
-                let bts: Double = Double(Self.nowMs())
-                let rawTimestampMs = data.timestamp * 1000.0
-                let offset = rawTimestampMs - bts
-                let timestampOffsetMs = (offset * 1000.0).rounded() / 1000.0
-                
-                // 2. Extract magnetic field vector (in µT)
+                // 1. Extract magnetic field vector (in µT)
                 let rawField = data.magneticField
                 
-                // 3. Round axes to 1 decimal place
+                // 2. Round axes to 1 decimal place
                 // Note: iOS native CoreMotion axes perfectly match your requested layout:
                 // +X is right, +Y is up/top of phone, +Z points straight out of screen (towards sky when flat).
                 let xRounded = (rawField.x * 10.0).rounded() / 10.0
                 let yRounded = (rawField.y * 10.0).rounded() / 10.0
                 let zRounded = (rawField.z * 10.0).rounded() / 10.0
                 
-                // 4. Map to your data structure
+                // 3. Map to your data structure
                 let magnetData = MotionSample(
                     version: "1",
                     timestampMs: Self.nowMs(),
@@ -212,7 +203,7 @@ public final class MotionTracker {
         motionManager.stopMagnetometerUpdates()
     }
 
-    private static func nowMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
+    private static func nowMs() -> Double {
+        Date().timeIntervalSince1970 * 1000.0
     }
 }

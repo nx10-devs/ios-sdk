@@ -21,7 +21,7 @@ public struct DeviceTypePayload: Codable {
 }
 
 public struct KeyboardMetricsSummary: Codable {
-    public init(typingSpeedWpm: Int, backspaceCount: Int, erasedTextLength: Int, averageHoldTimeMs: Int64, flightTimesMs: [Int64], totalKeyPresses: Int) {
+    public init(typingSpeedWpm: Int, backspaceCount: Int, erasedTextLength: Int, averageHoldTimeMs: Int, flightTimesMs: [Int], totalKeyPresses: Int) {
         self.typingSpeedWpm = typingSpeedWpm
         self.backspaceCount = backspaceCount
         self.erasedTextLength = erasedTextLength
@@ -33,13 +33,13 @@ public struct KeyboardMetricsSummary: Codable {
     public let typingSpeedWpm: Int
     public let backspaceCount: Int
     public let erasedTextLength: Int
-    public let averageHoldTimeMs: Int64
-    public let flightTimesMs: [Int64]
+    public let averageHoldTimeMs: Int
+    public let flightTimesMs: [Int]
     public let totalKeyPresses: Int
 }
 
 public struct MotionSample: Codable {
-    public init(version: String?, timestampMs: Int64, x: Double, y: Double, z: Double) {
+    public init(version: String?, timestampMs: Double, x: Double, y: Double, z: Double) {
         self.timestampMs = timestampMs
         self.version = version
         self.x = x
@@ -47,7 +47,7 @@ public struct MotionSample: Codable {
         self.z = z
     }
     
-    public let timestampMs: Int64
+    public let timestampMs: Double
     public let version: String?
     public let x: Double
     public let y: Double
@@ -98,7 +98,7 @@ public struct GeneralTouchSample: Codable {
     /// Velocity components in UIKit points / second (0 when unavailable).
     public let velocityX:   Double
     public let velocityY:   Double
-    public let timestampMs: Int64
+    public let timestampMs: Double
     
     public init(touchId: String,
                 touchType: TouchType,
@@ -108,7 +108,7 @@ public struct GeneralTouchSample: Codable {
                 radiusMm: Double,
                 velocityX: Double = 0,
                 velocityY: Double = 0,
-                timestampMs: Int64) {
+                timestampMs: Double) {
         self.touchId     = touchId
         self.touchType   = touchType
         self.touchObject = touchObject
@@ -139,8 +139,8 @@ public struct GeneralTouchSample: Codable {
 public struct KbStateSample: Codable {
     /// "down" when the keyboard appeared; "up" when it disappeared.
     public let state:       String
-    public let timestampMs: Int64
-    public init(state: String, timestampMs: Int64) {
+    public let timestampMs: Double
+    public init(state: String, timestampMs: Double) {
         self.state = state; self.timestampMs = timestampMs
     }
 }
@@ -148,8 +148,8 @@ public struct KbStateSample: Codable {
 /// Records characters erased by a single backspace — maps to "text-del" V2 event.
 public struct TextDelSample: Codable {
     public let erasedLength: Int
-    public let timestampMs:  Int64
-    public init(erasedLength: Int, timestampMs: Int64) {
+    public let timestampMs:  Double
+    public init(erasedLength: Int, timestampMs: Double) {
         self.erasedLength = erasedLength; self.timestampMs = timestampMs
     }
 }
@@ -157,8 +157,8 @@ public struct TextDelSample: Codable {
 /// Records a text correction event — maps to the "text-cor" V2 event.
 public struct TextCorSample: Codable {
     public let correction:  String
-    public let timestampMs: Int64
-    public init(correction: String, timestampMs: Int64) {
+    public let timestampMs: Double
+    public init(correction: String, timestampMs: Double) {
         self.correction = correction; self.timestampMs = timestampMs
     }
 }
@@ -167,8 +167,8 @@ public struct TextCorSample: Codable {
 public struct ScreenEventSample: Codable {
     /// "lock" or "unlock".
     public let event:       String
-    public let timestampMs: Int64
-    public init(event: String, timestampMs: Int64) {
+    public let timestampMs: Double
+    public init(event: String, timestampMs: Double) {
         self.event = event; self.timestampMs = timestampMs
     }
 }

@@ -135,7 +135,7 @@ public final class TelemetrySession {
     }
 
     // MARK: - Helpers
-    private static func nowMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
+    private static func nowMs() -> Double {
+        Date().timeIntervalSince1970 * 1000.0
     }
 }

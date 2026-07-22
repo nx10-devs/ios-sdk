@@ -9,7 +9,7 @@ import Foundation
 
 public protocol TelemetryV2Building {
     func buildPayload(
-        endEpochMs: Int64,
+        endEpochMs: Double,
         keyboardSummary: KeyboardSummary?,
         gyroscopeData: [[String: Any]],
         accelerometerData: [[String: Any]],
@@ -17,21 +17,21 @@ public protocol TelemetryV2Building {
         touchEvents: [TouchEvent]
     ) -> TelemetryV2Payload
     
-    init(baseEpochMs: Int64)
+    init(baseEpochMs: Double)
 }
 
 // MARK: - Builder / Adapter from your current data
 public final class TelemetryV2Builder {
 
     /// Base time in epoch ms. All offsets are computed relative to this.
-    private let baseEpochMs: Int64
+    private let baseEpochMs: Double
 
-    public init(baseEpochMs: Int64) {
+    public init(baseEpochMs: Double) {
         self.baseEpochMs = baseEpochMs
     }
 
     func buildPayload(
-        endEpochMs: Int64,
+        endEpochMs: Double,
         keyboardSummary: KeyboardSummary?,
         gyroscopeData: [[String: Any]],
         accelerometerData: [[String: Any]],
@@ -50,31 +50,31 @@ public final class TelemetryV2Builder {
         _ = touchKbEvents
         _ = touchEvents
 
-        // gyro: your arrays look like ["timestamp": Int64(ms), "x": Double, "y": Double, "z": Double]
+        // gyro: your arrays look like ["timestamp": Double(ms), "x": Double, "y": Double, "z": Double]
         for dp in gyroscopeData {
             guard
-                let ts = dp["timestamp"] as? Int64,
+                let ts = dp["timestamp"] as? Double,
                 let x = dp["x"] as? Double,
                 let y = dp["y"] as? Double,
                 let z = dp["z"] as? Double
             else { continue }
 
             let o = offsetMs(ts)
-            guard o >= 0, o <= ets else { continue }
+            guard o >= 0, o <= Double(ets) else { continue }
             events.append(.gyro(offsetMs: o, x: x, y: y, z: z))
         }
 
         // acc
         for dp in accelerometerData {
             guard
-                let ts = dp["timestamp"] as? Int64,
+                let ts = dp["timestamp"] as? Double,
                 let x = dp["x"] as? Double,
                 let y = dp["y"] as? Double,
                 let z = dp["z"] as? Double
             else { continue }
 
             let o = offsetMs(ts)
-            guard o >= 0, o <= ets else { continue }
+            guard o >= 0, o <= Double(ets) else { continue }
             events.append(.acc(offsetMs: o, x: x, y: y, z: z))
         }
 
@@ -93,12 +93,13 @@ public final class TelemetryV2Builder {
         return TelemetryV2Payload(bts: bts, ets: ets, d: events)
     }
 
-    private func offsetMs(_ eventEpochMs: Int64) -> Int {
-        Int(eventEpochMs - baseEpochMs)
+    private func offsetMs(_ eventEpochMs: Double) -> Double {
+        let diff = max(0.0, eventEpochMs - baseEpochMs)
+        return (diff * 1000.0).rounded(.toNearestOrAwayFromZero) / 1000.0
     }
 
-    private static func isoUTC(fromEpochMs ms: Int64) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(ms) / 1000.0)
+    private static func isoUTC(fromEpochMs ms: Double) -> String {
+        let date = Date(timeIntervalSince1970: ms / 1000.0)
         let f = ISO8601DateFormatter()
         f.timeZone = TimeZone(secondsFromGMT: 0)
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

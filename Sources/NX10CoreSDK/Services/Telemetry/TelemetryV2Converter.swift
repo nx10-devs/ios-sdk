@@ -26,7 +26,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
                               includeGeneralTouch: Bool = false) -> TelemetryV2Payload {
 
         // 1) Choose a base time (ms). Use earliest sample timestamp if available.
-        let allTimestamps: [Int64] =
+        let allTimestamps: [Double] =
             (env.gyroscope?.map(\.timestampMs) ?? []) +
             (env.accelerometer?.map(\.timestampMs) ?? []) +
             (env.generalTouch?.map(\.timestampMs) ?? []) +
@@ -36,10 +36,10 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             (env.textCorEvents?.map(\.timestampMs) ?? []) +
             (env.screenEvents?.map(\.timestampMs) ?? [])
 
-        let baseMs: Int64 = allTimestamps.min() ?? Int64(Date().timeIntervalSince1970 * 1000)
+        let baseMs: Double = allTimestamps.min() ?? (Date().timeIntervalSince1970 * 1000.0)
 
         // 2) Compute end time (ms) and ets (offset ms)
-        let endMs: Int64 = allTimestamps.max() ?? baseMs
+        let endMs: Double = allTimestamps.max() ?? baseMs
         let ets: Int = max(0, Int(endMs - baseMs))
 
         // 3) bts (ISO8601 UTC)
@@ -131,12 +131,13 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
 
     // MARK: - Helpers
 
-    private func offsetMs(baseMs: Int64, eventMs: Int64) -> Int {
-        max(0, Int(eventMs - baseMs))
+    private func offsetMs(baseMs: Double, eventMs: Double) -> Double {
+        let diff = max(0.0, eventMs - baseMs)
+        return (diff * 1000.0).rounded(.toNearestOrAwayFromZero) / 1000.0
     }
 
-    private func iso8601UTC(ms: Int64) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(ms) / 1000.0)
+    private func iso8601UTC(ms: Double) -> String {
+        let date = Date(timeIntervalSince1970: ms / 1000.0)
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         f.timeZone = TimeZone(secondsFromGMT: 0)
@@ -144,7 +145,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
     }
 
     private func sortEventsStable(_ events: [TelemetryV2Event]) -> [TelemetryV2Event] {
-        func off(_ e: TelemetryV2Event) -> Int? {
+        func off(_ e: TelemetryV2Event) -> Double? {
             switch e {
             case .touch(let o, _, _, _, _, _, _): return o
             case .gyro(let o, _, _, _):                 return o
@@ -162,8 +163,8 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         let withoutOffset = events.filter { off($0) == nil } // kb
 
         let sorted = withOffset.sorted { a, b in
-            let oa = off(a.element) ?? Int.max
-            let ob = off(b.element) ?? Int.max
+            let oa = off(a.element) ?? Double.greatestFiniteMagnitude
+            let ob = off(b.element) ?? Double.greatestFiniteMagnitude
             if oa == ob { return a.offset < b.offset } // stable
             return oa < ob
         }.map(\.element)

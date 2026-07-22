@@ -72,8 +72,8 @@ public final class TelemetryProvider: TelemetryProviding {
 
     // MARK: - Private helpers
 
-    private func nowMs() -> Int64 {
-        Int64(Date().timeIntervalSince1970 * 1000)
+    private func nowMs() -> Double {
+        Date().timeIntervalSince1970 * 1000.0
     }
     
     // MARK: - Public API
