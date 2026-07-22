@@ -8,8 +8,10 @@
 import Foundation
 
 public protocol TelemetryV2Converting {
-    func makeV2Payload(from env: TelemetryEnvelope,
-                              includeGeneralTouch: Bool) -> TelemetryV2Payload
+    func makeV2Payload(
+        from env: TelemetryEnvelope,
+        includeGeneralTouch: Bool
+    ) -> TelemetryV2Payload
     
     init()
 }
@@ -58,7 +60,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         if let mag = env.magnetometer {
             for m in mag {
                 let off = offsetMs(baseMs: baseMs, eventMs: m.timestampMs)
-                events.append(.mag(offsetMs: off, version: "1", x: m.x, y: m.y, z: m.z))
+                events.append(.mag(offsetMs: off, x: m.x, y: m.y, z: m.z))
             }
         }
 
@@ -149,7 +151,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             case .touch(let o, _, _, _, _, _, _): return o
             case .gyro(let o, _, _, _):                 return o
             case .acc(let o, _, _, _):                  return o
-            case .mag(let o, _, _, _, _):                 return o
+            case .mag(let o, _, _, _):                 return o
             case .kbState(let o, _):                    return o
             case .textDel(let o, _):                    return o
             case .textCor(let o, _):                    return o
