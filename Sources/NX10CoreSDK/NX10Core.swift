@@ -76,7 +76,6 @@ public final class NX10Core: ObservableObject {
         let analyticsService = AnalyticsProvider(networkService: networkService)
 
         // MARK: - Sensor Providers 
-//        let motionSensor: MotionSensorProvider = CoreMotionSensorProvider(errorProvider: errorProvider)
         let motionTracker = MotionTracker(errorProvider: errorProvider)
         
         // MARK: - Scheduler & Event Publisher
