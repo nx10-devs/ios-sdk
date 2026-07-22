@@ -21,7 +21,7 @@ public struct DeviceTypePayload: Codable {
 }
 
 public struct KeyboardMetricsSummary: Codable {
-    public init(typingSpeedWpm: Int, backspaceCount: Int, erasedTextLength: Int, averageHoldTimeMs: Int, flightTimesMs: [Int], totalKeyPresses: Int) {
+    public init(typingSpeedWpm: Int, backspaceCount: Int, erasedTextLength: Int, averageHoldTimeMs: Double, flightTimesMs: [Double], totalKeyPresses: Int) {
         self.typingSpeedWpm = typingSpeedWpm
         self.backspaceCount = backspaceCount
         self.erasedTextLength = erasedTextLength
@@ -33,8 +33,8 @@ public struct KeyboardMetricsSummary: Codable {
     public let typingSpeedWpm: Int
     public let backspaceCount: Int
     public let erasedTextLength: Int
-    public let averageHoldTimeMs: Int
-    public let flightTimesMs: [Int]
+    public let averageHoldTimeMs: Double
+    public let flightTimesMs: [Double]
     public let totalKeyPresses: Int
 }
 
