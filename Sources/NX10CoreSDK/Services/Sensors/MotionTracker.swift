@@ -85,8 +85,6 @@ public final class MotionTracker {
                     z: processedZ
                 )
 
-                
-
                 if isDebug {
                     DebugProvider.shared.updateGyro(gyro: gyroData)
                 }
@@ -110,7 +108,7 @@ public final class MotionTracker {
                 self?.accUpdateInterval != nil
             else {
                     if isDebug {
-                        print("LOG: Failed to start accelerometer - sample rate is null")
+                        print("LOG: Failed to start magnetometer - sample rate is null")
                     }
                     return
                 }
@@ -153,31 +151,24 @@ public final class MotionTracker {
             errorProvider.sendError(NSError(domain: "Accelerometer not available", code: -1))
         }
 
-        if motionManager.isMagnetometerAvailable {
-            motionManager.magnetometerUpdateInterval = magnetometerUpdateInterval ?? 1.0
-            motionManager.startMagnetometerUpdates(to: .main) { [weak self] data, error in
+        
+        if motionManager.isDeviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = magnetometerUpdateInterval ?? 0.02
+            motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: .main) { [weak self] data, error in
+                guard let self = self, let data = data else { return }
+                
+                // 1. Extract calibrated field vector
+                let calibratedField = data.magneticField.field
+                let accuracy = data.magneticField.accuracy
+                
+                // Skip if hardware accuracy is uncalibrated (optional)
+                guard accuracy != .uncalibrated else { return }
 
-                // Collecting nothing is sample rate is null
-                guard
-                    self?.magnetometerUpdateInterval != nil
-                else {
-                    if isDebug {
-                        print("LOG: Failed to start magnetometer - sample rate is null")
-                    }
-                    return
-                }
-                guard let data = data else { return }
-                
-                // 1. Extract magnetic field vector (in µT)
-                let rawField = data.magneticField
-                
                 // 2. Round axes to 1 decimal place
-                // Note: iOS native CoreMotion axes perfectly match your requested layout:
-                // +X is right, +Y is up/top of phone, +Z points straight out of screen (towards sky when flat).
-                let xRounded = (rawField.x * 10.0).rounded() / 10.0
-                let yRounded = (rawField.y * 10.0).rounded() / 10.0
-                let zRounded = (rawField.z * 10.0).rounded() / 10.0
-                
+                let xRounded = (calibratedField.x * 10.0).rounded(.toNearestOrAwayFromZero) / 10.0
+                let yRounded = (calibratedField.y * 10.0).rounded(.toNearestOrAwayFromZero) / 10.0
+                let zRounded = (calibratedField.z * 10.0).rounded(.toNearestOrAwayFromZero) / 10.0
+
                 // 3. Map to your data structure
                 let magnetData = MotionSample(
                     timestampMs: Self.nowMs(),
@@ -185,7 +176,6 @@ public final class MotionTracker {
                     y: yRounded,
                     z: zRounded
                 )
-
 //
 
 //                if isDebug {
@@ -216,7 +206,6 @@ public final class MotionTracker {
 
         motionManager.stopDeviceMotionUpdates()
         motionManager.stopAccelerometerUpdates()
-        motionManager.stopMagnetometerUpdates()
     }
 
     private static func nowMs() -> Double {
