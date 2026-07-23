@@ -9,15 +9,18 @@ import Foundation
 import UIKit
 
 @MainActor
-public protocol ScreenTelemetryProviding {
+public protocol ScreenStatesProviding {
     func screenOrientation() -> UIInterfaceOrientation
     func screenBrightness() -> CGFloat
     
     var onOrientationChange: ((UIInterfaceOrientation) -> Void)? { get set }
     var onBrightnessChange: ((CGFloat) -> Void)? { get set }
+    
+    init(networkService: NetworkService)
 }
 
-public final class ScreenTelemetryProvider: ScreenTelemetryProviding {
+public final class ScreenStatesProvider: ScreenStatesProviding {
+    private let networkService: NetworkService
     
     private var orientationObserver: NSObjectProtocol?
     private var brightnessObserver: NSObjectProtocol?
@@ -28,9 +31,11 @@ public final class ScreenTelemetryProvider: ScreenTelemetryProviding {
     /// Fired instantly when the screen brightness changes
     public var onBrightnessChange: ((CGFloat) -> Void)?
     
-    public init() {
+    public init(networkService: NetworkService) {
         // Enable hardware orientation monitoring
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+        
+        self.networkService = networkService
         
         setupObservers()
     }
