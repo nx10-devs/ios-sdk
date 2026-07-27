@@ -23,23 +23,38 @@ public struct ComplianceRequest: Codable {
         let dryRun: Bool
     }
     
+    public struct Consent: Codable {
+        let changeTimestamp: String
+        let consents: ConsentDecision
+        let dryRun: Bool
+        
+        struct ConsentDecision:  Codable {
+            let processorConsent: Bool
+            let controllerConsent: Bool
+        }
+    }
+    
     public struct Attest: Codable {
         let items: [AttestItem]
         let timestamp: String
         let dryDrun: Bool
-    }
-}
-
-public extension ComplianceRequest.Attest {
-    struct AttestItem: Codable {
-        let type: String
-        let version: String
-        let userAction: String
         
-        enum CodingKeys: String, CodingKey {
-            case type
-            case version
-            case userAction = "user_action"
+        public struct AttestItem: Codable {
+            public init(type: String, version: String, userAction: String) {
+                self.type = type
+                self.version = version
+                self.userAction = userAction
+            }
+            
+            let type: String
+            let version: String
+            let userAction: String
+            
+            enum CodingKeys: String, CodingKey {
+                case type
+                case version
+                case userAction = "user_action"
+            }
         }
     }
 }

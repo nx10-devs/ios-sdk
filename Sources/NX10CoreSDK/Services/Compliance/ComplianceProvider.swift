@@ -9,10 +9,10 @@ import Foundation
 
 @MainActor
 public protocol ComplianceProviding {
-    func access(for email: String, and date: Date) async throws
-    func consent() async throws
-    func forget(for email: String, and date: Date) async throws
-    func attest(with type: String, version: String, userAction: String, and date: Date) async throws
+    func access(for email: String, and date: Date) async throws -> Bool
+    func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool
+    func forget(for email: String, and date: Date) async throws -> Bool
+    func attest(with items: [ComplianceRequest.Attest.AttestItem], and date: Date) async throws -> Bool
     
     init(networking: Networking)
 }
@@ -21,7 +21,12 @@ public final class ComplianceProvider: ComplianceProviding {
     
     private let networking: Networking
     
-    public func access(for email: String, and date: Date) async throws {
+    public func access(for email: String, and date: Date) async throws -> Bool {
+        
+        // Delete
+        return true
+        // Delete
+        
         let dateString = date.iso8601
         let access = ComplianceRequest.Access(
             email: email,
@@ -33,11 +38,20 @@ public final class ComplianceProvider: ComplianceProviding {
         let response: GenericResponse? = try await networking.POST(access, for: .compliance, for: "/access")
     }
     
-    public func consent() async throws {
-       
+    public func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool {
+        
+        // Delete
+        return true
+        // Delete
+        
     }
     
-    public func forget(for email: String, and date: Date) async throws {
+    public func forget(for email: String, and date: Date) async throws -> Bool {
+        
+        // Delete
+        return true
+        // Delete
+        
         let dateString = date.iso8601
         let forget = ComplianceRequest.Forget(
             email: email,
@@ -49,11 +63,14 @@ public final class ComplianceProvider: ComplianceProviding {
         let response: GenericResponse? = try await networking.POST(forget, for: .compliance, for: "/forget")
     }
     
-    public func attest(with type: String, version: String, userAction: String, and date: Date) async throws {
+    public func attest(with items: [ComplianceRequest.Attest.AttestItem], and date: Date) async throws -> Bool {
+        
+        // Delete
+        return true
+        // Delete
+        
         let attest = ComplianceRequest.Attest(
-            items: [
-                .init(type: type, version: version, userAction: userAction)
-            ],
+            items: items,
             timestamp: date.iso8601,
             dryDrun: true
         )
