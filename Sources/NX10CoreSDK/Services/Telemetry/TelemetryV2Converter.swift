@@ -120,7 +120,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
         if let screens = env.screenEvents {
             for e in screens {
                 let off = offsetMs(baseMs: baseMs, eventMs: e.timestampMs)
-                events.append(.screen(offsetMs: off, event: e.event))
+                events.append(.screen(offsetMs: off, name: e.name, event: e.event))
             }
         }
 
@@ -156,7 +156,7 @@ public final class TelemetryV2Converter: TelemetryV2Converting {
             case .kbState(let o, _):                    return o
             case .textDel(let o, _):                    return o
             case .textCor(let o, _):                    return o
-            case .screen(let o, _):                     return o
+            case .screen(let o, _, _):                     return o
             case .kb:                                   return nil
             }
         }
