@@ -101,7 +101,7 @@ public final class NX10Core: ObservableObject {
             touchProcessor: touchProcessor
         )
         
-        let screenStatesProvider = ScreenStatesProvider(networkService: networkService)
+        let screenStatesProvider = ScreenStatesProvider(telemetryProvider: telemetryProvider)
         
         // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryProvider)

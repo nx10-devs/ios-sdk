@@ -10,32 +10,20 @@ import UIKit
 
 @MainActor
 public protocol ScreenStatesProviding {
-    func screenOrientation() -> UIInterfaceOrientation
-    func screenBrightness() -> CGFloat
-    
-    var onOrientationChange: ((UIInterfaceOrientation) -> Void)? { get set }
-    var onBrightnessChange: ((CGFloat) -> Void)? { get set }
-    
-    init(networkService: NetworkService)
+    init(telemetryProvider: TelemetryProviding)
 }
 
 public final class ScreenStatesProvider: ScreenStatesProviding {
-    private let networkService: NetworkService
+    private let telemetryProvider: TelemetryProviding
     
     private var orientationObserver: NSObjectProtocol?
     private var brightnessObserver: NSObjectProtocol?
     
-    /// Fired instantly when the device orientation changes
-    public var onOrientationChange: ((UIInterfaceOrientation) -> Void)?
-    
-    /// Fired instantly when the screen brightness changes
-    public var onBrightnessChange: ((CGFloat) -> Void)?
-    
-    public init(networkService: NetworkService) {
+    public init(telemetryProvider: TelemetryProviding) {
         // Enable hardware orientation monitoring
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         
-        self.networkService = networkService
+        self.telemetryProvider = telemetryProvider
         
         setupObservers()
     }
@@ -55,23 +43,31 @@ public final class ScreenStatesProvider: ScreenStatesProviding {
     
     // MARK: - Synchronous Getters
     
-    public func screenOrientation() -> UIInterfaceOrientation {
+    private func screenOrientation() {
+        
+        var orientation = ""
+        
         switch UIDevice.current.orientation {
         case .portrait:
-            return .portrait
+            orientation = "vertical-up"
         case .portraitUpsideDown:
-            return .portraitUpsideDown
+            orientation = "vertical-down"
         case .landscapeLeft:
-            return .landscapeRight
+            orientation = "horizontal-up"
         case .landscapeRight:
-            return .landscapeLeft
+            orientation = "horizontal-down"
         default:
-            return .portrait
+            orientation = ""
+        }
+        
+        if orientation.isEmpty == false {
+            telemetryProvider.screenOrientation(orientation)
         }
     }
     
-    public func screenBrightness() -> CGFloat {
-        UIScreen.main.brightness
+    private func screenBrightness() {
+        let brightness = UIScreen.main.brightness
+        telemetryProvider.screenBrightness(brightness)
     }
     
     // MARK: - Notification Setup
@@ -84,7 +80,7 @@ public final class ScreenStatesProvider: ScreenStatesProviding {
             queue: .main
         ) { [weak self] _ in
             guard let self = self else { return }
-            self.onOrientationChange?(self.screenOrientation())
+            self.screenOrientation()
         }
         
         // 2. Observe real-time brightness changes
@@ -94,7 +90,7 @@ public final class ScreenStatesProvider: ScreenStatesProviding {
             queue: .main
         ) { [weak self] _ in
             guard let self = self else { return }
-            self.onBrightnessChange?(self.screenBrightness())
+            self.screenBrightness()
         }
     }
 }
