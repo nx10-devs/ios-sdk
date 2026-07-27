@@ -45,7 +45,7 @@ public enum TelemetryV2Event: Codable {
     /// Text correction (autocorrect / suggest / undo).  V2 spec event "text-cor".
     case textCor(offsetMs: Double, correction: String)
     /// Screen locked or unlocked.  V2 spec event "screen".
-    case screen(offsetMs: Double, event: String)
+    case screen(offsetMs: Double, name: String, event: String)
 
     public func encode(to encoder: Encoder) throws {
         var c = encoder.unkeyedContainer()
@@ -119,9 +119,9 @@ public enum TelemetryV2Event: Codable {
             try c.encode(o)
             try c.encode(correction)
 
-        case let .screen(o, event):
+        case let .screen(o, n, event):
             // ["screen", "1", offsetMs, "lock"|"unlock"]
-            try c.encode("screen")
+            try c.encode(n)
             try c.encode("1")
             try c.encode(o)
             try c.encode(event)

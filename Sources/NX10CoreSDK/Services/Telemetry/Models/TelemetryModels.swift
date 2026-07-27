@@ -164,10 +164,13 @@ public struct TextCorSample: Codable {
 /// Records a screen lock/unlock event — maps to the "screen" V2 event.
 public struct ScreenEventSample: Codable {
     /// "lock" or "unlock".
+    public let name: String
     public let event:       String
     public let timestampMs: Double
-    public init(event: String, timestampMs: Double) {
-        self.event = event; self.timestampMs = timestampMs
+    public init(name: String, event: String, timestampMs: Double) {
+        self.name = name
+        self.event = event
+        self.timestampMs = timestampMs
     }
 }
 

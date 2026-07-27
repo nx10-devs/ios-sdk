@@ -40,6 +40,7 @@ public final class NX10Core: ObservableObject {
     public let attributesProvider: AttributesProviding
     public let activityProvider: ActivityProviding
     public let complianceProvider: ComplianceProviding
+    public let screenStatesProvider: ScreenStatesProviding
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -101,6 +102,8 @@ public final class NX10Core: ObservableObject {
             touchProcessor: touchProcessor
         )
         
+        let screenStatesProvider = ScreenStatesProvider(telemetryProvider: telemetryProvider)
+        
         // MARK: - Higher-level Services
         let saaqService = SaaQService(networkService: networkService, telemetryService: telemetryProvider)
         let attributesProvider = AttributesProvider(
@@ -139,6 +142,8 @@ public final class NX10Core: ObservableObject {
         self.touchTracker = touchTracker
         self.activityProvider = activityProvider
         self.complianceProvider = complianceProvider
+        self.screenStatesProvider = screenStatesProvider
+        // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
 

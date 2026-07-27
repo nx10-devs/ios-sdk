@@ -68,7 +68,9 @@ public protocol TelemetryProviding: AnyObject {
     // Screen lock / unlock ("screen" events)
     func screenLocked()
     func screenUnlocked()
-
+    func screenOrientation(_ orientation: String)
+    func screenBrightness(_ brightness: CGFloat)
+    
     // Data management
     func flushIfNeeded()
     func attemptUploadAndFlushNow()
