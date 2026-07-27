@@ -133,12 +133,6 @@ public struct GeneralTouchSample: Codable {
 
 // MARK: - Lightweight event-log samples for new V2 event types
 
-public struct ScreenState: Codable {
-    public let orientation: String?
-    public let brightness:  Double?
-    public let timestampMs: Double
-}
-
 /// Records a keyboard shown/hidden transition — maps to the "kb-state" V2 event.
 public struct KbStateSample: Codable {
     /// "down" when the keyboard appeared; "up" when it disappeared.
