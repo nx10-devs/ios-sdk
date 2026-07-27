@@ -45,5 +45,6 @@ public struct Endpoint: Decodable, Hashable {
         case brainJuice = "brain-juice"
         case activity
         case frustration
+        case compliance
     }
 }

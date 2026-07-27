@@ -39,6 +39,7 @@ public final class NX10Core: ObservableObject {
     public let touchTracker: GeneralTouchTracker
     public let attributesProvider: AttributesProviding
     public let activityProvider: ActivityProviding
+    public let complianceProvider: ComplianceProviding
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -115,7 +116,8 @@ public final class NX10Core: ObservableObject {
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         let activityProvider = ActivityProvider(networking: networkService, errorProvider: errorProvider)
-    
+        let complianceProvider = ComplianceProvider(networking: networkService)
+        
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.telemetryProvider = telemetryProvider
@@ -136,7 +138,7 @@ public final class NX10Core: ObservableObject {
         self.touchProcessor = touchProcessor
         self.touchTracker = touchTracker
         self.activityProvider = activityProvider
-        // self.textInputObserverService = textInputObserverService // NEW: Assign
+        self.complianceProvider = complianceProvider
     }
 }
 
