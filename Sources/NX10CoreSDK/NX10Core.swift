@@ -13,15 +13,17 @@ public struct NX10CoreConfig {
     public let apiKey: String
     public let appGroup: String
     public let errorTrackingEnabled: Bool
-    public let startSession: Bool
     public let enableDebug: Bool
+    public let allowDataCollecting: Bool
+    public let allowTrainingData: Bool
     
-    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, startSession: Bool, enableDebug: Bool = false) {
+    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, allowDataCollecting: Bool, allowTrainingData: Bool, enableDebug: Bool) {
         self.apiKey = apiKey
         self.appGroup = appGroup
         self.errorTrackingEnabled = errorTrackingEnabled
-        self.startSession = startSession
         self.enableDebug = enableDebug
+        self.allowDataCollecting = allowDataCollecting
+        self.allowTrainingData = allowTrainingData
     }
 }
 
@@ -32,7 +34,7 @@ public final class NX10Core: ObservableObject {
     
     // MARK: Public properties
     public let errorProvider: ErrorProviding
-    public let telemetryProvider: TelemetryProvider
+    public let telemetryProvider: TelemetryProviding
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
@@ -148,17 +150,11 @@ public final class NX10Core: ObservableObject {
 }
 
 extension NX10Core {
-    @MainActor public func configure(
-        apiKey: String,
-        appGroupdID: String,
-        errorTrackingEnabled: Bool,
-        shouldStartSession: Bool,
-        enableDebug: Bool
-    ) async throws -> Bool {
+    @MainActor public func configure(_ config: NX10CoreConfig) throws -> Self {
         
-        sessionProvider.setAPIKey(apiKey)
+        sessionProvider.setAPIKey(config.apiKey)
         
-        isDebug = enableDebug
+        isDebug = config.enableDebug
         var sessionStarted = false
         
         guard
@@ -167,23 +163,12 @@ extension NX10Core {
             if isDebug {
                 print("configuration has already been called")
             }
-            return false
+            return self
         }
         
-        errorProvider.setTrackingEnabled(errorTrackingEnabled)
+        errorProvider.setTrackingEnabled(config.errorTrackingEnabled)
         
-        if shouldStartSession {
-             sessionStarted = try await startSession()
-            if sessionStarted {
-                isStartingSession = false
-            }
-        }
-        
-        if isDebug {
-            print("LOG: isConfigured is \(shouldStartSession)")
-        }
-        
-        return sessionStarted 
+        return self
     }
     
     public func setToken(_ token: String) {

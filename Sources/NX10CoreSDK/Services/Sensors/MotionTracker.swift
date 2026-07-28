@@ -85,8 +85,6 @@ public final class MotionTracker {
                     z: processedZ
                 )
 
-                
-
                 if isDebug {
                     DebugProvider.shared.updateGyro(gyro: gyroData)
                 }
