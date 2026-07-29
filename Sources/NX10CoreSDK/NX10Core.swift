@@ -175,6 +175,10 @@ extension NX10Core {
         networkservice.setToken(token)
     }
     
+    public func stopSession() async throws {
+        // TODO: TODO
+    }
+    
     public func startSession() async throws -> Bool {
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
