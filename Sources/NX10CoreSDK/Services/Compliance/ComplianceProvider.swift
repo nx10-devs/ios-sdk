@@ -6,20 +6,17 @@
 //
 
 import Foundation
+import NX10CoreSDK
 
 @MainActor
-public protocol ComplianceProviding {
-    
-    var allowTrainingData: Bool { get }
-    var allowDataCollection: Bool { get }
-    
+public protocol ComplianceOperating {
     func access(for email: String, and date: Date) async throws -> Bool
     func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool
     func forget(for email: String, and date: Date) async throws -> Bool
     func attest(with items: [ComplianceRequest.Attest.AttestItem], and date: Date) async throws -> Bool
-    func setAllowTrainingData(_ allow: Bool)
-    func setAllowDataCollection(with allow: Bool)
-    
+}
+
+public protocol ComplianceProviding: ComplianceOperating {
     init(networking: Networking)
 }
 
@@ -27,16 +24,6 @@ public final class ComplianceProvider: ComplianceProviding {
     
     private let networking: Networking
     
-    public private(set) var allowTrainingData: Bool = false
-    public private(set) var allowDataCollection: Bool = false
-    
-    public func setAllowTrainingData(_ allow: Bool) {
-        self.allowTrainingData = allow
-    }
-    
-    public func setAllowDataCollection(with allow: Bool) {
-        self.allowDataCollection = allow
-    }
     public func access(for email: String, and date: Date) async throws -> Bool {
         
         // Delete

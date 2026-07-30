@@ -48,7 +48,7 @@ public final class NX10Core: ObservableObject {
     public let touchTracker: GeneralTouchTracker
     public let attributesProvider: AttributesProviding
     public let activityProvider: ActivityProviding
-    public let complianceProvider: ComplianceProviding
+    public let consentProvider: ConsentProvider
     public let screenStatesProvider: ScreenStatesProviding
 
     // MARK: Internal properties
@@ -59,7 +59,8 @@ public final class NX10Core: ObservableObject {
     let endpointProvider: EndpointProviding
     let sessionProvider: SessionProviding
     let networkservice: Networking
-    
+    let complianceProvider: ComplianceProviding
+
     private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
@@ -128,7 +129,13 @@ public final class NX10Core: ObservableObject {
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         let activityProvider = ActivityProvider(networking: networkService, errorProvider: errorProvider)
+        
+        // MARK: Compliance/Consent
         let complianceProvider = ComplianceProvider(networking: networkService)
+        let consentProvider = ConsentProvider()
+        
+        // TODO: Not happy (anti-pattern) - this is because of env keys that need an INIT. find a better way.
+        consentProvider.setComplainceProvider(complianceProvider)
         
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
@@ -150,8 +157,9 @@ public final class NX10Core: ObservableObject {
         self.touchProcessor = touchProcessor
         self.touchTracker = touchTracker
         self.activityProvider = activityProvider
-        self.complianceProvider = complianceProvider
         self.screenStatesProvider = screenStatesProvider
+        self.complianceProvider = complianceProvider
+        self.consentProvider = consentProvider
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
@@ -174,6 +182,8 @@ extension NX10Core {
         }
         
         errorProvider.setTrackingEnabled(config.errorTrackingEnabled)
+        
+        consentProvider.setAppGroupID(config.appGroup)
         
         return self
     }
