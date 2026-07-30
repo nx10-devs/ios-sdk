@@ -17,7 +17,14 @@ public struct NX10CoreConfig {
     public let allowDataCollecting: Bool
     public let allowTrainingData: Bool
     
-    public init(apiKey: String, appGroup: String, errorTrackingEnabled: Bool, allowDataCollecting: Bool, allowTrainingData: Bool, enableDebug: Bool) {
+    public init(
+        apiKey: String,
+        appGroup: String,
+        errorTrackingEnabled: Bool,
+        allowDataCollecting: Bool,
+        allowTrainingData: Bool,
+        enableDebug: Bool
+    ) {
         self.apiKey = apiKey
         self.appGroup = appGroup
         self.errorTrackingEnabled = errorTrackingEnabled
