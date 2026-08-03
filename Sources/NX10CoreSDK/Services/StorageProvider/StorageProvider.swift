@@ -16,7 +16,6 @@ public protocol SharedStorageProviding {
     
     init()
     func setAppGroupID(_ appGroupID: String?)
-    func synchronise()
 }
 
 public final class SharedStorageProvider: SharedStorageProviding {
@@ -41,8 +40,6 @@ public final class SharedStorageProvider: SharedStorageProviding {
         } else {
             self.storage = .standard
         }
-        
-        synchronise()
     }
     
     // MARK: - Storage Accessors
@@ -116,17 +113,6 @@ public final class SharedStorageProvider: SharedStorageProviding {
             storage.set(newValue, forKey: Key.demoKey)
             storage.synchronize()
         }
-    }
-    
-    // MARK: - Management
-    public func synchronise() {
-        guard let storage else {
-            if isDebug { fatalError("local storage not set") }
-            return
-        }
-        
-        // Forces a sync from disk into memory
-        storage.synchronize()
     }
     
     public func clearAll() {

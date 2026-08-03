@@ -46,5 +46,7 @@ public struct Endpoint: Decodable, Hashable {
         case activity
         case frustration
         case compliance
+        case forget
+        case access
     }
 }

@@ -191,6 +191,10 @@ extension NX10Core {
         return self
     }
     
+    public func enableNetworking(_ enabled: Bool) {
+        sharedStorageProvider.networkingEnabled = enabled
+    }
+    
     public func setToken(_ token: String) {
         networkservice.setToken(token)
     }
@@ -215,7 +219,6 @@ extension NX10Core {
         let sessionData = try await self.sessionProvider.startSession()
         
         if let sessionData {
-          
             isStartingSession = false
             self.sessionData = sessionData
         } else {

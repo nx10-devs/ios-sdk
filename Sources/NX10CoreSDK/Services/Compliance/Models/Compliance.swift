@@ -7,18 +7,24 @@
 
 import Foundation
 
+public struct ComplianceResponse: Decodable {
+    public let status: String?
+    public let data: Access? 
+
+    public struct Access: Decodable {
+        public let requestUrl: String?
+    }
+}
+
 public struct ComplianceRequest: Codable {
     
     public struct Forget: Codable {
-        let email: String
-        let callbackUrl: String
         let datetimeRequested: String
         let dryRun: Bool
     }
     
     public struct Access: Codable {
-        let email: String
-        let callbackUrl: String
+        let callbackUrl: String?
         let datetimeRequested: String
         let dryRun: Bool
     }

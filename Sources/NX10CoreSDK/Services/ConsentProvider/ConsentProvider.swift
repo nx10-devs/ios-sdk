@@ -41,6 +41,7 @@ public final class ConsentProvider: ConsentProviding {
         set {
             storageProvider.allowDataCollection = newValue
             // Business Rule: Disabling collection automatically forces training disabled
+            storageProvider.networkingEnabled = newValue
             if !newValue {
                 storageProvider.allowTrainingData = false
             }
@@ -67,15 +68,18 @@ public final class ConsentProvider: ConsentProviding {
         self.storageProvider = storageProvider
     }
     
-    public func access(for email: String, and date: Date) async throws -> Bool {
+    public func access(date: Date, dryRun: Bool) async throws -> String? {
         guard let complianceProvider else {
             if isDebug { fatalError("Compliance provider is missing") }
-            return false
+            return nil
         }
-        return try await complianceProvider.access(for: email, and: date)
+        return try await complianceProvider.access(date: date, dryRun: dryRun)
     }
     
     public func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool {
+        // TODO: Align with compliance pattern
+        storageProvider.networkingEnabled = processorConsent
+        
         guard let complianceProvider else {
             if isDebug { fatalError("Compliance provider is missing") }
             return false
@@ -83,12 +87,12 @@ public final class ConsentProvider: ConsentProviding {
         return try await complianceProvider.consent(for: processorConsent, and: controllerConsent)
     }
     
-    public func forget(for email: String, and date: Date) async throws -> Bool {
+    public func forget(date: Date, dryRun: Bool) async throws -> Bool {
         guard let complianceProvider else {
             if isDebug { fatalError("Compliance provider is missing") }
             return false
         }
-        return try await complianceProvider.forget(for: email, and: date)
+        return try await complianceProvider.forget(date: date, dryRun: dryRun)
     }
     
     public func attest(with items: [ComplianceRequest.Attest.AttestItem], and date: Date) async throws -> Bool {
