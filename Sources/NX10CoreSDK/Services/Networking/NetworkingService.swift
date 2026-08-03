@@ -14,15 +14,18 @@ public protocol Networking {
     
     func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
     func GET<R:Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R?
-    func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R?
+    func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
+    func enableNetworking(_ enable: Bool)
 }
 
 public final class NetworkService: Networking {
     private var token: String?
     private let endpointProvider: EndpointProviding
+    private var sharedStorageProvider: SharedStorageProviding
     
-    init(endpointProvider: EndpointProviding) {
+    init(endpointProvider: EndpointProviding, sharedStorageProvider: SharedStorageProviding) {
         self.endpointProvider = endpointProvider
+        self.sharedStorageProvider = sharedStorageProvider
     }
     
     public func setToken(_ token: String) {
@@ -36,6 +39,10 @@ public final class NetworkService: Networking {
     
     public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
+        if sharedStorageProvider.networkingEnabled == false {
+            print("LOG: Network disabled, returning ...")
+            return nil
+        }
         var url = try endpointProvider.url(for: endpoint)
         if let route {
             url = url.appendingPathComponent(route)
@@ -44,7 +51,20 @@ public final class NetworkService: Networking {
         return try await self.execute(payload, for: url)
     }
     
-    public func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL) async throws -> R? {
+    public func enableNetworking(_ enable: Bool) {
+        sharedStorageProvider.networkingEnabled = enable
+    }
+    
+    public func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
+        
+        if sharedStorageProvider.networkingEnabled == false {
+            print("Networking disabled")
+            throw NSError.error(for: .networkingDisabled)
+            return nil
+        } else {
+            print("Networking enabled")
+        }
+        
         if isDebug {
             print("LOG: Sending payload \(payload) for url \(url)")
         }
@@ -53,6 +73,13 @@ public final class NetworkService: Networking {
         encoder.outputFormatting = [.withoutEscapingSlashes] // optional
         
         var request = URLRequest(url: url)
+        
+        if let httpHeaders {
+            for (key, value) in httpHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
         do {
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -121,9 +148,16 @@ public final class NetworkService: Networking {
     }
     
     public func GET<R: Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R? {
+        
         if isDebug {
             print("LOG ------------------------------ \(endpoint.rawValue)")
         }
+
+        if sharedStorageProvider.networkingEnabled == false {
+            print("LOG: Network disabled, returning ...")
+            return nil
+        }
+
         let url = try endpointProvider.url(for: endpoint)
         
         if isDebug {

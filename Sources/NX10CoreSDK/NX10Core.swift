@@ -43,6 +43,7 @@ public final class NX10Core: ObservableObject {
     public let errorProvider: ErrorProviding
     public let telemetryProvider: TelemetryProviding
     public let saaqService: SaaQServiceProtocol
+    public let sharedStorageProvider: SharedStorageProvider
     public let brainJuiceProvider: BrainJuiceProviding
     public let touchProcessor: TouchProcessorProviding
     public let touchTracker: GeneralTouchTracker
@@ -82,9 +83,10 @@ public final class NX10Core: ObservableObject {
         let appService = AppInfoProvider()
         let touchProcessor = TouchProcessorProvider(errorProvider: errorProvider)
         let appLifecycleService = LifecyleProvider()
+        let sharedStorageProvider = SharedStorageProvider()
         
         let endpointProvider = EndpointProvider()
-        let networkService = NetworkService(endpointProvider: endpointProvider)
+        let networkService = NetworkService(endpointProvider: endpointProvider, sharedStorageProvider: sharedStorageProvider)
         let analyticsService = AnalyticsProvider(networkService: networkService)
 
         // MARK: - Sensor Providers 
@@ -124,7 +126,8 @@ public final class NX10Core: ObservableObject {
         let sessionProvider = SessionProvider(
             endpointsProvider: endpointProvider,
             networking: networkService,
-            applicationInfoProvider: appService
+            applicationInfoProvider: appService,
+            sharedStorageProvider: sharedStorageProvider
         )
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
@@ -135,12 +138,13 @@ public final class NX10Core: ObservableObject {
         let consentProvider = ConsentProvider()
         
         // TODO: Not happy (anti-pattern) - this is because of env keys that need an INIT. find a better way.
-        consentProvider.setComplainceProvider(complianceProvider)
+        consentProvider.setComplianceProvider(complianceProvider,and: sharedStorageProvider)
         
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.telemetryProvider = telemetryProvider
         self.saaqService = saaqService
+        self.sharedStorageProvider = sharedStorageProvider
         
         // Internal properties for lifecycle management
         self.endpointProvider = endpointProvider
@@ -166,7 +170,8 @@ public final class NX10Core: ObservableObject {
 
 extension NX10Core {
     @MainActor public func configure(_ config: NX10CoreConfig) throws -> Self {
-        
+        sharedStorageProvider.setAppGroupID(config.appGroup)
+
         sessionProvider.setAPIKey(config.apiKey)
         
         isDebug = config.enableDebug
@@ -183,8 +188,6 @@ extension NX10Core {
         
         errorProvider.setTrackingEnabled(config.errorTrackingEnabled)
         
-        consentProvider.setAppGroupID(config.appGroup)
-        
         return self
     }
     
@@ -196,10 +199,14 @@ extension NX10Core {
         // TODO: TODO
     }
     
-    public func startSession() async throws -> Bool {
+    public func startSession(_ isNewSession: Bool) async throws -> Bool {
+        if isNewSession {
+            sessionData = nil
+        }
+        
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
-            return false
+            throw NSError.error(for: .sessionAlreadyStarted)
         }
         
         isStartingSession = true

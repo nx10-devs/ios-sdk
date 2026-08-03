@@ -13,28 +13,37 @@ public protocol SessionProviding {
     var isReady: Bool { get }
     var apiKey: String? { get }
     var token: String? { get }
-    
+    var sessionStarted: Bool { get }
     func setAPIKey(_ key: String)
     func startSession() async throws -> SessionData?
+    func enableNetworking(_ enable: Bool) -> Self
 }
 
 public final class SessionProvider: SessionProviding {
     public private(set) var isReady: Bool = false
     public var token: String? = nil
+    public var sessionStarted: Bool = false
     
     private(set) public var apiKey: String? = nil
     private var endpointsProvider: EndpointProviding
     private let networking: Networking
     private let applicationInfoProvider: AppInfoProviding
+    private let sharedStorageProvider: SharedStorageProviding
     
-    init(endpointsProvider: EndpointProviding, networking: Networking, applicationInfoProvider: AppInfoProviding) {
+    init(endpointsProvider: EndpointProviding, networking: Networking, applicationInfoProvider: AppInfoProviding, sharedStorageProvider: SharedStorageProviding) {
         self.endpointsProvider = endpointsProvider
         self.networking = networking
         self.applicationInfoProvider = applicationInfoProvider
+        self.sharedStorageProvider = sharedStorageProvider
     }
     
     public func setAPIKey(_ key: String) {
         self.apiKey = key
+    }
+    
+    public func enableNetworking(_ enable: Bool) -> Self {
+        networking.enableNetworking(enable)
+        return self
     }
     
     public func startSession() async throws -> SessionData? {
@@ -77,9 +86,12 @@ public final class SessionProvider: SessionProviding {
             
             print(url)
             
+            let isDemo = sharedStorageProvider.isDemo
+            
             let result: StartSessionAPIResponse? = try await networking.execute(
                 payload,
-                for: url
+                for: url,
+                httpHeaders: isDemo ? ["X-Demo-Mode" : "true"] : nil
             )
             
             guard
@@ -93,8 +105,9 @@ public final class SessionProvider: SessionProviding {
             
             print("LOG: Session start established for UUID \(applicationInfoProvider.deviceID) version \(applicationInfoProvider.appVersionNumber)")
             
-            return result.data
+            sessionStarted = true
             
+            return result.data
         } catch {
             if isDebug {
                 print("LOG: Failed to start session")

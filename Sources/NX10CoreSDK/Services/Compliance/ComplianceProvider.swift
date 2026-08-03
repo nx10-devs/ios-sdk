@@ -41,12 +41,30 @@ public final class ComplianceProvider: ComplianceProviding {
         let response: GenericResponse? = try await networking.POST(access, for: .compliance, for: "/access")
     }
     
+    /// Desc: consent()
+    /// This method enables and disables networking
+    /// If networking is re-established it must be set first then a network call
+    /// If the user declines consent after consenting then this needs to be sent to the backend then set locally.
     public func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool {
         
+        // CONSENT: Enable traffic is conset is permitted
+        if processorConsent {
+            networking.enableNetworking(true)
+        }
+        
+        // TODO: Do the networking here
+        
+        // CONSENT: tell the API consent has been revoked
+        
+        
+        // CONSENT:  Locally block networking traffic
+        if processorConsent == false {
+            networking.enableNetworking(false)
+            return true
+        }
         // Delete
         return true
         // Delete
-        
     }
     
     public func forget(for email: String, and date: Date) async throws -> Bool {

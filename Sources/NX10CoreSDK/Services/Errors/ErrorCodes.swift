@@ -13,6 +13,9 @@ extension NSError {
         case missingAPIKey = -0002
         case jwtTokenMissing = -0003
         case failedToStartSession = -0004
+        case networkingDisabled = -0005
+        case sessionAlreadyStarted = -0006
+        case sessionWasNotStarted = -0007
         
         var code: Int {
             return rawValue
@@ -29,6 +32,12 @@ extension NSError {
                 string = "jwt-token-missing"
             case .failedToStartSession:
                 string = "failed-to-start-session"
+            case .networkingDisabled:
+                string = "networking-revoked"
+            case .sessionAlreadyStarted:
+                string = "session-already-started"
+            case .sessionWasNotStarted:
+                string = "session-not-started"
             }
             
             return "nx10-core-sdk-\(string)-error"
