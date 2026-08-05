@@ -208,22 +208,22 @@ public final class TelemetryProvider: TelemetryProviding {
     // MARK: - Screen lock/unlock ("screen" V2 events)
 
     public func screenLocked() {
-        let sample = ScreenEventSample(name: "screen", event: "lock", timestampMs: nowMs())
+        let sample = ScreenEventSample(name: "screen", event: .string("lock"), timestampMs: nowMs())
         telemetryCollector.appendScreenEvent(sample)
     }
 
     public func screenUnlocked() {
-        let sample = ScreenEventSample(name: "screen", event: "unlock", timestampMs: nowMs())
+        let sample = ScreenEventSample(name: "screen", event: .string("unlock"), timestampMs: nowMs())
         telemetryCollector.appendScreenEvent(sample)
     }
     
     public func screenOrientation(_ orientation: String) {
-        let sample = ScreenEventSample(name: "orient", event: orientation, timestampMs: nowMs())
+        let sample = ScreenEventSample(name: "orient", event: .string(orientation), timestampMs: nowMs())
         telemetryCollector.appendScreenEvent(sample)
     }
     
     public func screenBrightness(_ brightness: CGFloat) {
-        let sample = ScreenEventSample(name: "bright", event: String(format: "%.2f", brightness), timestampMs: nowMs())
+        let sample = ScreenEventSample(name: "bright", event: .float(Float(brightness)), timestampMs: nowMs())
         telemetryCollector.appendScreenEvent(sample)
     }
     

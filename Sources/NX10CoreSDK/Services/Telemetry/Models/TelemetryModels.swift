@@ -163,11 +163,46 @@ public struct TextCorSample: Codable {
 
 /// Records a screen lock/unlock event — maps to the "screen" V2 event.
 public struct ScreenEventSample: Codable {
-    /// "lock" or "unlock".
+    
+    public enum ScreenEventValue: Codable {
+        case float(Float)
+        case string(String)
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            
+            // Try decoding as Float first; fall back to String
+            if let floatValue = try? container.decode(Float.self) {
+                self = .float(floatValue)
+            } else if let stringValue = try? container.decode(String.self) {
+                self = .string(stringValue)
+            } else {
+                throw DecodingError.typeMismatch(
+                    ScreenEventValue.self,
+                    DecodingError.Context(
+                        codingPath: decoder.codingPath,
+                        debugDescription: "Expected Float or String for ScreenEventValue"
+                    )
+                )
+            }
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            case .float(let value):
+                try container.encode(value)
+            case .string(let value):
+                try container.encode(value)
+            }
+        }
+    }
+    
     public let name: String
-    public let event:       String
+    public let event: ScreenEventValue
     public let timestampMs: Double
-    public init(name: String, event: String, timestampMs: Double) {
+    
+    public init(name: String, event: ScreenEventValue, timestampMs: Double) {
         self.name = name
         self.event = event
         self.timestampMs = timestampMs
