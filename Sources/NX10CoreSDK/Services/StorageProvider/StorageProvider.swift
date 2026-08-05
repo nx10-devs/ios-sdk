@@ -11,7 +11,6 @@ import Foundation
 public protocol SharedStorageProviding {
     var allowDataCollection: Bool { get set }
     var allowTrainingData: Bool { get set }
-    var isDemo: Bool { get set }
     var networkingEnabled: Bool { get set }
     
     init()
@@ -22,10 +21,9 @@ public final class SharedStorageProvider: SharedStorageProviding {
     
     // MARK: - Keys
     public enum Key {
-        public static let collectionKey = "hasAcceptedDataCollectionConsent"
-        public static let trainingKey = "hasAcceptedDataTrainingConsent"
-        public static let demoKey = "demoKey"
-        public static let networkIsDisabled = "networkDisabledKey"
+        public static let collectionKey = "me.nx10.sdk.hasAcceptedDataCollectionConsent"
+        public static let trainingKey = "me.nx10.sdk.hasAcceptedDataTrainingConsent"
+        public static let networkIsDisabled = "me.nx10.sdk.networkDisabledKey"
     }
     
     // MARK: - Properties
@@ -35,11 +33,17 @@ public final class SharedStorageProvider: SharedStorageProviding {
     public init() {}
     
     public func setAppGroupID(_ appGroupID: String?) {
-        if let appGroupID, let groupStorage = UserDefaults(suiteName: appGroupID) {
-            self.storage = groupStorage
-        } else {
-            self.storage = .standard
+        guard
+            let appGroupID
+        else {
+            if isDebug {
+                fatalError("appGroupID not set")
+            }
+            return
         }
+        
+        let groupStorage = UserDefaults(suiteName: appGroupID)
+        self.storage = groupStorage
     }
     
     // MARK: - Storage Accessors
@@ -97,24 +101,6 @@ public final class SharedStorageProvider: SharedStorageProviding {
         }
     }
     
-    public var isDemo: Bool {
-        get {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return false
-            }
-            return storage.bool(forKey: Key.demoKey)
-        }
-        set {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return
-            }
-            storage.set(newValue, forKey: Key.demoKey)
-            storage.synchronize()
-        }
-    }
-    
     public func clearAll() {
         guard let storage else {
             if isDebug { fatalError("local storage not set") }
@@ -123,7 +109,6 @@ public final class SharedStorageProvider: SharedStorageProviding {
         
         storage.removeObject(forKey: Key.collectionKey)
         storage.removeObject(forKey: Key.trainingKey)
-        storage.removeObject(forKey: Key.demoKey)
         storage.removeObject(forKey: Key.networkIsDisabled)
         storage.synchronize()
     }

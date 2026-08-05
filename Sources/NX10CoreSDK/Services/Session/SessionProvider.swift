@@ -15,7 +15,7 @@ public protocol SessionProviding {
     var token: String? { get }
     var sessionStarted: Bool { get }
     func setAPIKey(_ key: String)
-    func startSession() async throws -> SessionData?
+    func startSession(for isDemo: Bool) async throws -> SessionData?
     func enableNetworking(_ enable: Bool) -> Self
 }
 
@@ -46,7 +46,7 @@ public final class SessionProvider: SessionProviding {
         return self
     }
     
-    public func startSession() async throws -> SessionData? {
+    public func startSession(for isDemo: Bool) async throws -> SessionData? {
         do {
             print("LOG: Attempting session start")
             guard let apiKey = apiKey else {
@@ -84,10 +84,6 @@ public final class SessionProvider: SessionProviding {
                 throw APIError.malformedURL
             }
             
-            print(url)
-            
-            let isDemo = sharedStorageProvider.isDemo
-            
             let result: StartSessionAPIResponse? = try await networking.execute(
                 payload,
                 for: url,
@@ -116,8 +112,6 @@ public final class SessionProvider: SessionProviding {
             
             throw error
         }
-        
-        return nil
     }
 }
 

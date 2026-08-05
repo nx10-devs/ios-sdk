@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension NSError {
+public extension NSError {
     public enum ErrorCodes: Int, CaseIterable {
         case missingDeviceMap = -0001
         case missingAPIKey = -0002

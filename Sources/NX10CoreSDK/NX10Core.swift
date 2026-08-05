@@ -14,23 +14,17 @@ public struct NX10CoreConfig {
     public let appGroup: String
     public let errorTrackingEnabled: Bool
     public let enableDebug: Bool
-    public let allowDataCollecting: Bool
-    public let allowTrainingData: Bool
     
     public init(
         apiKey: String,
         appGroup: String,
         errorTrackingEnabled: Bool,
-        allowDataCollecting: Bool,
-        allowTrainingData: Bool,
         enableDebug: Bool
     ) {
         self.apiKey = apiKey
         self.appGroup = appGroup
         self.errorTrackingEnabled = errorTrackingEnabled
         self.enableDebug = enableDebug
-        self.allowDataCollecting = allowDataCollecting
-        self.allowTrainingData = allowTrainingData
     }
 }
 
@@ -201,13 +195,11 @@ extension NX10Core {
     
     public func stopSession() async throws {
         // TODO: TODO
+        sessionData = nil
     }
     
-    public func startSession(_ isNewSession: Bool) async throws -> Bool {
-        if isNewSession {
-            sessionData = nil
-        }
-        
+    public func startSession(for isDemo: Bool) async throws -> Bool {
+
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
             throw NSError.error(for: .sessionAlreadyStarted)
@@ -216,7 +208,7 @@ extension NX10Core {
         isStartingSession = true
         
         print("LOG: startSession")
-        let sessionData = try await self.sessionProvider.startSession()
+        let sessionData = try await self.sessionProvider.startSession(for: isDemo)
         
         if let sessionData {
             isStartingSession = false

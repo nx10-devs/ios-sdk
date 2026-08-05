@@ -29,6 +29,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     
     
     public func setDecodedToken(_ decodedToken: NX10Token) {
+        print("LOG: setDecodedToken - Brain Juice")
         self.decodedToken = decodedToken
     }
     
@@ -46,6 +47,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     }
     
     public func fetchBrainJuiceData() async throws -> BrainJuice.Response? {
+        print("LOG: fetchBrainJuiceData")
         guard
             let brainJuiceConfig = self.brainJuiceConfig
         else {
@@ -58,6 +60,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     }
     
     public func setBrainJuiceConfig(_ brainJuiceConfig: JSONValue) {
+        print("LOG: Did set BrainJuice config")
         self.brainJuiceConfig = brainJuiceConfig
     }
 }
