@@ -22,7 +22,7 @@ public final class FrustrationProvider: FrustrationProviding {
     }
     
     public func getFrustration() async throws -> Frustration.Response? {
-        let frustration: Frustration.Response? = try await networking.GET(for: .frustration)
+        let frustration: Frustration.Response? = try await networking.GET(for: .frustration, for: nil)
         return frustration
     }
 }

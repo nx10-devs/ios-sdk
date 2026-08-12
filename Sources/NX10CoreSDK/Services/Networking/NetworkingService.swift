@@ -13,7 +13,7 @@ public protocol Networking {
     func setToken(_ token: String)
     
     func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
-    func GET<R:Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R?
+    func GET<R:Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
     func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
     func enableNetworking(_ enable: Bool)
 }
@@ -147,7 +147,7 @@ public final class NetworkService: Networking {
         return nil
     }
     
-    public func GET<R: Decodable>(for endpoint: Endpoint.EndpointType) async throws -> R? {
+    public func GET<R: Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R? {
         
         if isDebug {
             print("LOG ------------------------------ \(endpoint.rawValue)")
@@ -158,7 +158,10 @@ public final class NetworkService: Networking {
             return nil
         }
 
-        let url = try endpointProvider.url(for: endpoint)
+        var url = try endpointProvider.url(for: endpoint)
+        if let route {
+            url = url.appendingPathComponent(route)
+        }
         
         if isDebug {
             print("LOG: URL:\(url) [GET]")

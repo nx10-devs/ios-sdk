@@ -9,8 +9,12 @@ import Foundation
 
 @MainActor
 public protocol ActivityProviding {
+    // MARK: Activities
     func getActivity() async throws-> Activity.Action?
     func setActivity(_ activity: JSONValue)
+    
+    // MARK: History
+    func getHistory() async throws -> Activity.HistoryResponse.HistoryData?
     
     init(networking: Networking, errorProvider: ErrorProviding)
 }
@@ -26,12 +30,19 @@ final public class ActivityProvider: ActivityProviding {
         self.errorProvider = errorProvider
     }
     
-    public func getActivity() async throws-> Activity.Action? {
+    public func getActivity() async throws -> Activity.Action? {
         let response: Activity.Action? = try await networking.POST(activity, for: .activity, for: nil)
         return response
     }
     
     public func setActivity(_ activity: JSONValue) {
         self.activity = activity
+    }
+    
+    // MARK: History
+    public func getHistory() async throws -> Activity.HistoryResponse.HistoryData? {
+        
+        let response: Activity.HistoryResponse? = try await networking.GET(for: .activity, for: "/history")
+        return response?.data
     }
 }

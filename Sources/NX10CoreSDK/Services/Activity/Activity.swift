@@ -11,12 +11,12 @@ public struct Activity: Codable {}
 
 public extension Activity {
     public struct Data: Codable {
-        let thresholds: Thresholds?
-    }
-    
-    public struct Thresholds: Codable  {
-        public let stationaryMaxThreshold: Double
-        public let movingMinThreshold: Double
+        public let thresholds: Thresholds?
+        
+        public struct Thresholds: Codable  {
+            public let stationaryMaxThreshold: Double
+            public let movingMinThreshold: Double
+        }
     }
 }
 
@@ -26,24 +26,24 @@ public extension Activity {
     public struct Action: Decodable {
         public let status: String
         public let data: ActionData
-        
-        
-        public struct ActionData: Decodable {
 
+        // Child struct
+        public struct ActionData: Decodable {
             public let timestamp: String?
             public let device: Device?
             public let user: User?
-        }
-        
-        public struct Device: Decodable {
-            public let kineticState: String
-            public let orientation: String
-        }
-        
-        public struct User: Decodable {
-            public let position: String?
-            public let motion: String?
-            public let restingState: String?
+            
+            // Child structs
+            public struct Device: Decodable {
+                public let kineticState: String
+                public let orientation: String
+            }
+            
+            public struct User: Decodable {
+                public let position: String?
+                public let motion: String?
+                public let restingState: String?
+            }
         }
     }
 }

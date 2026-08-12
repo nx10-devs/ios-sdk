@@ -209,15 +209,16 @@ extension NX10Core {
         
         print("LOG: startSession")
         let sessionData = try await self.sessionProvider.startSession(for: isDemo)
-        
+        self.sessionData = sessionData
+
         if let sessionData {
             isStartingSession = false
-            self.sessionData = sessionData
         } else {
             if isDebug {
                 fatalError("failed to start session")
             }
             errorProvider.sendError(NSError.error(for: .failedToStartSession))
+            throw NSError.error(for: .sessionWasNotStarted)
         }
         return sessionData != nil
     }
