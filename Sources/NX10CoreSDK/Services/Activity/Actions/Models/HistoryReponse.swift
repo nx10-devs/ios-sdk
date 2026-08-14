@@ -9,17 +9,14 @@ import Foundation
 
 public extension Activity {
     // MARK: - Root Model
-    public struct HistoryResponse: Decodable {
+    struct HistoryResponse: Decodable {
+        public let status: String
         public let data: HistoryData?
-
-        public init(data: HistoryData?) {
-            self.data = data
-        }
     }
 }
 
 public extension Activity.HistoryResponse {
-    public struct HistoryData: Decodable {
+    struct HistoryData: Decodable {
         public let history: [HistoryItem]?
         
         public init(history: [HistoryItem]?) {
@@ -29,34 +26,81 @@ public extension Activity.HistoryResponse {
         public struct HistoryItem: Decodable, Identifiable {
             public let id = UUID().uuidString
             
-            public let startTime: Date
-            public let endTime: Date
+            public let startTime: String
+            public let endTime: String
             public let device: DeviceInfo?
             public let user: UserInfo?
             
-            public init(startTime: Date, endTime: Date, device: DeviceInfo?, user: UserInfo?) {
-                self.startTime = startTime
-                self.endTime = endTime
-                self.device = device
-                self.user = user
+            // MARK: - Midpoint Date
+            /// Calculates the exact midpoint Date between startTime and endTime
+            @MainActor
+            public var xAxisDate: Date? {
+                guard
+                    let dateEndTime = endTime.toISODate(),
+                    let dateStartTime = startTime.toISODate()
+                else {
+                    return nil
+                }
+                
+                let duration = dateEndTime.timeIntervalSince(dateStartTime)
+                return dateEndTime.addingTimeInterval(-(duration / 2.0))
+            }
+            
+            // MARK: - Primary Icon Resolution
+            public var icon: String? {
+                if let motion = user?.motion {
+                    return motion.rawValue
+                }
+                if let position = user?.position {
+                    return position.rawValue
+                }
+                if let restingState = user?.restingState {
+                    return restingState.rawValue
+                }
+                if let kineticState = device?.kineticState {
+                    return kineticState.rawValue
+                }
+                return nil
             }
             
             // MARK: - Device Info
             public struct DeviceInfo: Decodable {
-                public let kineticState: String?
+                public let kineticState: KeneticState?
                 
-                public init(kineticState: String?) {
+                public enum KeneticState: String, Decodable, CaseIterable {
+                    case stationary
+                    case inHand = "in hand"
+                }
+                
+                public init(kineticState: KeneticState?) {
                     self.kineticState = kineticState
                 }
             }
             
             // MARK: - User Info
             public struct UserInfo: Decodable {
-                public let restingState: String?
-                public let motion: String?
-                public let position: String?
+                public let restingState: RestingState?
+                public let motion: Motion?
+                public let position: Position?
                 
-                public init(restingState: String?, motion: String?, position: String?) {
+                public enum RestingState: String, Decodable, CaseIterable {
+                    case resting
+                    case active
+                }
+                
+                public enum Motion: String, Decodable, CaseIterable {
+                    case walking
+                    case running
+                    case vehicle
+                }
+                
+                public enum Position: String, Decodable, CaseIterable {
+                    case standing
+                    case sitting
+                    case lyingDown = "lying down"
+                }
+                
+                public init(restingState: RestingState?, motion: Motion?, position: Position?) {
                     self.restingState = restingState
                     self.motion = motion
                     self.position = position
@@ -66,20 +110,24 @@ public extension Activity.HistoryResponse {
     }
 }
 
+// MARK: - Mock Data Generator
 
-extension Activity.HistoryResponse {
+public extension Activity.HistoryResponse {
     /// Generates mock `HistoryResponse` data spanning a 30-day period starting from 7 days ago.
     ///
     /// - Parameter referenceDate: The baseline anchor date (defaults to `Date()`).
-    /// - Returns: A populated `HistoryResponse` instance.
-    public static func mockMonthData(relativeTo referenceDate: Date = Date()) -> Activity.HistoryResponse.HistoryData {
+    /// - Returns: A populated `HistoryResponse.HistoryData` instance.
+    static func mockMonthData(relativeTo referenceDate: Date = Date()) -> Activity.HistoryResponse.HistoryData {
         let calendar = Calendar.current
         var items: [HistoryData.HistoryItem] = []
         
-        let kineticStates = ["inhand", "on table", "in pocket"]
-        let restingStates = ["active", "resting"]
-        let motions = ["walking", "running", "stationary", nil]
-        let positions = ["sitting", "standing", "lying down", nil]
+        typealias Item = HistoryData.HistoryItem
+        
+        // Optionals lists using enum cases directly
+        let kineticStates: [Item.DeviceInfo.KeneticState?] = Item.DeviceInfo.KeneticState.allCases + [nil]
+        let restingStates: [Item.UserInfo.RestingState?] = Item.UserInfo.RestingState.allCases + [nil]
+        let motions: [Item.UserInfo.Motion?] = Item.UserInfo.Motion.allCases + [nil]
+        let positions: [Item.UserInfo.Position?] = Item.UserInfo.Position.allCases + [nil]
         
         // Generate entries for 30 days: Day -7 through Day +22
         for dayOffset in -7...22 {
@@ -98,16 +146,16 @@ extension Activity.HistoryResponse {
                 let motion = motions.randomElement()!
                 let position = positions.randomElement()!
                 
-                let device = HistoryData.HistoryItem.DeviceInfo(kineticState: kinetic)
-                let user = HistoryData.HistoryItem.UserInfo(
+                let device = Item.DeviceInfo(kineticState: kinetic)
+                let user = Item.UserInfo(
                     restingState: resting,
                     motion: motion,
                     position: position
                 )
                 
-                let item = HistoryData.HistoryItem(
-                    startTime: startTime,
-                    endTime: endTime,
+                let item = Item(
+                    startTime: startTime.iso8601,
+                    endTime: endTime.iso8601,
                     device: device,
                     user: user
                 )
