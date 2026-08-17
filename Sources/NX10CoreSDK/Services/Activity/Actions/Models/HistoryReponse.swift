@@ -92,6 +92,7 @@ public extension Activity.HistoryResponse {
                     case walking
                     case running
                     case vehicle
+                    case inTransit = "in transit"
                 }
                 
                 public enum Position: String, Decodable, CaseIterable {
