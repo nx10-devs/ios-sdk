@@ -86,6 +86,7 @@ public final class SessionProvider: SessionProviding {
             
             let result: StartSessionAPIResponse? = try await networking.execute(
                 payload,
+                shouldZip: false,
                 for: url,
                 httpHeaders: isDemo ? ["X-Demo-Mode" : "true"] : nil
             )

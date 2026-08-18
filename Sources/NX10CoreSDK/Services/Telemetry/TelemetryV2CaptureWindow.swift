@@ -78,7 +78,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
 
         Task {
             do {
-                let _ :TelemetryV2Response? = try await uploader.POST(payload, for: .telemetry, for: nil)
+                let _ :TelemetryV2Response? = try await uploader.POST(payload, shouldZip: false, for: .telemetry, for: nil)
                 
                 // TODO: Flush telemetry
                 

@@ -7,14 +7,15 @@
 
 import Foundation
 import JWTDecode
+import Compression
 
 @MainActor
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
+    func POST<T:Codable, R:Decodable>(_ payload: T?, shouldZip: Bool, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
     func GET<R:Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
-    func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
+    func execute<T: Codable, R: Decodable>(_ payload: T?, shouldZip: Bool, for url: URL, httpHeaders: [String : String]?) async throws -> R?
     func enableNetworking(_ enable: Bool)
 }
 
@@ -37,7 +38,7 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<T:Codable, R:Decodable>(_ payload: T?, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
+    public func POST<T:Codable, R:Decodable>(_ payload: T?, shouldZip: Bool, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         if sharedStorageProvider.networkingEnabled == false {
             print("LOG: Network disabled, returning ...")
@@ -48,14 +49,14 @@ public final class NetworkService: Networking {
             url = url.appendingPathComponent(route)
         }
         print(url)
-        return try await self.execute(payload, for: url)
+        return try await self.execute(payload, shouldZip: shouldZip, for: url)
     }
     
     public func enableNetworking(_ enable: Bool) {
         sharedStorageProvider.networkingEnabled = enable
     }
     
-    public func execute<T: Codable, R: Decodable>(_ payload: T?, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
+    public func execute<T: Codable, R: Decodable>(_ payload: T?, shouldZip: Bool, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
         
         if sharedStorageProvider.networkingEnabled == false {
             print("Networking disabled")
@@ -90,9 +91,28 @@ public final class NetworkService: Networking {
                 }
             }
             
+            if shouldZip {
+                request.setValue("Content-Encoding", forHTTPHeaderField: "gzip")
+            }
+            
             if let payload  {
                 let json = try encoder.encode(payload)
-                request.httpBody = json
+                if shouldZip {
+                    let data = json as NSData
+                    
+                    // 3. Compress using zlib (which produces standard Gzip/Zlib compliant payloads)
+                    guard let compressedNSData = try? data.compressed(using: .zlib) else {
+                        if isDebug {
+                            fatalError("failed to zip data")
+                        }
+                        return nil
+                    }
+                    
+                    
+                    request.httpBody = compressedNSData as Data
+                } else {
+                    request.httpBody = json
+                }
             }
             
             request.allowsCellularAccess = true

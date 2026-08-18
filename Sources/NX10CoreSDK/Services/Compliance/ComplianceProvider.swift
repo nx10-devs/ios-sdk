@@ -32,7 +32,7 @@ public final class ComplianceProvider: ComplianceProviding {
             dryRun: dryRun
         )
         
-        let response: ComplianceResponse? = try await networking.POST(access, for: .access, for: nil)
+        let response: ComplianceResponse? = try await networking.POST(access, shouldZip: false, for: .access, for: nil)
         
         return response?.data?.requestUrl
     }
@@ -45,7 +45,7 @@ public final class ComplianceProvider: ComplianceProviding {
             dryRun: dryRun
         )
         
-        let response: GenericResponse? = try await networking.POST(forget, for: .forget, for: nil)
+        let response: GenericResponse? = try await networking.POST(forget, shouldZip: false, for: .forget, for: nil)
         
         return response?.status == "success"
     }
@@ -74,7 +74,7 @@ public final class ComplianceProvider: ComplianceProviding {
             dryDrun: true
         )
         
-        let response: GenericResponse? = try await networking.POST(attest, for: .compliance, for: "/attest")
+        let response: GenericResponse? = try await networking.POST(attest, shouldZip: false, for: .compliance, for: "/attest")
     }
     
     public init(networking: Networking) {

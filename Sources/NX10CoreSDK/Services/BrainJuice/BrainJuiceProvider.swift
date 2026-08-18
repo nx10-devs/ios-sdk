@@ -41,7 +41,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.missingToken
         }
         let source = BrainJuice.RefreshBrainJuice(source: sourceID)
-        let response: GenericResponse? = try await networking.POST(source, for: .brainJuice, for: "baselines/refresh")
+        let response: GenericResponse? = try await networking.POST(source, shouldZip: false, for: .brainJuice, for: "baselines/refresh")
         
         return response
     }
@@ -54,7 +54,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.badRequest
         }
         
-        let brResponse: BrainJuice.Response? = try await networking.POST(brainJuiceConfig, for: .brainJuice, for: nil)
+        let brResponse: BrainJuice.Response? = try await networking.POST(brainJuiceConfig, shouldZip: false, for: .brainJuice, for: nil)
         
         return brResponse
     }
