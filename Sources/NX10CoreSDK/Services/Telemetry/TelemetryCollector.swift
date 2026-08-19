@@ -15,16 +15,16 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
     
     // MARK: - Dependencies
     private let session: TelemetrySession
-    private let uploader: Networking
+    private let networking: Networking
     
     // MARK: - Properties
     public var eventPublisher: TelemetryEventPublisher
     private let sharedDefaults = UserDefaults(suiteName: "group.com.nx10")
     
     // MARK: - Initialization
-    public init(session: TelemetrySession, uploader: Networking, eventPublisher: TelemetryEventPublisher) {
+    public init(session: TelemetrySession, networking: Networking, eventPublisher: TelemetryEventPublisher) {
         self.session = session
-        self.uploader = uploader
+        self.networking = networking
         self.eventPublisher = eventPublisher
     }
     
@@ -92,7 +92,16 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
         Task(name: "telemetry-upload", priority: .utility) {
             do {
                 // POST and handle SaaQ trigger response
-                let saaqTrigger: SaaQResponse? = try await uploader.POST(payload, shouldZip: true, for: .telemetry, for: nil)
+                
+                guard
+                       let data = networking.encode(payload),
+                       let zippedData = data.gzipped()
+                   else {
+                       print("Failed to encode telemetry payload")
+                       if isDebug { fatalError() }
+                       throw NSError(domain: "Failed to encode telemetry payload", code: -0001)
+                   }
+                let saaqTrigger: SaaQResponse? = try await networking.POST(.init(data: zippedData, zipped: true), for: .telemetry, for: nil)
                 
                 // Publish trigger event if received
                 if let trigger = saaqTrigger {

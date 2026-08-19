@@ -84,9 +84,16 @@ public final class SessionProvider: SessionProviding {
                 throw APIError.malformedURL
             }
             
+            guard
+                let data = networking.encode(payload)
+            else {
+                print("Failed to encode start session payload")
+                if isDebug { fatalError() }
+                throw NSError(domain: "Failed to encode start session payload", code: -0001)
+            }
+            
             let result: StartSessionAPIResponse? = try await networking.execute(
-                payload,
-                shouldZip: false,
+                .init(data: data),
                 for: url,
                 httpHeaders: isDemo ? ["X-Demo-Mode" : "true"] : nil
             )

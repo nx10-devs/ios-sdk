@@ -23,7 +23,8 @@ public protocol ComplianceProviding: ComplianceOperating {
 public final class ComplianceProvider: ComplianceProviding {
     
     private let networking: Networking
-    
+    private lazy var encoder = JSONEncoder()
+
     public func access(date: Date, dryRun: Bool) async throws -> String? {
         let dateString = date.iso8601
         let access = ComplianceRequest.Access(
@@ -32,7 +33,15 @@ public final class ComplianceProvider: ComplianceProviding {
             dryRun: dryRun
         )
         
-        let response: ComplianceResponse? = try await networking.POST(access, shouldZip: false, for: .access, for: nil)
+        guard
+            let data = networking.encode(access)
+        else {
+            print("Failed to encode access request payload")
+            if isDebug { fatalError() }
+            return nil
+        }
+        
+        let response: ComplianceResponse? = try await networking.POST(.init(data: data), for: .access, for: nil)
         
         return response?.data?.requestUrl
     }
@@ -44,8 +53,14 @@ public final class ComplianceProvider: ComplianceProviding {
             datetimeRequested: dateString,
             dryRun: dryRun
         )
-        
-        let response: GenericResponse? = try await networking.POST(forget, shouldZip: false, for: .forget, for: nil)
+        guard
+            let data = networking.encode(forget)
+        else {
+            print("Failed to encode forget payload")
+            if isDebug { fatalError() }
+            throw NSError(domain: "Failed to encode forget payload", code: -0001)
+        }
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .forget, for: nil)
         
         return response?.status == "success"
     }
@@ -74,7 +89,15 @@ public final class ComplianceProvider: ComplianceProviding {
             dryDrun: true
         )
         
-        let response: GenericResponse? = try await networking.POST(attest, shouldZip: false, for: .compliance, for: "/attest")
+        guard
+            let data = networking.encode(attest)
+        else {
+            print("Failed to encode attest payload")
+            if isDebug { fatalError() }
+            throw NSError(domain: "Failed to encode attest payload", code: -0001)
+        }
+        
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .compliance, for: "/attest")
     }
     
     public init(networking: Networking) {

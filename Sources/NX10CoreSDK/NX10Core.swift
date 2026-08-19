@@ -94,7 +94,7 @@ public final class NX10Core: ObservableObject {
         let telemetrySession = TelemetrySession()
         let telemetryCollector: TelemetryCollectorComprehensive = TelemetryCollector(
             session: telemetrySession,
-            uploader: networkService,
+            networking: networkService,
             eventPublisher: eventPublisher
         )
         

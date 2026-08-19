@@ -31,7 +31,14 @@ final public class ActivityProvider: ActivityProviding {
     }
     
     public func getActivity() async throws -> Activity.Action? {
-        let response: Activity.Action? = try await networking.POST(activity, shouldZip: false, for: .activity, for: nil)
+        guard
+            let data = networking.encode(activity)
+        else {
+            print("Failed to encode activity change")
+            if isDebug { fatalError() }
+            throw NSError(domain: "Failed to encode activity payload", code: -0001)
+        }
+        let response: Activity.Action? = try await networking.POST(.init(data: data), for: .activity, for: nil)
         return response
     }
     

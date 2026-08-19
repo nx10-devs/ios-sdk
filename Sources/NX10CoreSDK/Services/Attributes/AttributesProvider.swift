@@ -34,7 +34,15 @@ public class AttributesProvider: AttributesProviding {
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
         Task(name: "analytics-task", priority: .utility) {
             do {
-                let _: GenericResponse? = try await networkService.POST(deviceLog, shouldZip: false, for: .attributes, for: nil)
+                guard
+                    let data = networkService.encode(deviceLog)
+                else {
+                    print("Failed to encode device log")
+                    if isDebug { fatalError() }
+                    return
+                }
+                
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -52,9 +60,16 @@ public class AttributesProvider: AttributesProviding {
     public func didChangeKeyboardLanguage() async {
         Task(name: "attributes-task", priority: .utility) {
             let keyboardLanguage = appService.keyboardLanguage
-            let data = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
+            let payload = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
-                let _: GenericResponse? = try await networkService.POST(data, shouldZip: false, for: .attributes, for: nil)
+                guard
+                    let data = networkService.encode(payload)
+                else {
+                    print("Failed to encode kayboad language change")
+                    if isDebug { fatalError() }
+                    return
+                }
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -64,7 +79,15 @@ public class AttributesProvider: AttributesProviding {
     public func appDidChangeState(_ state: AppState) async {
         Task(name: "attributes-task", priority: .utility) {
             do {
-                let _: GenericResponse? = try await networkService.POST(state, shouldZip: false, for: .attributes, for: nil)
+                guard
+                    let data = networkService.encode(state)
+                else {
+                    print("Failed to encode kayboad language change")
+                    if isDebug { fatalError() }
+                    return
+                }
+                
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
             } catch {
                 errorProvider.sendError(error)
             }

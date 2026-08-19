@@ -15,6 +15,7 @@ public protocol AnalyticsProviding {
 public class AnalyticsProvider: AnalyticsProviding {
     private let networkService: Networking
     private struct EmptyResponse: Decodable {}
+    private lazy var encoder = JSONEncoder()
 
     public init(networkService: Networking) {
         self.networkService = networkService
@@ -32,9 +33,15 @@ public class AnalyticsProvider: AnalyticsProviding {
         
         Task {
             do {
-                let _: EmptyResponse? = try await networkService.POST(payload, shouldZip: false, for: .analytics, for: nil)
-            } catch {
+                guard
+                    let data = try networkService.encode(payload)
+                else {
+                    print("Failed to encode Analytics Payload")
+                    return
+                }
                 
+                let _: EmptyResponse? = try await networkService.POST(.init(data: data), for: .analytics, for: nil)
+            } catch {
                 print(error.localizedDescription)
             }
         }

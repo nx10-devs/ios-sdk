@@ -9,24 +9,48 @@ import Foundation
 import JWTDecode
 import Compression
 
+public struct PayloadData {
+    public let data: Data
+    public let zipped: Bool
+    
+    public init(data: Data, zipped: Bool = false) {
+        self.data = data
+        self.zipped = zipped
+    }
+}
+
 @MainActor
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<T:Codable, R:Decodable>(_ payload: T?, shouldZip: Bool, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
+    func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
     func GET<R:Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
-    func execute<T: Codable, R: Decodable>(_ payload: T?, shouldZip: Bool, for url: URL, httpHeaders: [String : String]?) async throws -> R?
+    func execute<R:Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
     func enableNetworking(_ enable: Bool)
+    func encode<T: Encodable>(_ object: T) -> Data?
 }
 
 public final class NetworkService: Networking {
     private var token: String?
     private let endpointProvider: EndpointProviding
     private var sharedStorageProvider: SharedStorageProviding
-    
+    lazy private var encoder = JSONEncoder()
+
     init(endpointProvider: EndpointProviding, sharedStorageProvider: SharedStorageProviding) {
         self.endpointProvider = endpointProvider
         self.sharedStorageProvider = sharedStorageProvider
+    }
+    
+    public func encode<T: Encodable>(_ object: T) -> Data? {
+        do {
+            let encoder = JSONEncoder()
+            let encodedObject = try encoder.encode(object)
+            return encodedObject
+        } catch {
+            print(error)
+        }
+        
+        return nil
     }
     
     public func setToken(_ token: String) {
@@ -38,7 +62,7 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<T:Codable, R:Decodable>(_ payload: T?, shouldZip: Bool, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
+    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         if sharedStorageProvider.networkingEnabled == false {
             print("LOG: Network disabled, returning ...")
@@ -49,15 +73,17 @@ public final class NetworkService: Networking {
             url = url.appendingPathComponent(route)
         }
         print(url)
-        return try await self.execute(payload, shouldZip: shouldZip, for: url)
+        return try await self.execute(payload, for: url)
     }
     
     public func enableNetworking(_ enable: Bool) {
         sharedStorageProvider.networkingEnabled = enable
     }
     
-    public func execute<T: Codable, R: Decodable>(_ payload: T?, shouldZip: Bool, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
+    
+    public func execute<R: Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
         
+        // NOTE: This may have to be moved to POST or GET (CRUD) to allow access outside main pipelines
         if sharedStorageProvider.networkingEnabled == false {
             print("Networking disabled")
             throw NSError.error(for: .networkingDisabled)
@@ -81,39 +107,20 @@ public final class NetworkService: Networking {
             }
         }
         
-        do {
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            if let token {
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                if isDebug {
-                    print("LOG: ", token)
-                }
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            if isDebug {
+                print("LOG: ", token)
             }
-            
-            if let payload {
-                let json = try encoder.encode(payload)
-                
-                if shouldZip {
-                    request.setValue("gzip", forHTTPHeaderField: "Content-Encoding")
-                    
-                    guard let compressedData = json.gzipped() else {
-                        if isDebug {
-                            fatalError("failed to gzip data")
-                        }
-                        return nil
-                    }
-                    
-                    print("LOG: Compressing and setting data")
-                    request.httpBody = compressedData
-                } else {
-                    request.httpBody = json
-                }
-            }
-        } catch {
-            print(error.localizedDescription)
         }
         
+        if let zipped = payload?.zipped, zipped {
+            request.setValue("gzip", forHTTPHeaderField: "Content-Encoding")
+        }
+        request.httpBody = payload?.data
+
         let config = URLSessionConfiguration.default
         config.allowsCellularAccess = true
         config.allowsExpensiveNetworkAccess = true

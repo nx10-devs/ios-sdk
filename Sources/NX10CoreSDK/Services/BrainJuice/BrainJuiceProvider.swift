@@ -21,7 +21,8 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
     private let errorProvider: ErrorProviding
     private var brainJuiceConfig: JSONValue?
     private var decodedToken: NX10Token? = nil
-    
+    private lazy var encoder = JSONEncoder()
+
     init(networking: Networking, errorProvider: ErrorProviding) {
         self.networking = networking
         self.errorProvider = errorProvider
@@ -41,7 +42,10 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.missingToken
         }
         let source = BrainJuice.RefreshBrainJuice(source: sourceID)
-        let response: GenericResponse? = try await networking.POST(source, shouldZip: false, for: .brainJuice, for: "baselines/refresh")
+        
+        let data = try encoder.encode(source)
+        
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .brainJuice, for: "baselines/refresh")
         
         return response
     }
@@ -53,8 +57,8 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
         else {
             throw APIError.badRequest
         }
-        
-        let brResponse: BrainJuice.Response? = try await networking.POST(brainJuiceConfig, shouldZip: false, for: .brainJuice, for: nil)
+        let data = try encoder.encode(brainJuiceConfig)
+        let brResponse: BrainJuice.Response? = try await networking.POST(.init(data: data), for: .brainJuice, for: nil)
         
         return brResponse
     }

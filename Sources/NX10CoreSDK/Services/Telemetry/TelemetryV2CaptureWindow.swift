@@ -15,8 +15,7 @@ protocol TelemetryV2Capturing: AnyObject {
         gyroscopeData: [[String: Any]],
         accelerometerData: [[String: Any]],
         touchKbEvents: [TouchKBEvent],
-        touchEvents: [TouchEvent],
-        uploader: Networking
+        touchEvents: [TouchEvent]
     )}
 
 /// Owns a short capture window so we can compute offsets (bts + offsetMs) and build a compact V2 payload.
@@ -27,9 +26,11 @@ protocol TelemetryV2Capturing: AnyObject {
 public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
     private let errorProvider: ErrorProviding
     private var baseEpochMs: Double?
+    private let networking: Networking
     
-    public init(errorProvider: ErrorProviding) {
+    public init(errorProvider: ErrorProviding, networking: Networking) {
         self.errorProvider = errorProvider
+        self.networking = networking
     }
 
     /// Start a new capture window.
@@ -46,8 +47,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
         gyroscopeData: [[String: Any]],
         accelerometerData: [[String: Any]],
         touchKbEvents: [TouchKBEvent] = [],
-        touchEvents: [TouchEvent] = [],
-        uploader: Networking
+        touchEvents: [TouchEvent] = []
     ) {
         // If we don't have an active window, start one now.
         if baseEpochMs == nil { start() }
@@ -78,7 +78,15 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
 
         Task {
             do {
-                let _ :TelemetryV2Response? = try await uploader.POST(payload, shouldZip: false, for: .telemetry, for: nil)
+                guard
+                    let data = networking.encode(payload)
+                else {
+                    print("Failed to encode Telemetry v2 payload")
+                    if isDebug { fatalError() }
+                    throw NSError(domain: "Failed to encode Telemetry v2 payload", code: -0001)
+                }
+                
+                let _ :TelemetryV2Response? = try await networking.POST(.init(data: data), for: .telemetry, for: nil)
                 
                 // TODO: Flush telemetry
                 
