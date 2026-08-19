@@ -37,8 +37,6 @@ public final class NX10Core: ObservableObject {
     public let telemetryProvider: TelemetryProviding
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
-    let touchProcessor: TouchProcessorProviding
-    let touchTracker: GeneralTouchTracker
     public let consentProvider: ConsentProvider
 
     // MARK: Internal properties
@@ -55,6 +53,8 @@ public final class NX10Core: ObservableObject {
     let activityProvider: ActivityProviding
     let attributesProvider: AttributesProviding
     let sharedStorageProvider: SharedStorageProvider
+    let touchProcessor: TouchProcessorProviding
+    let touchTracker: GeneralTouchTracker
 
     private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
