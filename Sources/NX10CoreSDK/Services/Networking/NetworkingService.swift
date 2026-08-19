@@ -91,32 +91,25 @@ public final class NetworkService: Networking {
                 }
             }
             
-            if shouldZip {
-                request.setValue("Content-Encoding", forHTTPHeaderField: "gzip")
-            }
-            
-            if let payload  {
+            if let payload {
                 let json = try encoder.encode(payload)
+                
                 if shouldZip {
-                    let data = json as NSData
+                    request.setValue("gzip", forHTTPHeaderField: "Content-Encoding")
                     
-                    // 3. Compress using zlib (which produces standard Gzip/Zlib compliant payloads)
-                    guard let compressedNSData = try? data.compressed(using: .zlib) else {
+                    guard let compressedData = json.gzipped() else {
                         if isDebug {
-                            fatalError("failed to zip data")
+                            fatalError("failed to gzip data")
                         }
                         return nil
                     }
                     
-                    
-                    request.httpBody = compressedNSData as Data
+                    print("LOG: Compressing and setting data")
+                    request.httpBody = compressedData
                 } else {
                     request.httpBody = json
                 }
             }
-            
-            request.allowsCellularAccess = true
-            request.allowsExpensiveNetworkAccess = true
         } catch {
             print(error.localizedDescription)
         }
