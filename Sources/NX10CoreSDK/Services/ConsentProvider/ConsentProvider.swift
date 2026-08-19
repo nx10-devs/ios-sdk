@@ -24,7 +24,6 @@ public protocol ConsentProviding: ComplianceOperating {
 
 @Observable
 public final class ConsentProvider: ConsentProviding {
-    
     private var storageProvider: SharedStorageProviding
     private var complianceProvider: ComplianceProviding? = nil
     

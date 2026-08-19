@@ -34,17 +34,12 @@ public final class NX10Core: ObservableObject {
     public static var shared = NX10Core()
     
     // MARK: Public properties
-    public let errorProvider: ErrorProviding
     public let telemetryProvider: TelemetryProviding
     public let saaqService: SaaQServiceProtocol
-    public let sharedStorageProvider: SharedStorageProvider
     public let brainJuiceProvider: BrainJuiceProviding
-    public let touchProcessor: TouchProcessorProviding
-    public let touchTracker: GeneralTouchTracker
-    public let attributesProvider: AttributesProviding
-    public let activityProvider: ActivityProviding
+    let touchProcessor: TouchProcessorProviding
+    let touchTracker: GeneralTouchTracker
     public let consentProvider: ConsentProvider
-    public let screenStatesProvider: ScreenStatesProviding
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -55,6 +50,11 @@ public final class NX10Core: ObservableObject {
     let sessionProvider: SessionProviding
     let networkservice: Networking
     let complianceProvider: ComplianceProviding
+    let errorProvider: ErrorProviding
+    let screenStatesProvider: ScreenStatesProviding
+    let activityProvider: ActivityProviding
+    let attributesProvider: AttributesProviding
+    let sharedStorageProvider: SharedStorageProvider
 
     private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
@@ -68,7 +68,7 @@ public final class NX10Core: ObservableObject {
             setSessionDataDependencies(with: sessionData)
         }
     }
-    
+
     @MainActor private init () {
         // MARK: - Core Services
         
@@ -162,7 +162,8 @@ public final class NX10Core: ObservableObject {
     }
 }
 
-extension NX10Core {
+// MARK: Public methods
+public extension NX10Core {    
     @MainActor public func configure(_ config: NX10CoreConfig) throws -> Self {
         sharedStorageProvider.setAppGroupID(config.appGroup)
 
@@ -199,7 +200,6 @@ extension NX10Core {
     }
     
     public func startSession(for isDemo: Bool) async throws -> Bool {
-
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
             throw NSError.error(for: .sessionAlreadyStarted)
@@ -222,7 +222,9 @@ extension NX10Core {
         }
         return sessionData != nil
     }
-    
+}
+
+extension NX10Core {
     fileprivate func setSessionDataDependencies(with sessionData: SessionData) {
         guard
             let deviceConfig = sessionData.typedDeviceConfig
@@ -258,4 +260,3 @@ extension NX10Core {
         }
     }
 }
-
