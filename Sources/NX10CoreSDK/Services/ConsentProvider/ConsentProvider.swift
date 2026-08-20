@@ -9,9 +9,15 @@ import Foundation
 import Observation
 import SwiftUI
 
+@MainActor
+public protocol ConsentManaging: AnyObject {
+    var allowDataCollection: Bool { get set }
+    var allowTrainingData: Bool { get set }
+}
+
 // MARK: - ConsentProvider
 @MainActor
-public protocol ConsentProviding: ComplianceOperating {
+public protocol ConsentProviding: ConsentManaging, ComplianceOperating {
     var allowDataCollection: Bool { get set }
     var allowTrainingData: Bool { get set }
     

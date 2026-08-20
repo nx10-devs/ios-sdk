@@ -92,7 +92,7 @@ public final class TelemetryProvider: TelemetryProviding {
         telemetryCollector.flushIfNeeded()
         scheduler.stop()
         motionSensor.stop()
-        analyticsService.sendAnalytics(.init(eventName: .telemetryEnded))
+        analyticsService.track(.init(eventName: .telemetryEnded))
     }
     
     public func startTelemetry() {
@@ -104,7 +104,7 @@ public final class TelemetryProvider: TelemetryProviding {
             accel: { [weak self] in self?.telemetryCollector.appendAccel($0) },
             magnet: { [weak self] in self?.telemetryCollector.appendMagnet($0) }
         )
-        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
+        analyticsService.track(.init(eventName: .telemetryStarted))
     }
 
     // MARK: - Input Handling
@@ -129,7 +129,7 @@ public final class TelemetryProvider: TelemetryProviding {
         scheduler.start(interval: TimeInterval(window)) { [weak self] in
             Task { @MainActor  in  self?.telemetryCollector.flushIfNeeded() }
         }
-        analyticsService.sendAnalytics(.init(eventName: .telemetryStarted))
+        analyticsService.track(.init(eventName: .telemetryStarted))
     }
     
     private func startTrackingMotion() {

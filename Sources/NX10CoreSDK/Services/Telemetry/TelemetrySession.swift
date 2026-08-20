@@ -15,15 +15,13 @@ public final class TelemetrySession {
     public private(set) var gyro: [MotionSample] = []
     public private(set) var accel: [MotionSample] = []
     public private(set) var magnet: [MotionSample] = []
-    /// Unified touch samples ("touch" V2 events) — keyboard + app-level.
+    
     public private(set) var generalTouches: [GeneralTouchSample] = []
-    /// Keyboard visibility transitions ("kb-state" events)
+    
     public private(set) var kbStateEvents: [KbStateSample] = []
-    /// Characters erased by a single backspace ("text-del" events)
     public private(set) var textDelEvents: [TextDelSample] = []
-    /// Text corrections ("text-cor" events)
     public private(set) var textCorEvents: [TextCorSample] = []
-    /// Screen lock/unlock ("screen" events)
+    
     public private(set) var screenEvents: [ScreenEventSample] = []
 
     // MARK: - Keyboard metrics aggregation (for "kb" summary)
@@ -117,20 +115,26 @@ public final class TelemetrySession {
     }
 
     public func reset() {
-        gyro.removeAll(keepingCapacity: false)
-        accel.removeAll(keepingCapacity: false)
-        generalTouches.removeAll(keepingCapacity: false)
-        kbStateEvents.removeAll(keepingCapacity: false)
-        textDelEvents.removeAll(keepingCapacity: false)
-        textCorEvents.removeAll(keepingCapacity: false)
-        screenEvents.removeAll(keepingCapacity: false)
+        // MARK: Sensors
+        gyro.removeAll()
+        accel.removeAll()
+        magnet.removeAll()
+        
+        // MARK: Touches
+        generalTouches.removeAll()
+        kbStateEvents.removeAll()
+        textDelEvents.removeAll()
+        textCorEvents.removeAll()
+        
+        // MARK: Other events
+        screenEvents.removeAll()
 
         totalKeyPresses = 0
         backspaceCount = 0
         erasedTextLength = 0
-        keyDownTimestamps.removeAll(keepingCapacity: false)
-        holdTimesMs.removeAll(keepingCapacity: false)
-        flightTimesMs.removeAll(keepingCapacity: false)
+        keyDownTimestamps.removeAll()
+        holdTimesMs.removeAll()
+        flightTimesMs.removeAll()
         lastKeyUpMs = nil
     }
 

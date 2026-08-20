@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 public protocol AnalyticsProviding {
-    func sendAnalytics(_ payload: AnalyticsProvider.Payload)
+    func track(_ event: AnalyticsProvider.Event)
 }
 
 public class AnalyticsProvider: AnalyticsProviding {
@@ -21,7 +21,7 @@ public class AnalyticsProvider: AnalyticsProviding {
         self.networkService = networkService
     }
     
-    public func sendAnalytics(_ payload: AnalyticsProvider.Payload) {
+    public func track(_ payload: AnalyticsProvider.Event) {
         
         /*
          If payloadStorage contains content

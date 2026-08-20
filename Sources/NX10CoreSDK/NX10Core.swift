@@ -6,7 +6,7 @@
 //
 
 import Foundation
-internal import UIKit
+import UIKit
 import Combine
 
 public struct NX10CoreConfig {
@@ -29,14 +29,87 @@ public struct NX10CoreConfig {
 }
 
 @MainActor
+// MARK: - Public façade protocols
+public protocol TelemetryManaging {
+    @discardableResult
+    func startIfNeeded(acquisitionWindowSize: TimeInterval) async throws -> Bool
+}
+
+@MainActor
+public protocol TouchTrackingManaging {
+    func setEnabled(_ enabled: Bool)
+    func reset()
+    func process(
+        touch: UITouch,
+        screen: UIScreen
+    ) -> GeneralTouchSample?
+}
+
+// MARK: - Internal façade wrappers
+struct TelemetryFacade: TelemetryManaging {
+    let provider: TelemetryProviding
+    @discardableResult
+    func startIfNeeded(acquisitionWindowSize: TimeInterval) async throws -> Bool {
+        try await provider.shouldStartTelemetry(with: Int(acquisitionWindowSize))
+    }
+}
+
+struct TouchTrackingFacade: TouchTrackingManaging {
+    let tracker: GeneralTouchTracker
+    func setEnabled(_ enabled: Bool) {
+//        tracker.setEnabled(enabled)
+    }
+    func reset() {
+//        tracker.reset()
+    }
+    
+    public func process(
+        touch: UITouch,
+        screen: UIScreen = .main
+    ) -> GeneralTouchSample? {
+        return tracker.process(touch: touch, screen: screen)
+    }
+}
+
+final class ConsentFacade: ConsentManaging {
+    private let provider: ConsentProviding
+    
+    init(provider: ConsentProviding) { self.provider = provider }
+    
+    var allowDataCollection: Bool {
+        get { provider.allowDataCollection }
+        set { provider.allowDataCollection = newValue }
+    }
+    var allowTrainingData: Bool {
+        get { provider.allowTrainingData }
+        set { provider.allowTrainingData = newValue }
+    }
+}
+
+struct AnalyticsFacade: AnalyticsProviding {
+    let provider: AnalyticsProviding
+    func track(_ event: AnalyticsProvider.Event) {
+        provider.track(event)
+    }
+}
+
+@MainActor
 public final class NX10Core: ObservableObject {
     
     public static var shared = NX10Core()
     
+    // MARK: Public façade accessors
+    public private(set) var telemetry: TelemetryManaging
+    public private(set) var consent: ConsentManaging
+    public private(set) var analytics: AnalyticsProviding
+    public private(set) var touchTracking: TouchTrackingManaging
+    
     // MARK: Public properties
+    @available(*, deprecated, message: "Use NX10Core.shared.telemetry façade instead of accessing telemetryProvider directly.")
     public let telemetryProvider: TelemetryProviding
     public let saaqService: SaaQServiceProtocol
     public let brainJuiceProvider: BrainJuiceProviding
+    @available(*, deprecated, message: "Use NX10Core.shared.consent façade instead of accessing consentProvider directly.")
     public let consentProvider: ConsentProvider
 
     // MARK: Internal properties
@@ -158,6 +231,13 @@ public final class NX10Core: ObservableObject {
         self.screenStatesProvider = screenStatesProvider
         self.complianceProvider = complianceProvider
         self.consentProvider = consentProvider
+        
+        // MARK: - Public façade initialisation
+        self.telemetry = TelemetryFacade(provider: telemetryProvider)
+        self.consent = ConsentFacade(provider: consentProvider)
+        self.analytics = AnalyticsFacade(provider: analyticsService)
+        self.touchTracking = TouchTrackingFacade(tracker: touchTracker)
+        
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
@@ -255,8 +335,9 @@ extension NX10Core {
         Task {
             print("LOG: shouldStartTelemetry")
             if let acquisitionWindowSize = deviceConfig.sensor?.acquisitionWindowSize {
-                _ = try await self.telemetryProvider.shouldStartTelemetry(with: acquisitionWindowSize)
+                _ = try await self.telemetry.startIfNeeded(acquisitionWindowSize: TimeInterval(acquisitionWindowSize))
             }
         }
     }
 }
+
