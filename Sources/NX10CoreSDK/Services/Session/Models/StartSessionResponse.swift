@@ -48,5 +48,6 @@ public struct Endpoint: Decodable, Hashable {
         case compliance
         case forget
         case access
+        case pvt
     }
 }

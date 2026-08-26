@@ -71,6 +71,18 @@ struct TouchTrackingFacade: TouchTrackingManaging {
     }
 }
 
+public final class GamesFacade: GamesProviding {
+    private var provider: GamesProviding
+    
+    public init(provider: GamesProviding) {
+        self.provider = provider
+    }
+    
+    public func getGame(_ gameType: GameRequest.GameType) async throws -> GameResponse.Response? {
+        try await provider.getGame(gameType)
+    }
+}
+
 final class ConsentFacade: ConsentManaging {
     private let provider: ConsentProviding
     
@@ -103,7 +115,8 @@ public final class NX10Core: ObservableObject {
     public private(set) var consent: ConsentManaging
     public private(set) var analytics: AnalyticsProviding
     public private(set) var touchTracking: TouchTrackingManaging
-    
+    public private(set) var gamesProvider: GamesFacade
+
     // MARK: Public properties
     @available(*, deprecated, message: "Use NX10Core.shared.telemetry façade instead of accessing telemetryProvider directly.")
     public let telemetryProvider: TelemetryProviding
@@ -128,7 +141,7 @@ public final class NX10Core: ObservableObject {
     let sharedStorageProvider: SharedStorageProvider
     let touchProcessor: TouchProcessorProviding
     let touchTracker: GeneralTouchTracker
-
+    
     private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
@@ -199,6 +212,7 @@ public final class NX10Core: ObservableObject {
         let brainJuiceProvider = BrainJuiceProvider(networking: networkService, errorProvider: errorProvider)
         let touchTracker = GeneralTouchTracker(touchProcessor: touchProcessor)
         let activityProvider = ActivityProvider(networking: networkService, errorProvider: errorProvider)
+        let gamesProvider = GameProvider(networking: networkService, errorProvider: errorProvider)
         
         // MARK: Compliance/Consent
         let complianceProvider = ComplianceProvider(networking: networkService)
@@ -237,7 +251,7 @@ public final class NX10Core: ObservableObject {
         self.consent = ConsentFacade(provider: consentProvider)
         self.analytics = AnalyticsFacade(provider: analyticsService)
         self.touchTracking = TouchTrackingFacade(tracker: touchTracker)
-        
+        self.gamesProvider = GamesFacade(provider: gamesProvider)
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }

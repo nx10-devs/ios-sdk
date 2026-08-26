@@ -38,7 +38,7 @@ public final class ComplianceProvider: ComplianceProviding {
         else {
             print("Failed to encode access request payload")
             if isDebug { fatalError() }
-            return nil
+            throw NSError(domain: "Failed to create compliance payload", code: -00011)
         }
         
         let response: ComplianceResponse? = try await networking.POST(.init(data: data), for: .access, for: nil)

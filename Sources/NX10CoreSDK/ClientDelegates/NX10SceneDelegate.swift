@@ -46,7 +46,7 @@ open class NX10MESceneDelegate: UIResponder, UIWindowSceneDelegate {
         fatalError("Implement on client side")
     }
 
-    public func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    open func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         // Store cold-start URL in tracker
