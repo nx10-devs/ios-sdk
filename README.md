@@ -30,7 +30,8 @@ The SDK uses App Groups to securely share data between your main app and extensi
 
 ### Configuring the SDK
 
-Before you can track any data, you must configure the SDK with your API key and App Group ID. Configuration is asynchronous and should be called as early as possible—ideally in your app's initialisation code.
+Before you can track any data, you must configure the SDK with your API key and App Group ID. Configuration is asynchronous and should be called before `startSession`
+
 
 **Required parameters:**
 
@@ -40,35 +41,45 @@ Before you can track any data, you must configure the SDK with your API key and 
 - **`shouldStartSession`**: Set to `true` to begin collecting telemetry immediately, or `false` to start manually later
 
 ### SwiftUI Setup
+This is a typical setup to enable nx10core to monitor gestures and configure the SDK for starting a session
 
 ```swift
 import SwiftUI
 import NX10CoreSDK
 
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+// The app delegate is required to allow screen touch detection
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let sceneConfig = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        // Explicitly declare your SceneDelegate class name
+        sceneConfig.delegateClass = SceneDelegate.self
+        return sceneConfig
+    }
+}
+
+@main
+struct ios_integration_showcaseApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    
+    init() {
+        let config = NX10CoreConfig(
+            apiKey: "YOUR_API_KEY_GIVEN_BY_NX10",
+            appGroup: "<your.app.groupd.id>", // This must be the same as your project
+            errorTrackingEnabled: true,
+            enableDebug: isDebug
+        )
+        // Configure NX10 Module
+        do {
+            _ = try NX10Core
+                .shared
+                .configure(config)
+        } catch {}
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
         }
-        .padding()
-        .onAppear {
-            Task {
-                do {
-                    _ = try await NX10Core.shared.configure(
-                        apiKey: "YOUR_API_KEY",
-                        appGroupdID: "group.test.com",
-                        errorTrackingEnabled: false,
-                        shouldStartSession: false
-                    )
-                } catch {
-                    print("NX10CoreSDK configuration failed: \(error)")
-                }
-            }
-        }
-        .nx10SaaQPromptPresenter()
     }
 }
 ```
@@ -89,8 +100,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 try await NX10Core.shared.configure(
                     apiKey: "YOUR_API_KEY",
                     appGroupdID: "group.your.app.identifier",
-                    errorTrackingEnabled: true,
-                    shouldStartSession: true
+                    errorTrackingEnabled: true
                 )
             } catch {
                 print("NX10CoreSDK configuration failed: \(error)")
@@ -100,6 +110,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 ```
+
+### Full screen touch detection
+If you want the NX10CoreSDK to detect all screen touches and gestures simply sub-class `NX10MESceneDelegate` in your scene delegate file.
+
+If you override methods be sure to call `super.method` within the overriden methods, first.
+```
+import UIKit
+import SwiftUI
+import NX10CoreSDK
+
+// The subclass overrides methods to capture gestures.
+class SceneDelegate: NX10MESceneDelegate {
+    open override var contentView: AnyView {
+        return AnyView(ContentView())
+    }
+}
+
+```
+Logic has been added to capture `scenePhase` changes automatically.
 
 ### Custom Keyboard Extension Setup
 
@@ -125,6 +154,34 @@ class KeyboardViewController: UIInputViewController {
         }
     }
 }
+```
+
+### Tracking deep links
+If you choose to enable full screen touch detection and have subclassed the scene deletate in a SwiftUI project then you must use the following method to capture deep links
+
+```swift
+struct MyCustomView: View {
+    
+    var body: some View {
+        Text("Hello World")
+            .onNX10OpenURL(perform: {  url in
+                handleDeepLink(url) // Your own custom method can go here
+            })
+    }
+
+    private func handleDeepLink(_ url: URL) {            
+            // Handle deep links here. This is just an example - replace with your own logic
+            guard url.scheme == "nx10" else { return }
+            
+            // Parse host or path components (e.g., myapp://details?id=123)
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return }
+            
+            if components.host == "settings" {
+                router.push(.settings)
+            }
+        }
+}
+
 ```
 
 ---
