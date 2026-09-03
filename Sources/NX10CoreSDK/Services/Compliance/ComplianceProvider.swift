@@ -41,7 +41,7 @@ public final class ComplianceProvider: ComplianceProviding {
             throw NSError(domain: "Failed to create compliance payload", code: -00011)
         }
         
-        let response: ComplianceResponse? = try await networking.POST(.init(data: data), for: .access, for: nil)
+        let response: ComplianceResponse? = try await networking.POST(.init(data: data), for: .api(.access), for: nil)
         
         return response?.data?.requestUrl
     }
@@ -60,7 +60,7 @@ public final class ComplianceProvider: ComplianceProviding {
             if isDebug { fatalError() }
             throw NSError(domain: "Failed to encode forget payload", code: -0001)
         }
-        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .forget, for: nil)
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .api(.forget), for: nil)
         
         return response?.status == "success"
     }
@@ -97,7 +97,7 @@ public final class ComplianceProvider: ComplianceProviding {
             throw NSError(domain: "Failed to encode attest payload", code: -0001)
         }
         
-        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .compliance, for: "/attest")
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .api(.compliance), for: "/attest")
     }
     
     public init(networking: Networking) {

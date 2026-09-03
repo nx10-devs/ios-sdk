@@ -45,7 +45,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
         
         let data = try encoder.encode(source)
         
-        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .brainJuice, for: "baselines/refresh")
+        let response: GenericResponse? = try await networking.POST(.init(data: data), for: .api(.brainJuice), for: "baselines/refresh")
         
         return response
     }
@@ -58,7 +58,7 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
             throw APIError.badRequest
         }
         let data = try encoder.encode(brainJuiceConfig)
-        let brResponse: BrainJuice.Response? = try await networking.POST(.init(data: data), for: .brainJuice, for: nil)
+        let brResponse: BrainJuice.Response? = try await networking.POST(.init(data: data), for: .api(.brainJuice), for: nil)
         
         return brResponse
     }

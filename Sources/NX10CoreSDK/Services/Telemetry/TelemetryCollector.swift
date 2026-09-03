@@ -101,7 +101,7 @@ public final class TelemetryCollector: TelemetryCollectorComprehensive {
                        if isDebug { fatalError() }
                        throw NSError(domain: "Failed to encode telemetry payload", code: -0001)
                    }
-                let saaqTrigger: SaaQResponse? = try await networking.POST(.init(data: zippedData, zipped: true), for: .telemetry, for: nil)
+                let saaqTrigger: SaaQResponse? = try await networking.POST(.init(data: zippedData, zipped: true), for: .api(.telemetry), for: nil)
                 
                 // Publish trigger event if received
                 if let trigger = saaqTrigger {

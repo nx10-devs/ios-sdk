@@ -86,7 +86,7 @@ public final class TelemetryV2CaptureWindow: TelemetryV2Capturing {
                     throw NSError(domain: "Failed to encode Telemetry v2 payload", code: -0001)
                 }
                 
-                let _ :TelemetryV2Response? = try await networking.POST(.init(data: data), for: .telemetry, for: nil)
+                let _ :TelemetryV2Response? = try await networking.POST(.init(data: data), for: .api(.telemetry), for: nil)
                 
                 // TODO: Flush telemetry
                 

@@ -42,7 +42,7 @@ public class AttributesProvider: AttributesProviding {
                     return
                 }
                 
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -69,7 +69,7 @@ public class AttributesProvider: AttributesProviding {
                     if isDebug { fatalError() }
                     return
                 }
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
                 errorProvider.sendError(error)
             }
@@ -87,7 +87,7 @@ public class AttributesProvider: AttributesProviding {
                     return
                 }
                 
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .attributes, for: nil)
+                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
                 errorProvider.sendError(error)
             }

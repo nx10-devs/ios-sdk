@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  GameProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 25/08/2026.
@@ -9,50 +9,54 @@ import Foundation
 
 @MainActor
 public protocol GamesProviding {
-    func getGame(_ gameType: GameRequest.GameType) async throws -> GameResponse.Response?
+    func getGameSessionID(for gameType: GameRequest.GameType) async throws -> Games.CreateResponse?
+    func getGameResults(for type: GameRequest.GameType) async throws -> Games.GameHistoryResponse?
 }
 
 public final class GameProvider: GamesProviding {
     private let networking: Networking
     private let errorProvider: ErrorProviding
     
+    private enum GameEndpoint {
+        case create
+        case results
+        case normal
+        
+        var url: String {
+            var host = NX10RoutesURL
+            switch self {
+            case .create:
+                return host + "/pvt/create"
+            case .results:
+                return host + "/pvt/results"
+            case .normal:
+                return host + "/pvt"
+            }
+        }
+    }
+
     init(networking: Networking, errorProvider: ErrorProviding) {
         self.networking = networking
         self.errorProvider = errorProvider
     }
-    
-    public func getGame(_ gameType: GameRequest.GameType) async throws -> GameResponse.Response? {
+
+    public func getGameSessionID(for gameType: GameRequest.GameType) async throws -> Games.CreateResponse? {
         let model = GameRequest(gameType: gameType)
-        if
-            let encoded = networking.encode(model)
-        {
-            let game: GameResponse.Response? = try await networking.POST(.init(data: encoded), for: .pvt, for: nil)
-            return game
-        } else {
+        guard let encoded = networking.encode(model) else {
             throw NSError(domain: "game request", code: -0011)
-            return nil
         }
-    }
-}
-
-public struct GameRequest: Encodable {
-    public let gameType: GameType
-    
-    public enum GameType: String, Encodable {
-        case pvt
-        case tmt
-        case stroop
-        case chimp
-    }
-}
-
-public struct GameResponse: Decodable {
-    public struct Response: Decodable {
-        public let status: String
-        public let data: ResponseData
         
-        public struct ResponseData: Decodable {
-            public let sessionId: String
+        let game: Games.CreateResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.create.url), for: nil)
+        return game
+    }
+
+    public func getGameResults(for type: GameRequest.GameType) async throws -> Games.GameHistoryResponse? {
+        let model = GameRequest(gameType: type)
+        guard let encoded = networking.encode(model) else {
+            throw NSError(domain: "game results request", code: -0011)
         }
+
+        let results: Games.GameHistoryResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.results.url), for: nil)
+        return results
     }
 }

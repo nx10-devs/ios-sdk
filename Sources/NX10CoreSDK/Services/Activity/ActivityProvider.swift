@@ -38,7 +38,7 @@ final public class ActivityProvider: ActivityProviding {
             if isDebug { fatalError() }
             throw NSError(domain: "Failed to encode activity payload", code: -0001)
         }
-        let response: Activity.Action? = try await networking.POST(.init(data: data), for: .activity, for: nil)
+        let response: Activity.Action? = try await networking.POST(.init(data: data), for: .api(.activity), for: nil)
         return response
     }
     
@@ -49,7 +49,7 @@ final public class ActivityProvider: ActivityProviding {
     // MARK: History
     public func getHistory() async throws -> Activity.HistoryResponse.HistoryData? {
         
-        let response: Activity.HistoryResponse? = try await networking.GET(for: .activity, for: "/history")
+        let response: Activity.HistoryResponse? = try await networking.GET(for: .api(.activity), for: "/history")
         return response?.data
     }
 }

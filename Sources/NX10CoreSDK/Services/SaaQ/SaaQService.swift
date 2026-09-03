@@ -72,14 +72,14 @@ public final class SaaQService: SaaQServiceProtocol {
                         let answerOne = answer.saaqOneAnswer,
                         let data = networkService.encode(answerOne)
                     {
-                        let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .saaqTriggered, for: nil)
+                        let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.saaqTriggered), for: nil)
                     }
                     
                     if
                         let answerTwo = answer.saaqTwoAnswer,
                         let data = networkService.encode(answerTwo)
                     {
-                        let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .saaqTriggered, for: nil)
+                        let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.saaqTriggered), for: nil)
                     }
                 } catch {
                     if isDebug {

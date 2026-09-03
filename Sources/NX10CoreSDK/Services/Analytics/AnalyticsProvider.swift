@@ -40,7 +40,7 @@ public class AnalyticsProvider: AnalyticsProviding {
                     return
                 }
                 
-                let _: EmptyResponse? = try await networkService.POST(.init(data: data), for: .analytics, for: nil)
+                let _: EmptyResponse? = try await networkService.POST(.init(data: data), for: .api(.analytics), for: nil)
             } catch {
                 print(error.localizedDescription)
             }

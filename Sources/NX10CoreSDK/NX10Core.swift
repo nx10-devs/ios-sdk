@@ -78,8 +78,12 @@ public final class GamesFacade: GamesProviding {
         self.provider = provider
     }
     
-    public func getGame(_ gameType: GameRequest.GameType) async throws -> GameResponse.Response? {
-        try await provider.getGame(gameType)
+    public func getGameSessionID(for gameType: GameRequest.GameType) async throws -> Games.CreateResponse? {
+        try await provider.getGameSessionID(for: gameType)
+    }
+    
+    public func getGameResults(for type: GameRequest.GameType) async throws -> Games.GameHistoryResponse? {
+        try await provider.getGameResults(for: type)
     }
 }
 

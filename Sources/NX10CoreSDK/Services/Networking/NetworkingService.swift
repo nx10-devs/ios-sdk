@@ -23,8 +23,8 @@ public struct PayloadData {
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
-    func GET<R:Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R?
+    func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String?) async throws -> R?
+    func GET<R:Decodable>(for endpoint: Endpoint.Target, for route: String?) async throws -> R?
     func execute<R:Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
     func enableNetworking(_ enable: Bool)
     func encode<T: Encodable>(_ object: T) -> Data?
@@ -62,17 +62,30 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.EndpointType, for route: String? = nil) async throws -> R? {
+    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String? = nil) async throws -> R? {
         print("LOG ------------------------------ \(endpoint.rawValue)")
         if sharedStorageProvider.networkingEnabled == false {
             print("LOG: Network disabled, returning ...")
             return nil
         }
-        var url = try endpointProvider.url(for: endpoint)
+        var url: URL?
+        
+        switch endpoint {
+        case .hardcoded(let string):
+            url = URL(string: string)
+        case .api(let endpointType):
+            url = try endpointProvider.url(for: endpointType)
+        }
+        
         if let route {
-            url = url.appendingPathComponent(route)
+            url = url?.appendingPathComponent(route)
         }
         print(url)
+        guard
+            let url
+        else {
+            throw NSError(domain: "Failed to create url", code: -00011)
+        }
         return try await self.execute(payload, for: url)
     }
     
@@ -167,7 +180,7 @@ public final class NetworkService: Networking {
         return nil
     }
     
-    public func GET<R: Decodable>(for endpoint: Endpoint.EndpointType, for route: String?) async throws -> R? {
+    public func GET<R: Decodable>(for endpoint: Endpoint.Target, for route: String?) async throws -> R? {
         
         if isDebug {
             print("LOG ------------------------------ \(endpoint.rawValue)")
@@ -177,14 +190,29 @@ public final class NetworkService: Networking {
             print("LOG: Network disabled, returning ...")
             return nil
         }
-
-        var url = try endpointProvider.url(for: endpoint)
+        
+        var url: URL?
+        
+        switch endpoint {
+        case .hardcoded(let string):
+            url = URL(string: string)
+        case .api(let endpointType):
+            url = try endpointProvider.url(for: endpointType)
+        }
+        
         if let route {
-            url = url.appendingPathComponent(route)
+            url = url?.appendingPathComponent(route)
         }
         
         if isDebug {
             print("LOG: URL:\(url) [GET]")
+        }
+        
+        
+        guard
+            let url
+        else {
+            throw NSError(domain: "Failed to create url", code: -00011)
         }
 
         var request = URLRequest(url: url)
