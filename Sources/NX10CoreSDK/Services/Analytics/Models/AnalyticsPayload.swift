@@ -28,10 +28,10 @@ public extension AnalyticsProvider {
         public let sourceName: String
         public let clientTimestamp: String
         
-        public init(eventName: AnalyticEvent, sourceName: String? = nil, clientTimestamp: Date = Date()) {
+        public init(eventName: AnalyticEvent, sourceName: String? = nil) {
             self.eventName = eventName
             self.sourceName = sourceName == nil ? "ios-sdk" : sourceName!
-            self.clientTimestamp = clientTimestamp.iso8601
+            self.clientTimestamp = Date().iso8601
         }
         
         public func hash(into hasher: inout Hasher) {
