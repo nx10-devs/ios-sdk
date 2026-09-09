@@ -9,106 +9,6 @@ import Foundation
 import UIKit
 import Combine
 
-public struct NX10CoreConfig {
-    public let apiKey: String
-    public let appGroup: String
-    public let errorTrackingEnabled: Bool
-    public let enableDebug: Bool
-    
-    public init(
-        apiKey: String,
-        appGroup: String,
-        errorTrackingEnabled: Bool,
-        enableDebug: Bool
-    ) {
-        self.apiKey = apiKey
-        self.appGroup = appGroup
-        self.errorTrackingEnabled = errorTrackingEnabled
-        self.enableDebug = enableDebug
-    }
-}
-
-@MainActor
-// MARK: - Public façade protocols
-public protocol TelemetryManaging {
-    @discardableResult
-    func startIfNeeded(acquisitionWindowSize: TimeInterval) async throws -> Bool
-}
-
-@MainActor
-public protocol TouchTrackingManaging {
-    func setEnabled(_ enabled: Bool)
-    func reset()
-    func process(
-        touch: UITouch,
-        screen: UIScreen
-    ) -> GeneralTouchSample?
-}
-
-// MARK: - Internal façade wrappers
-struct TelemetryFacade: TelemetryManaging {
-    let provider: TelemetryProviding
-    @discardableResult
-    func startIfNeeded(acquisitionWindowSize: TimeInterval) async throws -> Bool {
-        try await provider.shouldStartTelemetry(with: Int(acquisitionWindowSize))
-    }
-}
-
-struct TouchTrackingFacade: TouchTrackingManaging {
-    let tracker: GeneralTouchTracker
-    func setEnabled(_ enabled: Bool) {
-//        tracker.setEnabled(enabled)
-    }
-    func reset() {
-//        tracker.reset()
-    }
-    
-    public func process(
-        touch: UITouch,
-        screen: UIScreen = .main
-    ) -> GeneralTouchSample? {
-        return tracker.process(touch: touch, screen: screen)
-    }
-}
-
-public final class GamesFacade: GamesProviding {
-    private var provider: GamesProviding
-    
-    public init(provider: GamesProviding) {
-        self.provider = provider
-    }
-    
-    public func getGameSessionID(for gameType: GameRequest.GameType) async throws -> Games.CreateResponse? {
-        try await provider.getGameSessionID(for: gameType)
-    }
-    
-    public func getGameResults(for type: GameRequest.GameType) async throws -> Games.GameHistoryResponse? {
-        try await provider.getGameResults(for: type)
-    }
-}
-
-final class ConsentFacade: ConsentManaging {
-    private let provider: ConsentProviding
-    
-    init(provider: ConsentProviding) { self.provider = provider }
-    
-    var allowDataCollection: Bool {
-        get { provider.allowDataCollection }
-        set { provider.allowDataCollection = newValue }
-    }
-    var allowTrainingData: Bool {
-        get { provider.allowTrainingData }
-        set { provider.allowTrainingData = newValue }
-    }
-}
-
-struct AnalyticsFacade: AnalyticsProviding {
-    let provider: AnalyticsProviding
-    func track(_ event: AnalyticsProvider.Event) {
-        provider.track(event)
-    }
-}
-
 @MainActor
 public final class NX10Core: ObservableObject {
     
@@ -116,18 +16,21 @@ public final class NX10Core: ObservableObject {
     
     // MARK: Public façade accessors
     public private(set) var telemetry: TelemetryManaging
-    public private(set) var consent: ConsentManaging
+    public var consent: ConsentManaging
     public private(set) var analytics: AnalyticsProviding
     public private(set) var touchTracking: TouchTrackingManaging
     public private(set) var gamesProvider: GamesFacade
 
     // MARK: Public properties
-    @available(*, deprecated, message: "Use NX10Core.shared.telemetry façade instead of accessing telemetryProvider directly.")
-    public let telemetryProvider: TelemetryProviding
-    public let saaqService: SaaQServiceProtocol
+
+    let saaqService: SaaQServiceProtocol
+    
     public let brainJuiceProvider: BrainJuiceProviding
+    
+    @available(*, deprecated, message: "Use NX10Core.shared.telemetry façade instead of accessing telemetryProvider directly.")
+    let telemetryProvider: TelemetryProviding
     @available(*, deprecated, message: "Use NX10Core.shared.consent façade instead of accessing consentProvider directly.")
-    public let consentProvider: ConsentProvider
+    let consentProvider: ConsentProvider
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -255,6 +158,8 @@ public final class NX10Core: ObservableObject {
         self.consent = ConsentFacade(provider: consentProvider)
         self.analytics = AnalyticsFacade(provider: analyticsService)
         self.touchTracking = TouchTrackingFacade(tracker: touchTracker)
+        
+        // TODO: Use facade
         self.gamesProvider = GamesFacade(provider: gamesProvider)
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }

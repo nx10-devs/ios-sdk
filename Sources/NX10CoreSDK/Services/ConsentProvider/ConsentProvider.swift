@@ -9,8 +9,9 @@ import Foundation
 import Observation
 import SwiftUI
 
+// MARK: Facade protocols
 @MainActor
-public protocol ConsentManaging: AnyObject {
+public protocol ConsentManaging: ComplianceOperating {
     var allowDataCollection: Bool { get set }
     var allowTrainingData: Bool { get set }
 }
@@ -18,9 +19,6 @@ public protocol ConsentManaging: AnyObject {
 // MARK: - ConsentProvider
 @MainActor
 public protocol ConsentProviding: ConsentManaging, ComplianceOperating {
-    var allowDataCollection: Bool { get set }
-    var allowTrainingData: Bool { get set }
-    
     init()
     func setComplianceProvider(
         _ complianceProvider: ComplianceProviding,
@@ -106,17 +104,5 @@ public final class ConsentProvider: ConsentProviding {
             return false
         }
         return try await complianceProvider.attest(with: items, and: date)
-    }
-}
-
-// MARK: - SwiftUI Environment Setup
-private struct ConsentProviderKey: @preconcurrency EnvironmentKey {
-    @MainActor static let defaultValue = ConsentProvider()
-}
-
-public extension EnvironmentValues {
-    var consentProvider: ConsentProvider {
-        get { self[ConsentProviderKey.self] }
-        set { self[ConsentProviderKey.self] = newValue }
     }
 }
