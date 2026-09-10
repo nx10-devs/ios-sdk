@@ -1,25 +1,8 @@
 //
-//  File.swift
+//  NX10SceneDeletage.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 02/06/2026.
-//
-//
-//  File.swift
-//  NX10CoreSDK
-//
-//  Created by NX10 on 02/06/2026.
-//
-
-import Foundation
-import UIKit
-import SwiftUI
-//
-//  File.swift
-//  NX10CoreSDK
-//
-//  Created by NX10 on 02/06/2026.
-//
 
 import Foundation
 import UIKit
@@ -37,7 +20,6 @@ private class NX10LifecycleTracker: ObservableObject {
 
 open class NX10MESceneDelegate: UIResponder, UIWindowSceneDelegate {
     public var window: UIWindow?
-    private let nx10Core = NX10Core.shared
     
     // Maintain a strong reference to the state tracker
     private let tracker = NX10LifecycleTracker()

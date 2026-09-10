@@ -7,6 +7,9 @@ import Foundation
 /// All coordinates are automatically converted to millimetres with a bottom-left
 /// origin by ``CoordinateConverter``.  Touch sampling is throttled to 30 Hz for
 /// "move" phases and stationary detection uses a 3-point movement threshold.
+/// Important Note: Events are references and tend to change immediately before being processed so we have created the TouchProxy to deep copy an event
+/// before dispatch to retain the properties of every event
+
 public final class TouchEventInterceptor: UIWindow {
     private let nx10Core = NX10Core.shared
     
@@ -34,7 +37,6 @@ public final class TouchEventInterceptor: UIWindow {
         let screen = self.screen
         Task(name: "capture-task", priority: .background) { [proxies] in
             for proxy in proxies {
-                // Your EXACT untouched tracker method runs smoothly here without modification
                 if let processedTouch = nx10Core.touchTracker.process(touch: proxy, screen: screen) {
                     nx10Core.telemetryProvider.processGeneralTouch(processedTouch)
                 }
