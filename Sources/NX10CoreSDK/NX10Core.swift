@@ -16,21 +16,13 @@ public final class NX10Core: ObservableObject {
     
     // MARK: Public façade accessors
     public private(set) var telemetry: TelemetryManaging
-    public var consent: ConsentManaging
+    public private(set) var consent: ConsentManaging
     public private(set) var analytics: AnalyticsProviding
     public private(set) var touchTracking: TouchTrackingManaging
     public private(set) var gamesProvider: GamesFacade
-
-    // MARK: Public properties
+    public private(set) var brainJuiceProvider: BrainJuiceProviding
 
     let saaqService: SaaQServiceProtocol
-    
-    public let brainJuiceProvider: BrainJuiceProviding
-    
-    @available(*, deprecated, message: "Use NX10Core.shared.telemetry façade instead of accessing telemetryProvider directly.")
-    let telemetryProvider: TelemetryProviding
-    @available(*, deprecated, message: "Use NX10Core.shared.consent façade instead of accessing consentProvider directly.")
-    let consentProvider: ConsentProvider
 
     // MARK: Internal properties
     let appService: AppInfoProviding
@@ -130,7 +122,6 @@ public final class NX10Core: ObservableObject {
         
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
-        self.telemetryProvider = telemetryProvider
         self.saaqService = saaqService
         self.sharedStorageProvider = sharedStorageProvider
         
@@ -151,7 +142,6 @@ public final class NX10Core: ObservableObject {
         self.activityProvider = activityProvider
         self.screenStatesProvider = screenStatesProvider
         self.complianceProvider = complianceProvider
-        self.consentProvider = consentProvider
         
         // MARK: - Public façade initialisation
         self.telemetry = TelemetryFacade(provider: telemetryProvider)
@@ -202,7 +192,7 @@ public extension NX10Core {
         sessionData = nil
     }
     
-    public func startSession(for isDemo: Bool) async throws -> Bool {
+    public func startSession(enableDemo: Bool) async throws -> Bool {
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
             throw NSError.error(for: .sessionAlreadyStarted)
@@ -211,7 +201,7 @@ public extension NX10Core {
         isStartingSession = true
         
         print("LOG: startSession")
-        let sessionData = try await self.sessionProvider.startSession(for: isDemo)
+        let sessionData = try await self.sessionProvider.startSession(enableDemo: enableDemo)
         self.sessionData = sessionData
 
         if let sessionData {

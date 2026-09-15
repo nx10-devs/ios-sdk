@@ -46,7 +46,7 @@ Setup happens in two steps: **configure** (registers your API key and App Group 
 | `errorTrackingEnabled` | `Bool` | Enables automatic error reporting |
 | `enableDebug` | `Bool` | Enables verbose SDK logging and points the SDK at staging endpoints |
 
-> **Networking is off by default** — `startSession(for:)` will fail until it's enabled, typically by granting consent. See [Networking Must Be Enabled](#networking-must-be-enabled).
+> **Networking is off by default** — `startSession(enableDemo:)` will fail until it's enabled, typically by granting consent. See [Networking Must Be Enabled](#networking-must-be-enabled).
 
 ```swift
 try NX10Core.shared.configure(
@@ -58,9 +58,9 @@ try NX10Core.shared.configure(
     )
 )
 
-NX10Core.shared.consent.allowDataCollection = true // enables networking; required before startSession(for:)
+NX10Core.shared.consent.allowDataCollection = true // enables networking; required before startSession(enableDemo:)
 
-_ = try await NX10Core.shared.startSession(for: false) // pass `true` for demo/sandbox sessions
+_ = try await NX10Core.shared.startSession(enableDemo: false) // pass `true` for demo/sandbox sessions
 ```
 
 ### App Setup — AppDelegate & SceneDelegate
@@ -128,7 +128,7 @@ struct YourApp: App {
         } catch {}
 
         Task {
-            _ = try? await NX10Core.shared.startSession(for: false)
+            _ = try? await NX10Core.shared.startSession(enableDemo: false)
         }
     }
 
@@ -172,7 +172,7 @@ class AppDelegate: NX10MEAppDelegate {
                         enableDebug: false
                     )
                 )
-                _ = try await NX10Core.shared.startSession(for: false)
+                _ = try await NX10Core.shared.startSession(enableDemo: false)
             } catch {
                 print("NX10CoreSDK configuration failed: \(error)")
             }
@@ -257,7 +257,7 @@ class KeyboardViewController: UIInputViewController {
                         enableDebug: false
                     )
                 )
-                _ = try await NX10Core.shared.startSession(for: false)
+                _ = try await NX10Core.shared.startSession(enableDemo: false)
             } catch {
                 print("NX10CoreSDK keyboard configuration failed: \(error)")
             }
@@ -274,10 +274,10 @@ All tracking methods are accessed through `NX10Core.shared.telemetry`.
 
 ### Starting and Stopping Telemetry
 
-Telemetry doesn't start on its own — call `startIfNeeded(acquisitionWindowSize:)` once (after `startSession(for:)`, like everything else in the SDK):
+Telemetry doesn't start on its own — call `startTelemetry()` once (after `startSession(enableDemo:)`, like everything else in the SDK):
 
 ```swift
-try await NX10Core.shared.telemetry.startIfNeeded(acquisitionWindowSize: 30) // seconds
+try await NX10Core.shared.telemetry.startTelemetry() // seconds
 ```
 
 Stop telemetry to conserve battery and prevent unnecessary data collection:
@@ -395,7 +395,7 @@ The SDK buffers telemetry data to optimise performance. You can manually control
 
 ### Networking Must Be Enabled
 
-Networking is off by default — no request the SDK makes (`startSession(for:)`, telemetry uploads, BrainJuice/Games/Analytics, compliance) will succeed until it's enabled:
+Networking is off by default — no request the SDK makes (`startSession(enableDemo:)`, telemetry uploads, BrainJuice/Games/Analytics, compliance) will succeed until it's enabled:
 
 ```swift
 NX10Core.shared.consent.allowDataCollection = true // or NX10Core.shared.enableNetworking(true)
@@ -503,7 +503,7 @@ To force the backend to recalculate a fresh baseline (e.g. after a significant g
 try await NX10Core.shared.brainJuiceProvider.refreshBrainJuice()
 ```
 
-BrainJuice configuration (model weights, thresholds) is downloaded automatically as part of `startSession(for:)` — no manual setup is required beyond starting a session.
+BrainJuice configuration (model weights, thresholds) is downloaded automatically as part of `startSession(enableDemo:)` — no manual setup is required beyond starting a session.
 
 ---
 

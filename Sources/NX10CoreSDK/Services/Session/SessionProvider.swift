@@ -15,7 +15,7 @@ public protocol SessionProviding {
     var token: String? { get }
     var sessionStarted: Bool { get }
     func setAPIKey(_ key: String)
-    func startSession(for isDemo: Bool) async throws -> SessionData?
+    func startSession(enableDemo: Bool) async throws -> SessionData?
     func enableNetworking(_ enable: Bool) -> Self
 }
 
@@ -46,7 +46,7 @@ public final class SessionProvider: SessionProviding {
         return self
     }
     
-    public func startSession(for isDemo: Bool) async throws -> SessionData? {
+    public func startSession(enableDemo: Bool) async throws -> SessionData? {
         do {
             print("LOG: Attempting session start")
             guard let apiKey = apiKey else {
@@ -95,7 +95,7 @@ public final class SessionProvider: SessionProviding {
             let result: StartSessionAPIResponse? = try await networking.execute(
                 .init(data: data),
                 for: url,
-                httpHeaders: isDemo ? ["X-Demo-Mode" : "true"] : nil
+                httpHeaders: enableDemo ? ["X-Demo-Mode" : "true"] : nil
             )
             
             guard

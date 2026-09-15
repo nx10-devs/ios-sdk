@@ -38,7 +38,7 @@ public final class TouchEventInterceptor: UIWindow {
         Task(name: "capture-task", priority: .background) { [proxies] in
             for proxy in proxies {
                 if let processedTouch = nx10Core.touchTracker.process(touch: proxy, screen: screen) {
-                    nx10Core.telemetryProvider.processGeneralTouch(processedTouch)
+                    nx10Core.telemetry.processGeneralTouch(processedTouch)
                 }
             }
         }

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ComplianceProvider.swift
 //  NX10CoreSDK
 //
 //  Created by NX10 on 27/07/2026.
