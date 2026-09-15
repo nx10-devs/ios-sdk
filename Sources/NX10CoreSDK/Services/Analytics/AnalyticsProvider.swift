@@ -9,10 +9,12 @@ import Foundation
 
 @MainActor
 public protocol AnalyticsProviding {
-    func track(_ event: AnalyticsProvider.Event)
+    func trackSuperEvent(_ event: AnalyticsProvider.Event)
+    func trackCustomEvent(_ event: String, sourceName: String?)
 }
 
 public class AnalyticsProvider: AnalyticsProviding {
+    
     private let networkService: Networking
     private struct EmptyResponse: Decodable {}
     private lazy var encoder = JSONEncoder()
@@ -21,7 +23,15 @@ public class AnalyticsProvider: AnalyticsProviding {
         self.networkService = networkService
     }
     
-    public func track(_ payload: AnalyticsProvider.Event) {
+    public func trackCustomEvent(_ event: String, sourceName: String? = nil) {
+        let customEvent = AnalyticsProvider.CustomEvent(
+            eventName: event,
+            sourceName: sourceName,
+            clientTimestamp: Date().iso8601
+        )
+    }
+    
+    public func trackSuperEvent(_ payload: AnalyticsProvider.Event) {
         
         /*
          If payloadStorage contains content

@@ -199,7 +199,11 @@ public final class AnalyticsFacade: AnalyticsProviding {
         self.provider = provider
     }
     
-    public func track(_ event: AnalyticsProvider.Event) {
-        provider.track(event)
+    public func trackCustomEvent(_ event: String, sourceName: String?) {
+        provider.trackCustomEvent(event, sourceName: sourceName)
+    }
+    
+    public func trackSuperEvent(_ event: AnalyticsProvider.Event) {
+        provider.trackSuperEvent(event)
     }
 }

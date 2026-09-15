@@ -16,14 +16,20 @@ public protocol AttributesProviding: AnyObject {
     func didChangeKeyboardLanguage() async
     func appDidChangeState(_ state: AttributesProvider.AppState) async
     
+    func setAttribute(with key: String, and value: String) async
+    func setAttributes(_ attributes: [String: Any]) async
+    func clearAttributes() async
+    
     init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding)
 }
 
+// MARK: - Attributes Provider Implementation
+
 public class AttributesProvider: AttributesProviding {
-    
+
     private let networkService: Networking
     private let errorProvider: ErrorProviding
-    private let appService:  AppInfoProviding
+    private let appService: AppInfoProviding
     
     required public init(networkService: Networking, errorProvider: ErrorProviding, appService: AppInfoProviding) {
         self.networkService = networkService
@@ -31,20 +37,59 @@ public class AttributesProvider: AttributesProviding {
         self.appService = appService
     }
     
+    public func setAttribute(with key: String, and value: String) async {
+        await setAttributes([key: value])
+    }
+    
+    public func setAttributes(_ attributes: [String: Any]) async {
+        Task(name: "attributes-task", priority: .utility) {
+            do {
+                let encodablePayload = attributes.asEncodable
+                
+                guard let data = self.networkService.encode(encodablePayload) else {
+                    print("Failed to encode attributes")
+                    if isDebug { fatalError() }
+                    return
+                }
+                
+                let _: GenericResponse? = try await self.networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
+            } catch {
+                self.errorProvider.sendError(error)
+            }
+        }
+    }
+    
+    public func clearAttributes() async {
+        Task(name: "attributes-task", priority: .utility) {
+            let payload = ClearAttributesPayload(timestamp: Date().iso8601)
+            do {
+                guard let data = self.networkService.encode(payload) else {
+                    print("Failed to encode clear attributes payload")
+                    if isDebug { fatalError() }
+                    return
+                }
+                
+                let _: GenericResponse? = try await self.networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
+            } catch {
+                self.errorProvider.sendError(error)
+            }
+        }
+    }
+    
     public func sendDeviceLog(_ deviceLog: DeviceLog) async {
         Task(name: "analytics-task", priority: .utility) {
             do {
                 guard
-                    let data = networkService.encode(deviceLog)
+                    let data = self.networkService.encode(deviceLog)
                 else {
                     print("Failed to encode device log")
                     if isDebug { fatalError() }
                     return
                 }
                 
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
+                let _: GenericResponse? = try await self.networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
-                errorProvider.sendError(error)
+                self.errorProvider.sendError(error)
             }
         }
     }
@@ -59,19 +104,19 @@ public class AttributesProvider: AttributesProviding {
     
     public func didChangeKeyboardLanguage() async {
         Task(name: "attributes-task", priority: .utility) {
-            let keyboardLanguage = appService.keyboardLanguage
+            let keyboardLanguage = self.appService.keyboardLanguage
             let payload = AttributesProvider.KeyboardData(keyboardLanguage: keyboardLanguage, timestamp: Date().iso8601)
             do {
                 guard
-                    let data = networkService.encode(payload)
+                    let data = self.networkService.encode(payload)
                 else {
-                    print("Failed to encode kayboad language change")
+                    print("Failed to encode keyboard language change")
                     if isDebug { fatalError() }
                     return
                 }
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
+                let _: GenericResponse? = try await self.networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
-                errorProvider.sendError(error)
+                self.errorProvider.sendError(error)
             }
         }
     }
@@ -80,16 +125,16 @@ public class AttributesProvider: AttributesProviding {
         Task(name: "attributes-task", priority: .utility) {
             do {
                 guard
-                    let data = networkService.encode(state)
+                    let data = self.networkService.encode(state)
                 else {
-                    print("Failed to encode kayboad language change")
+                    print("Failed to encode app state change")
                     if isDebug { fatalError() }
                     return
                 }
                 
-                let _: GenericResponse? = try await networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
+                let _: GenericResponse? = try await self.networkService.POST(.init(data: data), for: .api(.attributes), for: nil)
             } catch {
-                errorProvider.sendError(error)
+                self.errorProvider.sendError(error)
             }
         }
     }

@@ -8,6 +8,12 @@
 import Foundation
 
 public extension AttributesProvider {
+    
+    public struct ClearAttributesPayload: Encodable {
+        public let timestamp: String
+        public let data: [String: String] = [:]
+    }
+
     struct DeviceLog: Codable {
         public let timestamp: String
         public let data: DeviceData?
