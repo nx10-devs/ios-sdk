@@ -16,11 +16,13 @@ public final class NX10Core: ObservableObject {
     
     // MARK: Public façade accessors
     public private(set) var telemetry: TelemetryManaging
-    public private(set) var consent: ConsentManaging
     public private(set) var analytics: AnalyticsProviding
     public private(set) var touchTracking: TouchTrackingManaging
     public private(set) var gamesProvider: GamesFacade
     public private(set) var brainJuiceProvider: BrainJuiceProviding
+    
+    // MARK: Settable objects
+    public var consent: ConsentManaging
 
     let saaqService: SaaQServiceProtocol
 
