@@ -85,12 +85,18 @@ public struct DeviceInfo: Codable {
     public let osVersion: String
     public let deviceVersion: String?
     public let deviceVariant: String?
+    public let locale: String
+    public let timezone: String
     
-    public init(type: String, os: String?, osVersion: String, deviceVersion: String?, deviceVariant: String?) {
+    
+    
+    public init(type: String, os: String?, osVersion: String, deviceVersion: String?, deviceVariant: String?, locale: String, timezone: String) {
         self.type = type
         self.os = os
         self.osVersion = osVersion
         self.deviceVersion = deviceVersion
         self.deviceVariant = deviceVariant
+        self.locale = locale
+        self.timezone = timezone
     }
 }

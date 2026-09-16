@@ -69,9 +69,11 @@ public final class AppInfoProvider: AppInfoProviding {
     public func deviceInfo() -> DeviceInfo {
         let deviceType = deviceType()
         let deviceVersion = deviceVersion()
+        let timezone = DeviceContext.timezoneIANA
+        let locale = DeviceContext.localeBCP47
         
         return DeviceInfo(
-           type: deviceType, os: "iOS", osVersion: iOSVersion, deviceVersion: deviceVersion, deviceVariant: nil
+            type: deviceType, os: "iOS", osVersion: iOSVersion, deviceVersion: deviceVersion, deviceVariant: nil, locale: locale, timezone: timezone
        )
     }
 }
