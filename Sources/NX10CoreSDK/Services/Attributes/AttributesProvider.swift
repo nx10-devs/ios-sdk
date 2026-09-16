@@ -9,7 +9,6 @@ import Foundation
 
 @MainActor
 public protocol AttributesProviding: AnyObject {
-    
     func sendDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
     func updateDeviceLog(_ deviceLog: AttributesProvider.DeviceLog) async
     func resetDeviceLog() async

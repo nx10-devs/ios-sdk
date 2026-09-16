@@ -29,16 +29,24 @@ public class AnalyticsProvider: AnalyticsProviding {
             sourceName: sourceName,
             clientTimestamp: Date().iso8601
         )
+        
+        Task {
+            do {
+                guard
+                    let data = try networkService.encode(customEvent)
+                else {
+                    print("Failed to encode Analytics Payload")
+                    return
+                }
+                
+                let _: EmptyResponse? = try await networkService.POST(.init(data: data), for: .api(.analytics), for: nil)
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
     }
     
     public func trackSuperEvent(_ payload: AnalyticsProvider.Event) {
-        
-        /*
-         If payloadStorage contains content
-         Spin a thread for each event
-         Then Send Event
-         Then continue with the normal analytics route
-         */
         print("LOG: Sending analytics for \(payload)")
         
         Task {

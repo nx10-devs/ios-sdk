@@ -207,3 +207,23 @@ public final class AnalyticsFacade: AnalyticsProviding {
         provider.trackSuperEvent(event)
     }
 }
+
+public final class EventsFacade: EventsProviding {
+    public func sendOutcomeEvent(_ eventName: String, with outcome: String, and data: [String : Any]) {
+        provider.sendOutcomeEvent(eventName, with: outcome, and: data)
+    }
+    
+    let provider: EventsProviding
+    
+    init(provider: EventsProviding) {
+        self.provider = provider
+    }
+    
+    public func sendEvent(_ eventName: String) {
+        provider.sendEvent(eventName)
+    }
+    
+    public func sendEvent(_ eventName: String, with data: [String : Any]) {
+        provider.sendEvent(eventName, with: data)
+    }
+}

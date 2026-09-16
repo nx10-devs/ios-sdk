@@ -20,6 +20,7 @@ public final class NX10Core: ObservableObject {
     public private(set) var touchTracking: TouchTrackingManaging
     public private(set) var gamesProvider: GamesFacade
     public private(set) var brainJuiceProvider: BrainJuiceProviding
+    public private(set) var eventsProvider: EventsProviding
     
     // MARK: Settable objects
     public var consent: ConsentManaging
@@ -118,6 +119,7 @@ public final class NX10Core: ObservableObject {
         // MARK: Compliance/Consent
         let complianceProvider = ComplianceProvider(networking: networkService)
         let consentProvider = ConsentProvider()
+        let eventsProvider = EventsProvider(networkService: networkService, errorProvider: errorProvider)
         
         // TODO: Not happy (anti-pattern) - this is because of env keys that need an INIT. find a better way.
         consentProvider.setComplianceProvider(complianceProvider,and: sharedStorageProvider)
@@ -153,6 +155,7 @@ public final class NX10Core: ObservableObject {
         
         // TODO: Use facade
         self.gamesProvider = GamesFacade(provider: gamesProvider)
+        self.eventsProvider = eventsProvider
         // self.textInputObserverService = textInputObserverService // NEW: Assign
     }
 }
