@@ -7,28 +7,32 @@
 
 import Foundation
 
+private let stageURL = "https://control-plane.affectstack-stage.com"
+private let prodURL = "https://control-plane.affectstack.com"
+var NX10BaseURL: String { isDebug ? stageURL : prodURL }
+var NX10RoutesURL: String {(isDebug ? stageURL : prodURL) + "/routes"}
 
-let NX10BaseURL = isDebug ? "https://control-plane.affectstack-stage.com" : "https://control-plane.affectstack.com"
-let NX10RoutesURL = NX10BaseURL + "/routes"
-
-// MARK: - Root Response
-public struct StartSessionAPIResponse: Decodable {
-    public let status: String
-    public let data: SessionData
-}
-
-// MARK: - Data Container
-public struct SessionData: Decodable {
-    public let token: String
-    /// Raw lossless JSON — pass this back to the API as-is to avoid 400s from schema drift.
-    public let deviceConfig: JSONValue?
-    public let endpoints: [Endpoint]
-
-    /// Typed accessor for the known fields consumed by the SDK.
-    public var typedDeviceConfig: DeviceConfig? {
-        try? deviceConfig?.decode(DeviceConfig.self)
+public extension SessionProvider {
+    // MARK: - Root Response
+    public struct Response: Decodable {
+        public let status: String
+        public let data: SessionData
+        
+        // MARK: - Data Container
+        public struct SessionData: Decodable {
+            public let token: String
+            /// Raw lossless JSON — pass this back to the API as-is to avoid 400s from schema drift.
+            public let deviceConfig: JSONValue?
+            public let endpoints: [Endpoint]
+            
+            /// Typed accessor for the known fields consumed by the SDK.
+            public var typedDeviceConfig: DeviceConfig? {
+                try? deviceConfig?.decode(DeviceConfig.self)
+            }
+        }
     }
 }
+
 // MARK: - Endpoint Details
 public struct Endpoint: Decodable, Hashable {
     public let location: String
@@ -73,5 +77,6 @@ public struct Endpoint: Decodable, Hashable {
         case forget
         case access
         case pvt
+        case events
     }
 }

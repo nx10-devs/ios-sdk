@@ -15,7 +15,7 @@ public protocol SessionProviding {
     var token: String? { get }
     var sessionStarted: Bool { get }
     func setAPIKey(_ key: String)
-    func startSession(enableDemo: Bool) async throws -> SessionData?
+    func startSession(enableDemo: Bool) async throws -> SessionProvider.Response.SessionData?
     func enableNetworking(_ enable: Bool) -> Self
 }
 
@@ -46,7 +46,7 @@ public final class SessionProvider: SessionProviding {
         return self
     }
     
-    public func startSession(enableDemo: Bool) async throws -> SessionData? {
+    public func startSession(enableDemo: Bool) async throws -> SessionProvider.Response.SessionData? {
         do {
             print("LOG: Attempting session start")
             guard let apiKey = apiKey else {
@@ -56,7 +56,7 @@ public final class SessionProvider: SessionProviding {
                 throw NSError.error(for: .missingAPIKey)
             }
             
-            let payload = StartSessionRequestPayload(
+            let payload = SessionProvider.Request(
                 apiKey: apiKey,
                 identifiers: .init(
                     deviceId: applicationInfoProvider.deviceID,
@@ -92,7 +92,7 @@ public final class SessionProvider: SessionProviding {
                 throw NSError(domain: "Failed to encode start session payload", code: -0001)
             }
             
-            let result: StartSessionAPIResponse? = try await networking.execute(
+            let result: SessionProvider.Response? = try await networking.execute(
                 .init(data: data),
                 for: url,
                 httpHeaders: enableDemo ? ["X-Demo-Mode" : "true"] : nil
