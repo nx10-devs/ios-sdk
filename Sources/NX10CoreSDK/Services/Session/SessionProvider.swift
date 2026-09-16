@@ -15,8 +15,12 @@ public protocol SessionProviding {
     var token: String? { get }
     var sessionStarted: Bool { get }
     func setAPIKey(_ key: String)
-    func startSession(enableDemo: Bool) async throws -> SessionProvider.Response.SessionData?
+    func startSession(enableDemo: Bool) async throws -> SessionProvider.StartSession.Response.SessionData?
     func enableNetworking(_ enable: Bool) -> Self
+}
+
+public extension SessionProvider {
+    public struct StartSession {}
 }
 
 public final class SessionProvider: SessionProviding {
@@ -46,7 +50,7 @@ public final class SessionProvider: SessionProviding {
         return self
     }
     
-    public func startSession(enableDemo: Bool) async throws -> SessionProvider.Response.SessionData? {
+    public func startSession(enableDemo: Bool) async throws -> SessionProvider.StartSession.Response.SessionData? {
         do {
             print("LOG: Attempting session start")
             guard let apiKey = apiKey else {
@@ -92,7 +96,7 @@ public final class SessionProvider: SessionProviding {
                 throw NSError(domain: "Failed to encode start session payload", code: -0001)
             }
             
-            let result: SessionProvider.Response? = try await networking.execute(
+            let result: SessionProvider.StartSession.Response? = try await networking.execute(
                 .init(data: data),
                 for: url,
                 httpHeaders: enableDemo ? ["X-Demo-Mode" : "true"] : nil

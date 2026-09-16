@@ -12,7 +12,9 @@ private let prodURL = "https://control-plane.affectstack.com"
 var NX10BaseURL: String { isDebug ? stageURL : prodURL }
 var NX10RoutesURL: String {(isDebug ? stageURL : prodURL) + "/routes"}
 
-public extension SessionProvider {
+
+public extension SessionProvider.StartSession {
+    
     // MARK: - Root Response
     public struct Response: Decodable {
         public let status: String

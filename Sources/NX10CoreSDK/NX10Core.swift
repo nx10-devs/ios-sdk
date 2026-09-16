@@ -47,7 +47,7 @@ public final class NX10Core: ObservableObject {
     private var decodedToken: NX10Token? = nil
     private var isStartingSession = false
     private var didStartSessionCallback: ((Bool) -> Void)?
-    private var sessionData: SessionProvider.Response.SessionData? = nil {
+    private var sessionData: SessionProvider.StartSession.Response.SessionData? = nil {
         didSet {
             guard
                 let sessionData = sessionData
@@ -223,7 +223,7 @@ public extension NX10Core {
 }
 
 extension NX10Core {
-    fileprivate func setSessionDataDependencies(with sessionData: SessionProvider.Response.SessionData) {
+    fileprivate func setSessionDataDependencies(with sessionData: SessionProvider.StartSession.Response.SessionData) {
         guard
             let deviceConfig = sessionData.typedDeviceConfig
         else {
