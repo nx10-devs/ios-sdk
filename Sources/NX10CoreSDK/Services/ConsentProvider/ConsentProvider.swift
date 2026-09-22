@@ -11,29 +11,21 @@ import SwiftUI
 
 // MARK: Facade protocols
 @MainActor
-public protocol ConsentManaging: ComplianceOperating {
+public protocol ConsentProviding: ComplianceOperating {
     var allowDataCollection: Bool { get set }
     var allowTrainingData: Bool { get set }
-}
-
-// MARK: - ConsentProvider
-@MainActor
-public protocol ConsentProviding: ConsentManaging, ComplianceOperating {
-    init()
-    func setComplianceProvider(
-        _ complianceProvider: ComplianceProviding,
-        and storageProvider: SharedStorageProviding
-    )
 }
 
 @Observable
 public final class ConsentProvider: ConsentProviding {
     private var storageProvider: SharedStorageProviding
-    private var complianceProvider: ComplianceProviding? = nil
+    private var complianceProvider: ComplianceProviding
     
     // MARK: - Initializer
-    public init() {
-        self.storageProvider = SharedStorageProvider()
+    
+    public init(storageProvider: SharedStorageProviding, complianceProvider: ComplianceProviding) {
+        self.storageProvider = storageProvider
+        self.complianceProvider = complianceProvider
     }
     
     // MARK: - Computed Properties
@@ -62,47 +54,25 @@ public final class ConsentProvider: ConsentProviding {
         }
     }
     
-    // MARK: - Dependency Injection
-    public func setComplianceProvider(
-        _ complianceProvider: ComplianceProviding,
-        and storageProvider: SharedStorageProviding
-    ) {
-        self.complianceProvider = complianceProvider
-        self.storageProvider = storageProvider
-    }
-    
     public func access(date: Date, dryRun: Bool) async throws -> String? {
-        guard let complianceProvider else {
-            if isDebug { fatalError("Compliance provider is missing") }
-            return nil
-        }
         return try await complianceProvider.access(date: date, dryRun: dryRun)
     }
     
     public func consent(for processorConsent: Bool, and controllerConsent: Bool) async throws -> Bool {
         // TODO: Align with compliance pattern
         storageProvider.networkingEnabled = processorConsent
+        storageProvider.allowTrainingData = controllerConsent
+        storageProvider.allowDataCollection = processorConsent
         
-        guard let complianceProvider else {
-            if isDebug { fatalError("Compliance provider is missing") }
-            return false
-        }
         return try await complianceProvider.consent(for: processorConsent, and: controllerConsent)
     }
     
     public func forget(date: Date, dryRun: Bool) async throws -> Bool {
-        guard let complianceProvider else {
-            if isDebug { fatalError("Compliance provider is missing") }
-            return false
-        }
+
         return try await complianceProvider.forget(date: date, dryRun: dryRun)
     }
     
     public func attest(with items: [ComplianceRequest.Attest.AttestItem], and date: Date) async throws -> Bool {
-        guard let complianceProvider else {
-            if isDebug { fatalError("Compliance provider is missing") }
-            return false
-        }
         return try await complianceProvider.attest(with: items, and: date)
     }
 }

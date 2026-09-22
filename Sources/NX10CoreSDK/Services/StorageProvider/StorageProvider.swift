@@ -2,13 +2,11 @@
 //  StorageProvider.swift
 //  NX10CoreSDK
 //
-//  Created by NX10 on 03/08/2026.
-//
 
 import Foundation
 
 @MainActor
-public protocol SharedStorageProviding {
+public protocol SharedStorageProviding: AnyObject {
     var allowDataCollection: Bool { get set }
     var allowTrainingData: Bool { get set }
     var networkingEnabled: Bool { get set }
@@ -23,93 +21,88 @@ public final class SharedStorageProvider: SharedStorageProviding {
     public enum Key {
         public static let collectionKey = "me.nx10.sdk.hasAcceptedDataCollectionConsent"
         public static let trainingKey = "me.nx10.sdk.hasAcceptedDataTrainingConsent"
-        public static let networkIsDisabled = "me.nx10.sdk.networkDisabledKey"
+        public static let networkDisabledKey = "me.nx10.sdk.networkDisabledKey"
     }
     
     // MARK: - Properties
-    private var storage: UserDefaults?
+    // Default to standard storage until AppGroupID is configured
+    private var storage: UserDefaults = .standard
+    private var appGroupID: String?
     
     // MARK: - Initializer
     public init() {}
     
     public func setAppGroupID(_ appGroupID: String?) {
-        guard
-            let appGroupID
-        else {
-            if isDebug {
-                fatalError("appGroupID not set")
-            }
+        guard let appGroupID = appGroupID, !appGroupID.isEmpty else {
+            print("LOG: [StorageProvider] Warning - No App Group ID provided. Falling back to standard defaults.")
             return
         }
         
-        let groupStorage = UserDefaults(suiteName: appGroupID)
+        guard let groupStorage = UserDefaults(suiteName: appGroupID) else {
+            print("LOG: [StorageProvider] Error - Could not initialize UserDefaults for AppGroup: \(appGroupID)")
+            return
+        }
+        
+        self.appGroupID = appGroupID
         self.storage = groupStorage
+        
+        // Synchronize in-memory cache with disk state
+        self.reloadFromDisk()
+        print("LOG: [StorageProvider] Successfully attached App Group ID:", appGroupID)
+    }
+    
+    /// Forces in-memory UserDefaults cache to reload from disk across processes
+    public func reloadFromDisk() {
+        // CFPreferencesCopyAppValue forces IPC synchronization across App Group containers
+        if let appGroupID = appGroupID as CFString? {
+            CFPreferencesAppSynchronize(appGroupID)
+        } else {
+            CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication)
+        }
     }
     
     // MARK: - Storage Accessors
     public var networkingEnabled: Bool {
         get {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return false
-            }
-            return storage.bool(forKey: Key.networkIsDisabled)
+            reloadFromDisk()
+            let enabled = storage.bool(forKey: Key.networkDisabledKey)
+            return enabled
         }
         set {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return
-            }
-            storage.set(newValue, forKey: Key.networkIsDisabled)
-            storage.synchronize()
+            storage.set(newValue, forKey: Key.networkDisabledKey)
+            reloadFromDisk()
         }
     }
     
     public var allowDataCollection: Bool {
         get {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return false
-            }
-            return storage.bool(forKey: Key.collectionKey)
+            reloadFromDisk()
+            let result = storage.bool(forKey: Key.collectionKey)
+            print("LOG: [StorageProvider] getting allowDataCollection: \(result)")
+            return result
         }
         set {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return
-            }
+            print("LOG: [StorageProvider] setting allowDataCollection: \(newValue)")
             storage.set(newValue, forKey: Key.collectionKey)
-            storage.synchronize()
+            reloadFromDisk()
         }
     }
     
     public var allowTrainingData: Bool {
         get {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return false
-            }
+            reloadFromDisk()
             return storage.bool(forKey: Key.trainingKey)
         }
         set {
-            guard let storage else {
-                if isDebug { fatalError("local storage not set") }
-                return
-            }
             storage.set(newValue, forKey: Key.trainingKey)
-            storage.synchronize()
+            reloadFromDisk()
         }
     }
     
     public func clearAll() {
-        guard let storage else {
-            if isDebug { fatalError("local storage not set") }
-            return
-        }
-        
         storage.removeObject(forKey: Key.collectionKey)
         storage.removeObject(forKey: Key.trainingKey)
-        storage.removeObject(forKey: Key.networkIsDisabled)
-        storage.synchronize()
+        storage.removeObject(forKey: Key.networkDisabledKey)
+        reloadFromDisk()
     }
 }

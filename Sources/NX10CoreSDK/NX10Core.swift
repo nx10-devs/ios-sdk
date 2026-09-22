@@ -23,7 +23,7 @@ public final class NX10Core: ObservableObject {
     public private(set) var eventsProvider: EventsProviding
     
     // MARK: Settable objects
-    public var consent: ConsentManaging
+    public let consent: ConsentFacade
 
     let saaqService: SaaQServiceProtocol
 
@@ -118,12 +118,9 @@ public final class NX10Core: ObservableObject {
         
         // MARK: Compliance/Consent
         let complianceProvider = ComplianceProvider(networking: networkService)
-        let consentProvider = ConsentProvider()
+        let consentProvider = ConsentProvider(storageProvider: sharedStorageProvider, complianceProvider: complianceProvider)
         let eventsProvider = EventsProvider(networkService: networkService, errorProvider: errorProvider)
-        
-        // TODO: Not happy (anti-pattern) - this is because of env keys that need an INIT. find a better way.
-        consentProvider.setComplianceProvider(complianceProvider,and: sharedStorageProvider)
-        
+
         // MARK: - Retention assignments
         self.errorProvider = errorProvider
         self.saaqService = saaqService

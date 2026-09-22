@@ -161,10 +161,12 @@ public final class GamesFacade: GamesProviding {
 }
 
 @Observable
-public final class ConsentFacade: ConsentManaging {
+public final class ConsentFacade: ConsentProviding {
     private var provider: ConsentProviding
     
-    init(provider: ConsentProviding) { self.provider = provider }
+    init(provider: ConsentProviding) {
+        self.provider = provider
+    }
     
     public func access(date: Date, dryRun: Bool) async throws -> String? {
         try await provider.access(date: date, dryRun: dryRun)
@@ -183,8 +185,12 @@ public final class ConsentFacade: ConsentManaging {
     }
     
     public var allowDataCollection: Bool {
-        get { provider.allowDataCollection }
-        set { provider.allowDataCollection = newValue }
+        get {
+            provider.allowDataCollection
+        }
+        set {
+            provider.allowDataCollection = newValue
+        }
     }
     public var allowTrainingData: Bool {
         get { provider.allowTrainingData }
