@@ -63,9 +63,7 @@ public final class SessionProvider: SessionProviding {
             let payload = SessionProvider.Request(
                 apiKey: apiKey,
                 identifiers: .init(
-                    deviceId: applicationInfoProvider.deviceID,
-                    email: nil,
-                    phoneNumber: nil
+                    deviceId: applicationInfoProvider.deviceID
                 ),
                 sdkProvided: .init(
                     device: applicationInfoProvider.deviceInfo(),

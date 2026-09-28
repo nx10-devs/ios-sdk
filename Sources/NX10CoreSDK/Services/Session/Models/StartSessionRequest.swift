@@ -26,13 +26,11 @@ public extension SessionProvider {
     // MARK: - Identifiers
     public struct Identifiers: Codable {
         public let deviceId: String
-        public let email: String?
-        public let phoneNumber: String?
+//        public let email: String?
+//        public let phoneNumber: String?
         
-        public init(deviceId: String, email: String?, phoneNumber: String?) {
+        public init(deviceId: String) {
             self.deviceId = deviceId
-            self.email = email
-            self.phoneNumber = phoneNumber
         }
     }
     
