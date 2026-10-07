@@ -21,6 +21,8 @@ public final class NX10Core: ObservableObject {
     public private(set) var gamesProvider: GamesFacade
     public private(set) var brainJuiceProvider: BrainJuiceProviding
     public private(set) var eventsProvider: EventsProviding
+    public private(set) var sessionStarted: Bool = false
+    public var enableDemo: Bool = false
     
     // MARK: Settable objects
     public let consent: ConsentFacade
@@ -194,28 +196,36 @@ public extension NX10Core {
         sessionData = nil
     }
     
-    public func startSession(enableDemo: Bool) async throws -> Bool {
+    public func startSession() async throws -> Bool {
         if isStartingSession || sessionData != nil {
             print("LOG: session already started")
-            throw NSError.error(for: .sessionAlreadyStarted)
+            throw SDKError.sessionAlreadyStarted
         }
         
         isStartingSession = true
         
         print("LOG: startSession")
-        let sessionData = try await self.sessionProvider.startSession(enableDemo: enableDemo)
-        self.sessionData = sessionData
-
-        if let sessionData {
+        do {
+            let sessionData = try await self.sessionProvider.startSession(enableDemo: enableDemo)
             isStartingSession = false
-        } else {
-            if isDebug {
-                fatalError("failed to start session")
+            
+            if let sessionData {
+                self.sessionData = sessionData
+            } else {
+                if isDebug {
+                    fatalError("failed to start session")
+                }
+                errorProvider.sendError(NSError.error(for: .failedToStartSession))
+                throw SDKError.failedToStartSession
             }
-            errorProvider.sendError(NSError.error(for: .failedToStartSession))
-            throw NSError.error(for: .sessionWasNotStarted)
+            
+            sessionStarted = sessionData != nil
+            
+            return sessionData != nil
+        } catch {
+            isStartingSession = false
+            throw error
         }
-        return sessionData != nil
     }
 }
 

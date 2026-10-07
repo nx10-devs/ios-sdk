@@ -8,6 +8,11 @@
 
 import Foundation
 
+public enum SDKError: Error {
+    case sessionAlreadyStarted
+    case failedToStartSession
+}
+
 public enum APIError: Error {
     case noDataReturned
     case invalidData
@@ -23,6 +28,7 @@ public enum APIError: Error {
     case unknownError(Int)
     case malformedURL
     case missingToken
+    case sessionAlreadyStarted
     
     public static func errorFor(code: Int) -> Self? {
         switch code {

@@ -28,7 +28,6 @@ public final class BrainJuiceProvider: BrainJuiceProviding {
         self.errorProvider = errorProvider
     }
     
-    
     public func setDecodedToken(_ decodedToken: NX10Token) {
         print("LOG: setDecodedToken - Brain Juice")
         self.decodedToken = decodedToken

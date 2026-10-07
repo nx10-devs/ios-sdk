@@ -89,6 +89,7 @@ private struct RuntimeEnvironmentAdapter<Content: View>: View {
             }
     }
 }
+
 public extension View {
     /// Zero-boilerplate URL handler for clients using NX10MESceneDelegate
     func onNX10OpenURL(perform action: @escaping (URL) -> Void) -> some View {

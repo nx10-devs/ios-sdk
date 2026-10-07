@@ -46,7 +46,7 @@ public final class GameProvider: GamesProviding {
             throw NSError(domain: "game request", code: -0011)
         }
         
-        let game: Games.CreateResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.create.url), for: nil)
+        let game: Games.CreateResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.create.url), for: nil, isForced: true)
         return game
     }
 
@@ -56,7 +56,7 @@ public final class GameProvider: GamesProviding {
             throw NSError(domain: "game results request", code: -0011)
         }
 
-        let results: Games.GameHistoryResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.results.url), for: nil)
+        let results: Games.GameHistoryResponse? = try await networking.POST(.init(data: encoded), for: .hardcoded(GameEndpoint.results.url), for: nil, isForced: true)
         return results
     }
 }

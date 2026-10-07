@@ -97,7 +97,8 @@ public final class SessionProvider: SessionProviding {
             let result: SessionProvider.StartSession.Response? = try await networking.execute(
                 .init(data: data),
                 for: url,
-                httpHeaders: enableDemo ? ["X-Demo-Mode" : "true"] : nil
+                httpHeaders: enableDemo ? ["X-Demo-Mode" : "true"] : nil,
+                isForced: false
             )
             
             guard

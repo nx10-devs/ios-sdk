@@ -23,11 +23,39 @@ public struct PayloadData {
 public protocol Networking {
     func setToken(_ token: String)
     
-    func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String?) async throws -> R?
-    func GET<R:Decodable>(for endpoint: Endpoint.Target, for route: String?) async throws -> R?
-    func execute<R:Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]?) async throws -> R?
+    func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String?, isForced: Bool) async throws -> R?
+    func GET<R:Decodable>(for endpoint: Endpoint.Target, for route: String?, isForced: Bool) async throws -> R?
+    func execute<R:Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]?, isForced: Bool) async throws -> R?
     func enableNetworking(_ enable: Bool)
     func encode<T: Encodable>(_ object: T) -> Data?
+}
+
+/// Desc: Networking here is used to surface default values in the methods
+extension Networking {
+    public func encode<T: Encodable>(_ object: T) -> Data? {
+        return self.encode(object)
+    }
+    
+    public func setToken(_ token: String) {
+        self.setToken(token)
+    }
+    
+    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String? = nil, isForced: Bool = false) async throws -> R? {
+        try await self.POST(payload, for: endpoint, for: route, isForced: isForced)
+    }
+    
+    public func enableNetworking(_ enable: Bool) {
+        self.enableNetworking(enable)
+    }
+    
+    
+    public func execute<R: Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]? = nil, isForced: Bool) async throws -> R? {
+        try await self.execute(payload, for: url, httpHeaders: httpHeaders, isForced: isForced)
+    }
+    
+    public func GET<R: Decodable>(for endpoint: Endpoint.Target, for route: String?,  isForced: Bool = false) async throws -> R? {
+        try await self.GET(for: endpoint, for: route, isForced: isForced)
+    }
 }
 
 public final class NetworkService: Networking {
@@ -62,11 +90,14 @@ public final class NetworkService: Networking {
         self.token = token
     }
     
-    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String? = nil) async throws -> R? {
-        print("LOG ------------------------------ \(endpoint.rawValue)")
-        if sharedStorageProvider.networkingEnabled == false {
-            print("LOG: Network disabled, returning ...")
-            return nil
+    public func POST<R:Decodable>(_ payload: PayloadData?, for endpoint: Endpoint.Target, for route: String? = nil, isForced: Bool = false) async throws -> R? {
+        
+        if !isForced {
+            print("LOG ------------------------------ \(endpoint.rawValue)")
+            if sharedStorageProvider.networkingEnabled == false {
+                print("LOG: Network disabled, returning ...")
+                return nil
+            }
         }
         var url: URL?
         
@@ -86,7 +117,7 @@ public final class NetworkService: Networking {
         else {
             throw NSError(domain: "Failed to create url", code: -00011)
         }
-        return try await self.execute(payload, for: url)
+        return try await self.execute(payload, for: url, isForced: isForced)
     }
     
     public func enableNetworking(_ enable: Bool) {
@@ -94,15 +125,17 @@ public final class NetworkService: Networking {
     }
     
     
-    public func execute<R: Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]? = nil) async throws -> R? {
+    public func execute<R: Decodable>(_ payload: PayloadData?, for url: URL, httpHeaders: [String : String]? = nil, isForced: Bool) async throws -> R? {
         
         // NOTE: This may have to be moved to POST or GET (CRUD) to allow access outside main pipelines
-        if sharedStorageProvider.networkingEnabled == false {
-            print("Networking disabled")
-            throw NSError.error(for: .networkingDisabled)
-            return nil
-        } else {
-            print("Networking enabled")
+        if !isForced {
+            if sharedStorageProvider.networkingEnabled == false {
+                print("Networking disabled")
+                throw NSError.error(for: .networkingDisabled)
+                return nil
+            } else {
+                print("Networking enabled")
+            }
         }
         
         if isDebug {
@@ -138,7 +171,7 @@ public final class NetworkService: Networking {
         config.allowsCellularAccess = true
         config.allowsExpensiveNetworkAccess = true
         config.allowsConstrainedNetworkAccess = true
-        config.waitsForConnectivity = true
+        config.waitsForConnectivity = false
         
         if isDebug {
             print("LOG: URL:\(url)\npayload:\(payload)\nData: \(request.httpBody?.asString ?? "nil")")
@@ -180,15 +213,17 @@ public final class NetworkService: Networking {
         return nil
     }
     
-    public func GET<R: Decodable>(for endpoint: Endpoint.Target, for route: String?) async throws -> R? {
+    public func GET<R: Decodable>(for endpoint: Endpoint.Target, for route: String?,  isForced: Bool = false) async throws -> R? {
         
         if isDebug {
             print("LOG ------------------------------ \(endpoint.rawValue)")
         }
 
-        if sharedStorageProvider.networkingEnabled == false {
-            print("LOG: Network disabled, returning ...")
-            return nil
+        if !isForced {
+            if sharedStorageProvider.networkingEnabled == false {
+                print("LOG: Network disabled, returning ...")
+                return nil
+            }
         }
         
         var url: URL?
@@ -207,7 +242,6 @@ public final class NetworkService: Networking {
         if isDebug {
             print("LOG: URL:\(url) [GET]")
         }
-        
         
         guard
             let url
